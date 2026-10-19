@@ -1,0 +1,21 @@
+.venv/
+venv/
+env/
+
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+.env
+.env.*
+.DS_Store
+Thumbs.db
+
+# La caché diaria de NASA POWER es grande y se puede regenerar.
+datos/cache/
+
+# Salidas temporales
+*.log
+*.tmp

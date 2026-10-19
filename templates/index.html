@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rendimiento de cultivos | TP Integrador</title>
+  <style>
+    :root {
+      --verde: #1f5c3a;
+      --verde-claro: #e8f1ea;
+      --tinta: #1c2521;
+      --gris: #5b6660;
+      --borde: #d5ded8;
+      --fondo: #f7faf7;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--fondo);
+      color: var(--tinta);
+      line-height: 1.55;
+    }
+    main {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 48px 24px 72px;
+    }
+    .etiqueta {
+      display: inline-block;
+      background: var(--verde-claro);
+      color: var(--verde);
+      border: 1px solid var(--borde);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .02em;
+    }
+    h1 {
+      font-size: clamp(32px, 5vw, 48px);
+      line-height: 1.1;
+      margin: 18px 0 12px;
+      color: var(--verde);
+    }
+    p { color: var(--gris); font-size: 18px; max-width: 68ch; }
+    .tarjetas {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin: 32px 0;
+    }
+    .tarjeta {
+      background: #fff;
+      border: 1px solid var(--borde);
+      border-radius: 14px;
+      padding: 18px 20px;
+    }
+    .tarjeta h2 {
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--verde);
+      margin: 0 0 8px;
+    }
+    .tarjeta p { font-size: 15px; margin: 0; }
+    .nota {
+      border-left: 4px solid var(--verde);
+      background: #fff;
+      padding: 14px 18px;
+      border-radius: 0 10px 10px 0;
+      font-size: 15px;
+      color: var(--gris);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <span class="etiqueta">Entrega 2 · Datos y baselines</span>
+    <h1>Rendimiento de cultivos por partido</h1>
+    <p>
+      Predicción del rendimiento de maíz, trigo, girasol y soja en partidos de la
+      Provincia de Buenos Aires, con una alerta de campaña mala antes de la cosecha.
+    </p>
+
+    <div class="tarjetas">
+      <div class="tarjeta">
+        <h2>Variable numérica</h2>
+        <p>Rendimiento en kg/ha, expresado como ratio sobre el promedio de las cinco campañas anteriores.</p>
+      </div>
+      <div class="tarjeta">
+        <h2>Alerta</h2>
+        <p>Campaña mala si el ratio es menor a 0,85. Se comparan clasificador directo y regresión más umbral.</p>
+      </div>
+      <div class="tarjeta">
+        <h2>Datos</h2>
+        <p>Estimaciones Agrícolas de la Provincia de Buenos Aires, CC BY 4.0, y clima diario de NASA POWER.</p>
+      </div>
+    </div>
+
+    <div class="nota">
+      La aplicación de predicción se completa en la Clase 4. Esta versión deja
+      disponible el esqueleto Flask y el endpoint <code>/health</code>.
+    </div>
+  </main>
+</body>
+</html>

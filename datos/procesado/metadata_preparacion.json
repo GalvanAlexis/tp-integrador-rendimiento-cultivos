@@ -1,0 +1,47 @@
+{
+  "generado_utc": "2026-10-19T14:23:52+00:00",
+  "cultivos": [
+    "Maíz",
+    "Trigo total",
+    "Girasol",
+    "Soja total"
+  ],
+  "campanias_modelado": [
+    1981,
+    2024
+  ],
+  "umbral_principal": 0.85,
+  "umbrales_analizados": [
+    0.8,
+    0.85,
+    0.9
+  ],
+  "split": {
+    "train": [
+      1981,
+      2013
+    ],
+    "validacion": [
+      2014,
+      2018
+    ],
+    "test": [
+      2019,
+      2024
+    ]
+  },
+  "filas_limpias": 20390,
+  "filas_modelado": 15179,
+  "filas_por_split": {
+    "train": 11147,
+    "test": 2204,
+    "validacion": 1828
+  },
+  "filas_por_cultivo": {
+    "Maíz": 4179,
+    "Trigo total": 3989,
+    "Girasol": 3726,
+    "Soja total": 3285
+  },
+  "perdidas_totales": 46
+}
