@@ -1,0 +1,17 @@
+split,cultivo,modelo,n,accuracy,precision,recall,f1,tp,fp,fn,tn,tasa_alertas
+validacion,Maíz,Dummy,499,0.8657314629258517,0.0,0.0,0.0,0,0,67,432,0.0
+validacion,Maíz,Promedio 5 campañas,499,0.8657314629258517,0.0,0.0,0.0,0,0,67,432,0.0
+validacion,Trigo total,Dummy,465,0.8473118279569892,0.0,0.0,0.0,0,0,71,394,0.0
+validacion,Trigo total,Promedio 5 campañas,465,0.8473118279569892,0.0,0.0,0.0,0,0,71,394,0.0
+validacion,Girasol,Dummy,413,0.8668280871670703,0.0,0.0,0.0,0,0,55,358,0.0
+validacion,Girasol,Promedio 5 campañas,413,0.8668280871670703,0.0,0.0,0.0,0,0,55,358,0.0
+validacion,Soja total,Dummy,451,0.8292682926829268,0.0,0.0,0.0,0,0,77,374,0.0
+validacion,Soja total,Promedio 5 campañas,451,0.8292682926829268,0.0,0.0,0.0,0,0,77,374,0.0
+test,Maíz,Dummy,606,0.764026402640264,0.0,0.0,0.0,0,0,143,463,0.0
+test,Maíz,Promedio 5 campañas,606,0.764026402640264,0.0,0.0,0.0,0,0,143,463,0.0
+test,Trigo total,Dummy,579,0.7599309153713298,0.0,0.0,0.0,0,0,139,440,0.0
+test,Trigo total,Promedio 5 campañas,579,0.7599309153713298,0.0,0.0,0.0,0,0,139,440,0.0
+test,Girasol,Dummy,451,0.9135254988913526,0.0,0.0,0.0,0,0,39,412,0.0
+test,Girasol,Promedio 5 campañas,451,0.9135254988913526,0.0,0.0,0.0,0,0,39,412,0.0
+test,Soja total,Dummy,568,0.7376760563380281,0.0,0.0,0.0,0,0,149,419,0.0
+test,Soja total,Promedio 5 campañas,568,0.7376760563380281,0.0,0.0,0.0,0,0,149,419,0.0

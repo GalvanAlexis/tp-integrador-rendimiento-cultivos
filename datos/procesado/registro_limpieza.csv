@@ -1,0 +1,9 @@
+paso,filas_antes,filas_despues,filas_removidas,motivo
+lectura_csv,53905,53905,0,Archivo original
+filtrar_cultivos,53905,20495,33410,"Cultivos del alcance: Maíz, Trigo total, Girasol, Soja total"
+filtrar_campanias,20495,20393,102,Se conservan campañas 1969 a 2024; se excluye 2025/26 por estar incompleta
+quitar_municipio_ignorado,20393,20393,0,Municipio 'Ignorado' sin partido asignado
+quitar_rendimiento_invalido,20393,20392,1,Rendimiento nulo o negativo
+quitar_superficie_invalida,20392,20390,2,Superficie sembrada nula o no positiva
+quitar_duplicados,20390,20390,0,"Duplicados por cultivo, campaña y municipio"
+ordenar,20390,20390,0,"Orden por cultivo, municipio y campaña"

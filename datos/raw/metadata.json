@@ -1,0 +1,20 @@
+{
+  "fuente": "https://catalogo.datos.gba.gob.ar/dataset/estimaciones-agro",
+  "url_descarga": "https://catalogo.datos.gba.gob.ar/dataset/4ee50a8f-6866-4191-9bf8-aebb30b0d718/resource/d3e23031-164a-43e0-b104-01ced63e4abd/download/estimaciones-agricolas-1969_2026.csv",
+  "licencia": "CC BY 4.0",
+  "archivo": "estimaciones-agricolas-1969_2026.csv",
+  "bytes": 2959265,
+  "sha256": "a3b8e1295978343847324b2c3dff4d41b985f093372b34b1290cbc7ad75934e0",
+  "filas": 53905,
+  "columnas": [
+    "cultivo",
+    "campania",
+    "municipio_id",
+    "municipio_nombre",
+    "superficie_sembrada",
+    "superficie_cosechada",
+    "produccion",
+    "rendimiento"
+  ],
+  "descargado_utc": "2026-10-19T14:27:26+00:00"
+}
