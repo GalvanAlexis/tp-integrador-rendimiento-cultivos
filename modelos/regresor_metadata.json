@@ -1,0 +1,43 @@
+{
+  "generado_utc": "2026-10-20T21:55:13+00:00",
+  "modelo": "KNeighborsRegressor",
+  "variables": "con_clima",
+  "params": {
+    "n_neighbors": 300,
+    "weights": "distance"
+  },
+  "entrada": [
+    "cultivo",
+    "superficie_sembrada",
+    "prev5",
+    "prev5_ceros",
+    "clima_precip_total_mm",
+    "clima_dias_tmax_30",
+    "clima_tmax_media_c",
+    "clima_tmin_media_c",
+    "clima_humedad_media_pct",
+    "clima_sequia_max_dias",
+    "clima_precip_pre_siembra_mm",
+    "clima_dias_helada",
+    "clima_dias_lluvia"
+  ],
+  "salida": "ratio = rendimiento / promedio de las 5 campañas anteriores",
+  "conversion_kg_ha": "rendimiento_kg_ha = ratio_predicho * prev5",
+  "umbral_alerta": 0.85,
+  "entrenado_con": "train + validacion (campañas 1981/82 a 2018/19)",
+  "metricas_test": {
+    "mae_ratio_test": 0.1587768652449289,
+    "rmse_ratio_test": 0.22329122487818506,
+    "r2_ratio_test": -0.09424212081860706,
+    "mae_kg_test": 636.7792367596745,
+    "r2_kg_test": 0.8109984083182619
+  },
+  "semilla": 42,
+  "versiones": {
+    "python": "3.13.3",
+    "scikit-learn": "1.8.0",
+    "pandas": "3.0.2",
+    "numpy": "2.4.4",
+    "joblib": "1.5.3"
+  }
+}

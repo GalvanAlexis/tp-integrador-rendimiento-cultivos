@@ -29,6 +29,15 @@ BASELINES_REGRESION = PROCESADO_DIR / "baselines_regresion.csv"
 BASELINES_CLASIFICACION = PROCESADO_DIR / "baselines_clasificacion.csv"
 BASELINES_GLOBAL = PROCESADO_DIR / "baselines_global.csv"
 
+MODELOS_DIR = ROOT / "modelos"
+REGRESOR_FILE = MODELOS_DIR / "regresor.joblib"
+REGRESOR_METADATA = MODELOS_DIR / "regresor_metadata.json"
+REGRESION_BUSQUEDA = PROCESADO_DIR / "regresion_busqueda_validacion.csv"
+REGRESION_COMPARACION = PROCESADO_DIR / "regresion_comparacion.csv"
+REGRESION_POR_CULTIVO = PROCESADO_DIR / "regresion_por_cultivo_test.csv"
+REGRESION_POR_CAMPANIA = PROCESADO_DIR / "regresion_por_campania_test.csv"
+REGRESION_PREDICCIONES = PROCESADO_DIR / "regresion_predicciones_test.csv"
+
 SOURCE_URL = (
     "https://catalogo.datos.gba.gob.ar/dataset/4ee50a8f-6866-4191-9bf8-aebb30b0d718/"
     "resource/d3e23031-164a-43e0-b104-01ced63e4abd/download/"

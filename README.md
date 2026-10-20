@@ -4,7 +4,7 @@ Trabajo Práctico Integrador de **Aprendizaje Automático**.
 
 **Repositorio:** https://github.com/GalvanAlexis/tp-integrador-rendimiento-cultivos
 
-**Estado:** Entrega 2 terminada. Dataset preparado, diccionario de variables, protocolo de evaluación y baselines.
+**Estado:** Entrega 3 terminada. Regresores comparados con validación, evaluados en test y regresor seleccionado guardado en `modelos/`.
 
 ---
 
@@ -75,16 +75,20 @@ proyecto/
 ├── requirements.txt
 ├── app.py
 ├── modelos/
+│   ├── regresor.joblib
+│   └── regresor_metadata.json
 ├── templates/
 ├── public/
 ├── notebooks/
-│   └── 02_preparacion_y_baselines.ipynb
+│   ├── 02_preparacion_y_baselines.ipynb
+│   └── 03_regresion.ipynb
 ├── src/
 │   ├── config.py
 │   ├── descargar_datos.py
 │   ├── preparar_datos.py
 │   ├── baselines.py
-│   └── clima.py
+│   ├── clima.py
+│   └── regresion.py
 ├── datos/
 │   ├── README.md
 │   ├── diccionario_variables.md
@@ -93,6 +97,8 @@ proyecto/
 ├── informe/
 │   ├── entrega_1_propuesta.md
 │   ├── entrega_2_preparacion_y_baselines.md
+│   ├── entrega_3_regresion.md
+│   ├── bitacora.md
 │   └── figuras/
 └── tests/
 ```
@@ -108,12 +114,20 @@ python -m src.descargar_datos
 python -m src.preparar_datos
 python -m src.baselines
 python -m src.clima --merge
+python -m src.regresion
 ```
 
-Notebook:
+Notebooks:
 
 ```bash
 python -m nbconvert --to notebook --execute --inplace notebooks/02_preparacion_y_baselines.ipynb
+python -m nbconvert --to notebook --execute --inplace notebooks/03_regresion.ipynb
+```
+
+Tests:
+
+```bash
+python -m pytest
 ```
 
 Clima:
@@ -146,13 +160,29 @@ Lectura:
 - Hay 12 ratios extremos (mayores a 3), todos causados por campañas previas sin cosecha. Se conservan y se agrega `prev5_ceros` como predictor.
 - En maíz y soja el clima se relaciona con el ratio en la dirección esperada; en trigo y girasol la relación es casi nula.
 
+## Resultados principales de la Entrega 3
+
+Se compararon 136 configuraciones de árbol y KNN, con y sin clima, elegidas con validación. El regresor seleccionado es **KNN con clima, k = 300 y pesos por distancia**.
+
+| Modelo (test) | MAE ratio | MAE kg/ha | RMSE kg/ha | R² kg/ha | Recall de la alerta |
+|---|---:|---:|---:|---:|---:|
+| Dummy por cultivo | 0,177 | 756 | 1.174 | 0,704 | 0,00 |
+| Promedio 5 campañas | **0,154** | **626** | 981 | 0,793 | 0,00 |
+| **KNN con clima** | 0,159 | 637 | **938** | **0,811** | **0,23** |
+
+Lectura:
+
+- En validación, el KNN supera a los dos baselines.
+- En test, supera al Dummy pero no al promedio de 5 campañas en MAE. Sí lo supera en RMSE y R² en kg/ha, en la sequía 2022/23 y en soja.
+- La causa es un sesgo de nivel: el test (ratio medio 0,96) fue más malo que cualquier período de entrenamiento (1,08).
+- La precipitación de la ventana es la variable más importante. El clima explica bien la soja y algo del maíz, pero no el trigo ni el girasol.
+- Por la regresión hacia la media, la alerta obtenida desde la regresión detecta solo el 23% de las campañas malas.
+
 ## Próximos pasos
 
-1. Usar el dataset con clima (`dataset_modelado_con_clima.csv`) en el modelado.
-2. Entrenar Dummy, DecisionTree y KNN con StandardScaler en Pipeline.
-3. Evaluar MAE, RMSE y R², residuos y errores por campaña.
-4. Entrenar los clasificadores y comparar los dos sistemas de alerta.
-5. Construir la app Flask y desplegarla en Vercel.
+1. Entrenar los clasificadores y comparar el clasificador directo con la alerta por regresión.
+2. Definir el esquema de costos de falsos positivos y falsos negativos.
+3. Construir la app Flask y desplegarla en Vercel.
 
 ## Equipo
 
