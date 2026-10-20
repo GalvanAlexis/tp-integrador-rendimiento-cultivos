@@ -67,6 +67,7 @@ Dirección de Estimaciones Agrícolas.
 3. **Calcular el promedio de 5 campañas solo con campañas anteriores.** Se usa una grilla calendario y `shift(1).rolling(5, min_periods=5)`. Si falta un año, el promedio queda nulo y la fila no entra al modelado.
 4. **Separar por campañas, no al azar.** Los partidos de una misma campaña comparten el mismo shock climático.
 5. **No usar el test para elegir modelos o hiperparámetros.**
+6. **Conservar los ratios extremos.** Hay 12 filas con ratio mayor a 3. Todas tienen campañas sin cosecha entre las cinco anteriores, que bajan el promedio. No son errores de carga: se conservan, se listan en `procesado/casos_ratio_extremo.csv` y se agrega `prev5_ceros` como predictor.
 
 ## Advertencias
 

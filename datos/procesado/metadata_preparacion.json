@@ -1,5 +1,5 @@
 {
-  "generado_utc": "2026-10-19T14:23:52+00:00",
+  "generado_utc": "2026-10-20T21:10:36+00:00",
   "cultivos": [
     "Maíz",
     "Trigo total",
@@ -43,5 +43,8 @@
     "Girasol": 3726,
     "Soja total": 3285
   },
-  "perdidas_totales": 46
+  "perdidas_totales": 46,
+  "filas_con_ceros_previos": 190,
+  "umbral_ratio_extremo": 3.0,
+  "casos_ratio_extremo": 12
 }

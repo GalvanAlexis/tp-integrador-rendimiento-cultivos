@@ -1,0 +1,15 @@
+# Bitácora de decisiones
+
+| Fecha | Decisión | Alternativas | Justificación | Resultado |
+|---|---|---|---|---|
+| 13/10/2026 | Proyecto: rendimiento de cultivos por partido | Demanda de una línea de colectivo; ocupación de alojamientos en Chascomús | Fuente pública con licencia abierta, más de 50.000 filas, decisión concreta para el productor | Propuesta aprobada (Entrega 1) |
+| 19/10/2026 | Alcance: maíz, trigo total, girasol y soja total; campañas 1981/82 a 2024/25 | Incluir sorgo y cebada cervecera | Sorgo tiene 14,5% de rendimientos cero; cebada termina en 2015/16; el clima de NASA POWER empieza en 1981 | 15.179 filas de modelado |
+| 19/10/2026 | Objetivo: ratio contra el promedio de las 5 campañas anteriores | Rendimiento absoluto en kg/ha | Absorbe la tendencia tecnológica y las diferencias de suelo; es comparable entre cultivos | El rendimiento mediano se duplicó entre 1981 y 2024; el ratio es estacionario |
+| 19/10/2026 | Split temporal por campaña | Split aleatorio | Todos los partidos de una campaña comparten el mismo clima; un split aleatorio filtraría información | Train 1981-2013, validación 2014-2018, test 2019-2024 |
+| 19/10/2026 | Conservar los rendimientos cero | Eliminarlos | Son campañas sembradas y no cosechadas: pérdidas reales y costosas | 46 casos en el dataset de modelado |
+| 20/10/2026 | Umbral 0,85 | 0,50 (Ley 26.509), 0,70 (seguro multirriesgo), 0,80, 0,90 | La alerta tiene que llegar antes que la emergencia; con 0,85 queda un 18% de positivos en train | 0,80 y 0,90 quedan como sensibilidad |
+| 20/10/2026 | Conservar los 12 ratios mayores a 3 y agregar `prev5_ceros` | Eliminarlos; recortar el ratio | Todos se explican por campañas previas sin cosecha; eliminarlos sería filtrar por el objetivo | MAE como métrica principal; `prev5_ceros` es la 4.ª variable más importante del regresor |
+| 20/10/2026 | Excluir `campania_inicio` y `municipio_id` como predictores | Incluirlos | El año del test queda fuera del rango de entrenamiento; el nivel del partido ya está en `prev5` | 13 variables de entrada |
+| 20/10/2026 | Selección por MAE del ratio en validación y evaluación final con train + validación | Seleccionar por RMSE; evaluar con el modelo entrenado solo en train | MAE robusto a extremos; la validación es el período más cercano al test | 136 configuraciones evaluadas |
+| 20/10/2026 | Descartar anomalías climáticas y ventanas de entrenamiento más cortas | Usarlas | No mejoran el MAE de validación (0,1599 de la configuración original contra 0,1601 o más) | Se mantiene el clima absoluto desde 1981 |
+| 20/10/2026 | Regresor: KNN con clima, k = 300, pesos por distancia | Árbol de profundidad 4 | Menor MAE de validación | En test, MAE 0,159 contra 0,154 del promedio de 5 campañas; mejor en RMSE kg/ha, soja y 2022/23 |

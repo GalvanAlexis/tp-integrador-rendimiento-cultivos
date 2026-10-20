@@ -22,10 +22,21 @@ DATASET_MODELADO = PROCESADO_DIR / "dataset_modelado.csv"
 REGISTRO_LIMPIEZA = PROCESADO_DIR / "registro_limpieza.csv"
 RESUMEN_CLASES_CULTIVO = PROCESADO_DIR / "resumen_clases_por_cultivo.csv"
 RESUMEN_CLASES_CAMPANIA = PROCESADO_DIR / "resumen_clases_por_campania.csv"
+CASOS_RATIO_EXTREMO = PROCESADO_DIR / "casos_ratio_extremo.csv"
 CLIMA_FEATURES = PROCESADO_DIR / "clima_features.csv"
+DATASET_MODELADO_CLIMA = PROCESADO_DIR / "dataset_modelado_con_clima.csv"
 BASELINES_REGRESION = PROCESADO_DIR / "baselines_regresion.csv"
 BASELINES_CLASIFICACION = PROCESADO_DIR / "baselines_clasificacion.csv"
 BASELINES_GLOBAL = PROCESADO_DIR / "baselines_global.csv"
+
+MODELOS_DIR = ROOT / "modelos"
+REGRESOR_FILE = MODELOS_DIR / "regresor.joblib"
+REGRESOR_METADATA = MODELOS_DIR / "regresor_metadata.json"
+REGRESION_BUSQUEDA = PROCESADO_DIR / "regresion_busqueda_validacion.csv"
+REGRESION_COMPARACION = PROCESADO_DIR / "regresion_comparacion.csv"
+REGRESION_POR_CULTIVO = PROCESADO_DIR / "regresion_por_cultivo_test.csv"
+REGRESION_POR_CAMPANIA = PROCESADO_DIR / "regresion_por_campania_test.csv"
+REGRESION_PREDICCIONES = PROCESADO_DIR / "regresion_predicciones_test.csv"
 
 SOURCE_URL = (
     "https://catalogo.datos.gba.gob.ar/dataset/4ee50a8f-6866-4191-9bf8-aebb30b0d718/"
@@ -51,6 +62,11 @@ GRID_END_YEAR = 2024
 
 THRESHOLDS = (0.80, 0.85, 0.90)
 THRESHOLD = 0.85
+
+# Un ratio mayor a 3 (rendimiento más de tres veces el promedio de las cinco
+# campañas anteriores) se marca para revisión. No se elimina: el dato actual es
+# consistente, el promedio queda bajo por campañas previas sin cosecha.
+RATIO_EXTREMO = 3.0
 
 TRAIN_END = 2013
 VALIDATION_END = 2018

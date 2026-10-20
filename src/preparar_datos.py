@@ -5,9 +5,11 @@ Flujo:
 2. Limpia tipos, filtra cultivos y campañas, elimina duplicados y registra
    cada exclusión.
 3. Calcula el promedio de las cinco campañas anteriores por cultivo y
-   municipio, usando una grilla calendario para no mezclar campañas salteadas.
+   municipio, usando una grilla calendario para no mezclar campañas salteadas,
+   y cuenta cuántas de esas campañas no tuvieron cosecha.
 4. Construye el rendimiento relativo (ratio) y las clases binarias.
 5. Define el split temporal y guarda los datasets de trabajo.
+6. Exporta los casos con ratio extremo para revisión.
 """
 
 from __future__ import annotations
@@ -22,6 +24,7 @@ import numpy as np
 import pandas as pd
 
 from .config import (
+    CASOS_RATIO_EXTREMO,
     CROPS,
     DATASET_LIMPIO,
     DATASET_MODELADO,
@@ -29,6 +32,7 @@ from .config import (
     GRID_END_YEAR,
     GRID_START_YEAR,
     PROCESADO_DIR,
+    RATIO_EXTREMO,
     RAW_FILE,
     REGISTRO_LIMPIEZA,
     RESUMEN_CLASES_CAMPANIA,
@@ -57,6 +61,7 @@ MODEL_COLS = [
     "municipio_nombre",
     "superficie_sembrada",
     "prev5",
+    "prev5_ceros",
     "rendimiento",
     "ratio",
     "mala80",
@@ -171,6 +176,12 @@ def add_prev5(df: pd.DataFrame) -> pd.DataFrame:
     Se construye una grilla completa cultivo x municipio x campaña para que el
     promedio use cinco campañas calendario consecutivas. Si falta un año, el
     promedio queda nulo en lugar de saltear el hueco.
+
+    También agrega `prev5_ceros`: cuántas de esas cinco campañas tuvieron
+    rendimiento cero (sin cosecha). Usa solo campañas anteriores, así que está
+    disponible al momento de predecir. Explica los ratios extremos: un
+    promedio con varios ceros queda bajo y cualquier cosecha normal lo
+    multiplica.
     """
     pairs = df[["cultivo", "municipio_id"]].drop_duplicates()
     years = pd.DataFrame({"campania_inicio": range(GRID_START_YEAR, GRID_END_YEAR + 1)})
@@ -186,13 +197,15 @@ def add_prev5(df: pd.DataFrame) -> pd.DataFrame:
         validate="one_to_one",
     )
     grid = grid.sort_values(["cultivo", "municipio_id", "campania_inicio"])
-    grid["prev5"] = (
-        grid.groupby(["cultivo", "municipio_id"], group_keys=False)["rendimiento"]
-        .transform(lambda s: s.shift(1).rolling(5, min_periods=5).mean())
+    by_pair = grid.groupby(["cultivo", "municipio_id"], group_keys=False)["rendimiento"]
+    grid["prev5"] = by_pair.transform(lambda s: s.shift(1).rolling(5, min_periods=5).mean())
+    grid["prev5_ceros"] = by_pair.transform(
+        lambda s: (s == 0).astype(float).where(s.notna()).shift(1).rolling(5, min_periods=5).sum()
     )
+    grid["prev5_ceros"] = grid["prev5_ceros"].where(grid["prev5"].notna()).astype("Int64")
 
     return df.merge(
-        grid[["cultivo", "municipio_id", "campania_inicio", "prev5"]],
+        grid[["cultivo", "municipio_id", "campania_inicio", "prev5", "prev5_ceros"]],
         on=["cultivo", "municipio_id", "campania_inicio"],
         how="left",
         validate="one_to_one",
@@ -262,12 +275,36 @@ def class_summaries(modelado: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]
     return by_crop, by_campaign
 
 
+def extreme_ratio_cases(modelado: pd.DataFrame, threshold: float = RATIO_EXTREMO) -> pd.DataFrame:
+    """Devuelve las filas con ratio mayor al umbral de revisión.
+
+    No se usa para filtrar: la lista documenta los casos y su causa. No se
+    agrega como columna del dataset porque se calcula con el objetivo y sería
+    fuga si se usara como predictor.
+    """
+    cols = [
+        "cultivo",
+        "campania",
+        "municipio_id",
+        "municipio_nombre",
+        "superficie_sembrada",
+        "prev5",
+        "prev5_ceros",
+        "rendimiento",
+        "ratio",
+        "split",
+    ]
+    out = modelado.loc[modelado["ratio"] > threshold, cols]
+    return out.sort_values("ratio", ascending=False).reset_index(drop=True)
+
+
 def save_outputs(
     limpio: pd.DataFrame,
     modelado: pd.DataFrame,
     registro: pd.DataFrame,
     by_crop: pd.DataFrame,
     by_campaign: pd.DataFrame,
+    extremos: pd.DataFrame,
 ) -> None:
     PROCESADO_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -276,6 +313,7 @@ def save_outputs(
     registro.to_csv(REGISTRO_LIMPIEZA, index=False, encoding="utf-8")
     by_crop.to_csv(RESUMEN_CLASES_CULTIVO, index=False, encoding="utf-8")
     by_campaign.to_csv(RESUMEN_CLASES_CAMPANIA, index=False, encoding="utf-8")
+    extremos.to_csv(CASOS_RATIO_EXTREMO, index=False, encoding="utf-8")
 
     metadata = {
         "generado_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -293,6 +331,9 @@ def save_outputs(
         "filas_por_split": modelado["split"].value_counts().to_dict(),
         "filas_por_cultivo": modelado["cultivo"].value_counts().to_dict(),
         "perdidas_totales": int(modelado["perdida_total"].sum()),
+        "filas_con_ceros_previos": int((modelado["prev5_ceros"] > 0).sum()),
+        "umbral_ratio_extremo": RATIO_EXTREMO,
+        "casos_ratio_extremo": int(len(extremos)),
     }
     (PROCESADO_DIR / "metadata_preparacion.json").write_text(
         json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8"
@@ -304,7 +345,8 @@ def prepare(verbose: bool = True) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFr
     limpio_base, registro = clean_raw(raw)
     limpio, modelado = build_datasets(limpio_base)
     by_crop, by_campaign = class_summaries(modelado)
-    save_outputs(limpio, modelado, registro, by_crop, by_campaign)
+    extremos = extreme_ratio_cases(modelado)
+    save_outputs(limpio, modelado, registro, by_crop, by_campaign, extremos)
 
     if verbose:
         print("Registro de limpieza")
@@ -315,6 +357,8 @@ def prepare(verbose: bool = True) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFr
         print(by_crop.to_string(index=False))
         print("\nBalance por campaña")
         print(by_campaign.to_string(index=False))
+        print(f"\nCasos con ratio > {RATIO_EXTREMO}")
+        print(extremos.to_string(index=False))
 
     return limpio, modelado, registro
 
