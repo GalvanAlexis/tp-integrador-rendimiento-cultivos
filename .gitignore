@@ -16,6 +16,10 @@ Thumbs.db
 # La caché diaria de NASA POWER es grande y se puede regenerar.
 datos/cache/
 
+# Archivos de bloqueo de Office y material del curso que no forma parte de las entregas
+~$*
+Consigna_*.docx
+
 # Salidas temporales
 *.log
 *.tmp

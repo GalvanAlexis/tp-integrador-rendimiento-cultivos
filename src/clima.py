@@ -31,6 +31,7 @@ from .config import (
     CROP_WINDOWS,
     CROPS,
     DATASET_MODELADO,
+    DATASET_MODELADO_CLIMA,
     GEOREF_URL,
     NASA_END,
     NASA_PARAMETERS,
@@ -303,7 +304,7 @@ def merge_climate(drop_incomplete: bool = True) -> pd.DataFrame:
     )
     if drop_incomplete:
         merged = merged.drop(columns=["clima_radiacion_kwh_m2"], errors="ignore")
-    out = PROCESADO_DIR / "dataset_modelado_con_clima.csv"
+    out = DATASET_MODELADO_CLIMA
     merged.to_csv(out, index=False, encoding="utf-8")
     print(f"Guardado: {out} ({len(merged)} filas, {merged['clima_precip_total_mm'].notna().sum()} con clima)")
     return merged

@@ -30,14 +30,14 @@ La alerta se genera de dos maneras y luego se comparan:
 - **Decisión:** contratar o reforzar cobertura, vender una parte de la cosecha a futuro, gestionar financiamiento o priorizar asistencia en los partidos con alerta.
 - **Momento de la predicción:** fecha de corte fija por cultivo, al final del período crítico y antes de la cosecha.
 
-| Cultivo | Corte provisorio |
+| Cultivo | Corte |
 |---|---|
 | Trigo | 15/11 |
 | Maíz | 31/01 |
 | Girasol | 31/01 |
 | Soja | 28/02 |
 
-Las fechas se validan con material del INTA o con un asesor agronómico.
+El corte se ubica cuando ya empezó el período crítico de cada cultivo. La justificación, las fuentes y las limitaciones están en el informe de la Entrega 2.
 
 ## Variable numérica y umbral
 
@@ -45,7 +45,7 @@ Las fechas se validan con material del INTA o con un asesor agronómico.
 - **Variable de modelado:** `ratio = rendimiento / promedio de las 5 campañas anteriores`.
 - **Clase:** `campaña_mala = 1` si `ratio < 0,85`.
 
-El umbral relativo absorbe diferencias de suelo y tendencia tecnológica entre partidos. El 0,85 es provisorio: se analizan también 0,80 y 0,90.
+El umbral relativo absorbe diferencias de suelo y tendencia tecnológica entre partidos. El 0,85 se justifica frente a la Ley 26.509 de Emergencia Agropecuaria (50%), el seguro multirriesgo (60-70%) y la tasa de positivos que deja en train (18%). Los umbrales 0,80 y 0,90 se analizan como sensibilidad.
 
 ## Fuente de datos
 
@@ -91,6 +91,7 @@ proyecto/
 │   ├── raw/
 │   └── procesado/
 ├── informe/
+│   ├── entrega_1_propuesta.md
 │   ├── entrega_2_preparacion_y_baselines.md
 │   └── figuras/
 └── tests/
@@ -106,6 +107,7 @@ pip install -r requirements.txt
 python -m src.descargar_datos
 python -m src.preparar_datos
 python -m src.baselines
+python -m src.clima --merge
 ```
 
 Notebook:
@@ -124,6 +126,8 @@ python -m src.clima --merge
 
 La descarga completa ya se ejecutó: 107 partidos, 18.832 filas de clima y 15.179 filas de modelado con clima completo. La radiación se conserva en la tabla cruda pero se excluye del modelado por faltantes en 1981-1983; quedan nueve variables climáticas.
 
+El notebook no descarga clima: lee `datos/procesado/dataset_modelado_con_clima.csv`, que está versionado. `--merge` lo regenera sin conexión a partir de `clima_features.csv`. Solo `--full` y `--sample` consultan la API de NASA POWER.
+
 ## Resultados principales de la Entrega 2
 
 Dataset de modelado: **15.179 filas** (11.147 train, 1.828 validación, 2.204 test).
@@ -139,6 +143,8 @@ Lectura:
 - En validación el Dummy gana por poco; en test pierde. El período de prueba es más malo que el de entrenamiento: el ratio medio pasa de 1,079 en train a 0,960 en test.
 - Ambos baselines tienen **recall = 0**. Aciertan cerca del 79% y no detectan ninguna campaña mala. Es el ejemplo de "buen MAE, mala clasificación".
 - La campaña 2022/23 concentra el **60,7%** de los casos malos del test. El modelo de la Clase 3 tiene que demostrar que la detecta con clima.
+- Hay 12 ratios extremos (mayores a 3), todos causados por campañas previas sin cosecha. Se conservan y se agrega `prev5_ceros` como predictor.
+- En maíz y soja el clima se relaciona con el ratio en la dirección esperada; en trigo y girasol la relación es casi nula.
 
 ## Próximos pasos
 
@@ -150,7 +156,11 @@ Lectura:
 
 ## Equipo
 
-Completar con nombre y apellido de los cuatro integrantes, curso y comisión.
+- Francisco Calahorra
+- Federico Valdés
+- Alexis Galván
+
+Curso: Aprendizaje Automático 2026.
 
 ## Licencia
 

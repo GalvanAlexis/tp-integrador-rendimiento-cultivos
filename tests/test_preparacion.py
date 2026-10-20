@@ -51,6 +51,30 @@ def test_prev5_is_null_when_a_campaign_is_missing():
     assert pd.isna(row_2006["prev5"])
 
 
+def test_prev5_ceros_counts_previous_zero_campaigns():
+    df = pd.DataFrame(
+        {
+            "cultivo": ["Maíz"] * 7,
+            "municipio_id": [1] * 7,
+            "campania_inicio": list(range(2000, 2007)),
+            "rendimiento": [0.0, 0.0, 3000.0, 0.0, 3000.0, 6000.0, 0.0],
+        }
+    )
+    out = add_prev5(df).sort_values("campania_inicio")
+    row_2005 = out[out["campania_inicio"] == 2005].iloc[0]
+    assert row_2005["prev5"] == pytest.approx(1200.0)
+    assert row_2005["prev5_ceros"] == 3
+
+    # El cero de la campaña actual no entra en su propio conteo.
+    row_2006 = out[out["campania_inicio"] == 2006].iloc[0]
+    assert row_2006["prev5_ceros"] == 2
+
+    # Sin cinco campañas previas no hay promedio ni conteo.
+    row_2004 = out[out["campania_inicio"] == 2004].iloc[0]
+    assert pd.isna(row_2004["prev5"])
+    assert pd.isna(row_2004["prev5_ceros"])
+
+
 def test_targets_and_threshold():
     df = pd.DataFrame(
         {

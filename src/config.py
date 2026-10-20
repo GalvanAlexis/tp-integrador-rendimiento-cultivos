@@ -22,7 +22,9 @@ DATASET_MODELADO = PROCESADO_DIR / "dataset_modelado.csv"
 REGISTRO_LIMPIEZA = PROCESADO_DIR / "registro_limpieza.csv"
 RESUMEN_CLASES_CULTIVO = PROCESADO_DIR / "resumen_clases_por_cultivo.csv"
 RESUMEN_CLASES_CAMPANIA = PROCESADO_DIR / "resumen_clases_por_campania.csv"
+CASOS_RATIO_EXTREMO = PROCESADO_DIR / "casos_ratio_extremo.csv"
 CLIMA_FEATURES = PROCESADO_DIR / "clima_features.csv"
+DATASET_MODELADO_CLIMA = PROCESADO_DIR / "dataset_modelado_con_clima.csv"
 BASELINES_REGRESION = PROCESADO_DIR / "baselines_regresion.csv"
 BASELINES_CLASIFICACION = PROCESADO_DIR / "baselines_clasificacion.csv"
 BASELINES_GLOBAL = PROCESADO_DIR / "baselines_global.csv"
@@ -51,6 +53,11 @@ GRID_END_YEAR = 2024
 
 THRESHOLDS = (0.80, 0.85, 0.90)
 THRESHOLD = 0.85
+
+# Un ratio mayor a 3 (rendimiento más de tres veces el promedio de las cinco
+# campañas anteriores) se marca para revisión. No se elimina: el dato actual es
+# consistente, el promedio queda bajo por campañas previas sin cosecha.
+RATIO_EXTREMO = 3.0
 
 TRAIN_END = 2013
 VALIDATION_END = 2018
