@@ -1,0 +1,25 @@
+cultivo,modelo,n,positivos_reales,recall,precision,f1,costo,tp,fp,fn,tn
+Girasol,Dummy (clase mayoritaria),451,39,0.0,0.0,0.0,78.0,0,0,39,412
+Maíz,Dummy (clase mayoritaria),606,143,0.0,0.0,0.0,286.0,0,0,143,463
+Soja total,Dummy (clase mayoritaria),568,149,0.0,0.0,0.0,298.0,0,0,149,419
+Trigo total,Dummy (clase mayoritaria),579,139,0.0,0.0,0.0,278.0,0,0,139,440
+Girasol,Regresión + umbral (Entrega 3),451,39,0.0,0.0,0.0,78.0,0,0,39,412
+Maíz,Regresión + umbral (Entrega 3),606,143,0.3706293706293706,0.6708860759493671,0.4774774774774775,206.0,53,26,90,437
+Soja total,Regresión + umbral (Entrega 3),568,149,0.3624161073825503,0.9,0.5167464114832536,196.0,54,6,95,413
+Trigo total,Regresión + umbral (Entrega 3),579,139,0.0,0.0,0.0,278.0,0,0,139,440
+Girasol,KNeighborsClassifier (con_clima),451,39,0.0,0.0,0.0,78.0,0,0,39,412
+Maíz,KNeighborsClassifier (con_clima),606,143,0.2517482517482518,0.9473684210526315,0.39779005524861877,216.0,36,2,107,461
+Soja total,KNeighborsClassifier (con_clima),568,149,0.0,0.0,0.0,298.0,0,0,149,419
+Trigo total,KNeighborsClassifier (con_clima),579,139,0.0,0.0,0.0,278.0,0,0,139,440
+Girasol,KNeighborsClassifier (sin_clima),451,39,0.02564102564102564,0.14285714285714285,0.043478260869565216,82.0,1,6,38,406
+Maíz,KNeighborsClassifier (sin_clima),606,143,0.02097902097902098,0.6,0.04054054054054054,282.0,3,2,140,461
+Soja total,KNeighborsClassifier (sin_clima),568,149,0.0,0.0,0.0,298.0,0,0,149,419
+Trigo total,KNeighborsClassifier (sin_clima),579,139,0.0,0.0,0.0,279.0,0,1,139,439
+Girasol,DecisionTreeClassifier (con_clima),451,39,0.358974358974359,0.11864406779661017,0.17834394904458598,154.0,14,104,25,308
+Maíz,DecisionTreeClassifier (con_clima),606,143,0.5314685314685315,0.4175824175824176,0.4676923076923077,240.0,76,106,67,357
+Soja total,DecisionTreeClassifier (con_clima),568,149,0.8053691275167785,0.502092050209205,0.6185567010309279,177.0,120,119,29,300
+Trigo total,DecisionTreeClassifier (con_clima),579,139,0.7553956834532374,0.481651376146789,0.5882352941176471,181.0,105,113,34,327
+Girasol,DecisionTreeClassifier (sin_clima),451,39,0.0,0.0,0.0,78.0,0,0,39,412
+Maíz,DecisionTreeClassifier (sin_clima),606,143,0.3916083916083916,0.2978723404255319,0.338368580060423,306.0,56,132,87,331
+Soja total,DecisionTreeClassifier (sin_clima),568,149,0.04697986577181208,0.21875,0.07734806629834254,309.0,7,25,142,394
+Trigo total,DecisionTreeClassifier (sin_clima),579,139,0.9712230215827338,0.23601398601398602,0.379746835443038,445.0,135,437,4,3

@@ -1,0 +1,408 @@
+﻿<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Predecir campana | Rendimiento de cultivos</title>
+  <meta name="description" content="Formulario de prediccion de rendimiento y alerta de campana mala.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --verde: #166534;
+      --verde-mid: #15803d;
+      --verde-claro: #dcfce7;
+      --tinta: #0f172a;
+      --gris: #475569;
+      --borde: #d1fae5;
+      --fondo: #f0fdf4;
+      --blanco: #ffffff;
+      --rojo-bg: #fef2f2;
+      --rojo: #991b1b;
+      --rojo-borde: #fecaca;
+      --amber-bg: #fffbeb;
+      --amber: #92400e;
+      --amber-borde: #fde68a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", system-ui, sans-serif;
+      background: var(--fondo);
+      color: var(--tinta);
+      line-height: 1.6;
+    }
+    header {
+      background: var(--verde);
+      color: var(--blanco);
+      padding: 0 24px;
+    }
+    .header-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+    .logo { font-weight: 700; font-size: 15px; }
+    nav a {
+      color: var(--verde-claro);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      margin-left: 20px;
+      transition: color .15s;
+    }
+    nav a:hover { color: var(--blanco); }
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+    h1 { font-size: 26px; color: var(--verde); margin-bottom: 4px; }
+    .subtitulo { color: var(--gris); font-size: 14px; margin-bottom: 32px; }
+    .card {
+      background: var(--blanco);
+      border: 1px solid var(--borde);
+      border-radius: 16px;
+      padding: 28px 28px;
+      margin-bottom: 24px;
+    }
+    .card h2 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--gris);
+      margin-bottom: 20px;
+    }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    @media (max-width: 600px) {
+      .grid-3, .grid-2 { grid-template-columns: 1fr; }
+    }
+    label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: var(--tinta); }
+    .hint { font-size: 11px; color: var(--gris); margin-top: 3px; }
+    input[type=number], input[type=text], select {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 14px;
+      font-family: inherit;
+      background: var(--blanco);
+      color: var(--tinta);
+      transition: border-color .15s;
+    }
+    input[type=number]:focus, input[type=text]:focus, select:focus {
+      outline: none;
+      border-color: var(--verde-mid);
+      box-shadow: 0 0 0 3px rgba(21,128,61,.12);
+    }
+    .btn-primary {
+      background: var(--verde-mid);
+      color: var(--blanco);
+      border: none;
+      border-radius: 8px;
+      padding: 12px 28px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+    }
+    .btn-primary:hover { background: var(--verde); transform: translateY(-1px); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--verde-mid);
+      border: 1px solid var(--verde-mid);
+      border-radius: 8px;
+      padding: 11px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-secondary:hover { background: var(--verde-claro); }
+    .acciones { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    /* Resultado */
+    .resultado-alerta {
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 24px;
+      animation: fadeIn .4s ease;
+    }
+    .resultado-alerta.mala {
+      background: var(--rojo-bg);
+      border: 2px solid var(--rojo-borde);
+    }
+    .resultado-alerta.normal {
+      background: var(--verde-claro);
+      border: 2px solid var(--borde);
+    }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+    .alerta-icon { font-size: 36px; margin-bottom: 10px; }
+    .alerta-titulo { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .alerta-titulo.mala { color: var(--rojo); }
+    .alerta-titulo.normal { color: var(--verde); }
+    .alerta-desc { font-size: 14px; color: var(--gris); margin-bottom: 20px; }
+    .metricas { display: flex; gap: 20px; flex-wrap: wrap; }
+    .metrica { background: var(--blanco); border-radius: 10px; padding: 14px 18px; min-width: 140px; }
+    .metrica-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--gris); margin-bottom: 4px; }
+    .metrica-valor { font-size: 22px; font-weight: 700; color: var(--tinta); }
+    .sistemas { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      border-radius: 999px; padding: 5px 12px;
+      font-size: 13px; font-weight: 500;
+    }
+    .chip-alerta { background: var(--rojo-bg); color: var(--rojo); border: 1px solid var(--rojo-borde); }
+    .chip-ok { background: var(--verde-claro); color: var(--verde); border: 1px solid var(--borde); }
+    .chip-gris { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+    .chip-dot { width: 7px; height: 7px; border-radius: 50; background: currentColor; }
+    /* Info autocompletado */
+    .info-real {
+      background: var(--amber-bg);
+      border: 1px solid var(--amber-borde);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--amber);
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <span class="logo">Rendimiento de cultivos</span>
+      <nav>
+        <a href="/">Inicio</a>
+        <a href="/predecir">Predecir</a>
+        <a href="/health">Health</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Prediccion de campana</h1>
+    <p class="subtitulo">
+      Selecciona partido, cultivo y campana. Los valores historicos se autocompletan.
+      Podes editar las variables climaticas para simular escenarios.
+    </p>
+
+    <!-- RESULTADO -->
+    {% if resultado and not resultado.get("error") %}
+    {% set alerta = resultado.get("alerta_final", 0) %}
+    <div class="resultado-alerta {{ 'mala' if alerta else 'normal' }}">
+      <div class="alerta-icon">{{ "🚨" if alerta else "✅" }}</div>
+      <div class="alerta-titulo {{ 'mala' if alerta else 'normal' }}">
+        {{ "Alerta: campana mala esperada" if alerta else "Campana dentro de lo normal" }}
+      </div>
+      <p class="alerta-desc">
+        {% if alerta %}
+          Uno o ambos sistemas predicen que el rendimiento sera inferior al 85% del promedio de las 5 campanas anteriores.
+        {% else %}
+          Ambos sistemas coinciden en que no se espera una campana significativamente mala.
+        {% endif %}
+      </p>
+
+      <div class="metricas">
+        {% if resultado.get("ratio_pred") is not none %}
+        <div class="metrica">
+          <div class="metrica-label">Ratio predicho</div>
+          <div class="metrica-valor">{{ "%.3f"|format(resultado.ratio_pred) }}</div>
+        </div>
+        {% endif %}
+        {% if resultado.get("rend_pred_kg") is not none %}
+        <div class="metrica">
+          <div class="metrica-label">Rendimiento estimado</div>
+          <div class="metrica-valor">{{ "{:,.0f}".format(resultado.rend_pred_kg) }} kg/ha</div>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="sistemas">
+        {% if resultado.get("alerta_regresion") is not none %}
+        <span class="chip {{ 'chip-alerta' if resultado.alerta_regresion else 'chip-ok' }}">
+          <span class="chip-dot"></span>
+          Regresion: {{ "ALERTA" if resultado.alerta_regresion else "normal" }}
+        </span>
+        {% endif %}
+        {% if resultado.get("alerta_clasificador") is not none %}
+        <span class="chip {{ 'chip-alerta' if resultado.alerta_clasificador else 'chip-ok' }}">
+          <span class="chip-dot"></span>
+          Clasificador: {{ "ALERTA" if resultado.alerta_clasificador else "normal" }}
+        </span>
+        {% endif %}
+      </div>
+
+      {% if autocomp.get("rendimiento_real") %}
+      <div class="info-real">
+        📊 Valor real (del dataset): rendimiento {{ "{:,.0f}".format(autocomp.rendimiento_real) }} kg/ha &mdash;
+        ratio {{ "%.3f"|format(autocomp.ratio_real) }} &mdash;
+        campana {{ "mala" if autocomp.mala85_real else "normal" }}
+      </div>
+      {% endif %}
+    </div>
+    {% elif resultado and resultado.get("error") %}
+    <div class="resultado-alerta mala">
+      <p>⚠️ Error al predecir: {{ resultado.error }}</p>
+    </div>
+    {% endif %}
+
+    <!-- FORMULARIO -->
+    <form method="POST" action="/predecir" id="form-pred">
+      <div class="card">
+        <h2>🌾 Campana a predecir</h2>
+        <div class="grid-3">
+          <div>
+            <label for="partido">Partido</label>
+            <select id="partido" name="partido" required>
+              <option value="">Seleccionar...</option>
+              {% for p in partidos %}
+              <option value="{{ p }}" {{ "selected" if p == partido }}>{{ p }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label for="cultivo">Cultivo</label>
+            <select id="cultivo" name="cultivo" required>
+              <option value="">Seleccionar...</option>
+              {% for c in cultivos %}
+              <option value="{{ c }}" {{ "selected" if c == cultivo }}>{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label for="anio">Campana (inicio)</label>
+            <select id="anio" name="anio" required>
+              <option value="">Seleccionar...</option>
+              {% for a in anios %}
+              <option value="{{ a }}" {{ "selected" if a == anio }}>{{ a }}/{{ a+1 }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:12px">
+          <button type="button" id="btn-autocompletar" class="btn-secondary">
+            ↻ Autocompletar desde historico
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📈 Variables agronomicas</h2>
+        <div class="grid-3">
+          <div>
+            <label for="superficie_sembrada">Sup. sembrada (ha)</label>
+            <input type="number" id="superficie_sembrada" name="superficie_sembrada"
+              value="{{ form_data.get('superficie_sembrada', autocomp.get('superficie_sembrada', '')) }}"
+              min="0" step="0.1" required>
+          </div>
+          <div>
+            <label for="prev5">Prom. 5 campanas ant. (kg/ha)</label>
+            <input type="number" id="prev5" name="prev5"
+              value="{{ form_data.get('prev5', autocomp.get('prev5', '')) }}"
+              min="0" step="0.01" required>
+            <p class="hint">Rendimiento promedio de las 5 campanas anteriores en este partido</p>
+          </div>
+          <div>
+            <label for="prev5_ceros">Campanas sin cosecha (0-5)</label>
+            <input type="number" id="prev5_ceros" name="prev5_ceros"
+              value="{{ form_data.get('prev5_ceros', autocomp.get('prev5_ceros', 0)) }}"
+              min="0" max="5" step="1" required>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>☁️ Variables climaticas (ventana por cultivo)</h2>
+        <div class="grid-3">
+          <div>
+            <label for="clima_precip_total_mm">Precip. total (mm)</label>
+            <input type="number" id="clima_precip_total_mm" name="clima_precip_total_mm"
+              value="{{ form_data.get('clima_precip_total_mm', autocomp.get('clima_precip_total_mm', '')) }}"
+              step="0.1">
+          </div>
+          <div>
+            <label for="clima_precip_pre_siembra_mm">Precip. pre-siembra (mm)</label>
+            <input type="number" id="clima_precip_pre_siembra_mm" name="clima_precip_pre_siembra_mm"
+              value="{{ form_data.get('clima_precip_pre_siembra_mm', autocomp.get('clima_precip_pre_siembra_mm', '')) }}"
+              step="0.1">
+          </div>
+          <div>
+            <label for="clima_dias_lluvia">Dias de lluvia</label>
+            <input type="number" id="clima_dias_lluvia" name="clima_dias_lluvia"
+              value="{{ form_data.get('clima_dias_lluvia', autocomp.get('clima_dias_lluvia', '')) }}"
+              step="1">
+          </div>
+          <div>
+            <label for="clima_tmax_media_c">Tmax media (C)</label>
+            <input type="number" id="clima_tmax_media_c" name="clima_tmax_media_c"
+              value="{{ form_data.get('clima_tmax_media_c', autocomp.get('clima_tmax_media_c', '')) }}"
+              step="0.01">
+          </div>
+          <div>
+            <label for="clima_tmin_media_c">Tmin media (C)</label>
+            <input type="number" id="clima_tmin_media_c" name="clima_tmin_media_c"
+              value="{{ form_data.get('clima_tmin_media_c', autocomp.get('clima_tmin_media_c', '')) }}"
+              step="0.01">
+          </div>
+          <div>
+            <label for="clima_humedad_media_pct">Humedad media (%)</label>
+            <input type="number" id="clima_humedad_media_pct" name="clima_humedad_media_pct"
+              value="{{ form_data.get('clima_humedad_media_pct', autocomp.get('clima_humedad_media_pct', '')) }}"
+              step="0.01">
+          </div>
+          <div>
+            <label for="clima_dias_tmax_30">Dias con Tmax gt 30C</label>
+            <input type="number" id="clima_dias_tmax_30" name="clima_dias_tmax_30"
+              value="{{ form_data.get('clima_dias_tmax_30', autocomp.get('clima_dias_tmax_30', '')) }}"
+              step="1">
+          </div>
+          <div>
+            <label for="clima_sequia_max_dias">Sequia maxima (dias)</label>
+            <input type="number" id="clima_sequia_max_dias" name="clima_sequia_max_dias"
+              value="{{ form_data.get('clima_sequia_max_dias', autocomp.get('clima_sequia_max_dias', '')) }}"
+              step="1">
+          </div>
+          <div>
+            <label for="clima_dias_helada">Dias de helada</label>
+            <input type="number" id="clima_dias_helada" name="clima_dias_helada"
+              value="{{ form_data.get('clima_dias_helada', autocomp.get('clima_dias_helada', '')) }}"
+              step="1">
+          </div>
+        </div>
+      </div>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primary" id="btn-submit">Predecir campana</button>
+        <a href="/predecir" style="color:var(--gris);font-size:14px;text-decoration:none;">Limpiar</a>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    // Autocompletar via GET con los selectores de partido/cultivo/anio
+    document.getElementById("btn-autocompletar").addEventListener("click", function() {
+      var partido = document.getElementById("partido").value;
+      var cultivo = document.getElementById("cultivo").value;
+      var anio = document.getElementById("anio").value;
+      if (!partido || !cultivo || !anio) {
+        alert("Selecciona partido, cultivo y campana antes de autocompletar.");
+        return;
+      }
+      var url = "/predecir?partido=" + encodeURIComponent(partido) +
+                "&cultivo=" + encodeURIComponent(cultivo) +
+                "&anio=" + encodeURIComponent(anio);
+      window.location.href = url;
+    });
+  </script>
+
+  <footer style="text-align:center;color:#475569;font-size:13px;padding:28px 24px;border-top:1px solid #d1fae5;">
+    Francisco Calahorra &middot; Federico Valdes &middot; Alexis Galvan &mdash;
+    Aprendizaje Automatico 2026
+  </footer>
+</body>
+</html>

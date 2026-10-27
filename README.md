@@ -4,7 +4,7 @@ Trabajo Práctico Integrador de **Aprendizaje Automático**.
 
 **Repositorio:** https://github.com/GalvanAlexis/tp-integrador-rendimiento-cultivos
 
-**Estado:** Entrega 3 terminada. Regresores comparados con validación, evaluados en test y regresor seleccionado guardado en `modelos/`.
+**Estado:** Entrega 4 terminada. Clasificadores entrenados, comparacion con la regresión+umbral realizada, app Flask operativa.
 
 ---
 
@@ -76,8 +76,12 @@ proyecto/
 ├── app.py
 ├── modelos/
 │   ├── regresor.joblib
-│   └── regresor_metadata.json
+│   ├── regresor_metadata.json
+│   ├── clasificador.joblib
+│   └── clasificador_metadata.json
 ├── templates/
+│   ├── index.html
+│   └── predecir.html
 ├── public/
 ├── notebooks/
 │   ├── 02_preparacion_y_baselines.ipynb
@@ -88,7 +92,8 @@ proyecto/
 │   ├── preparar_datos.py
 │   ├── baselines.py
 │   ├── clima.py
-│   └── regresion.py
+│   ├── regresion.py
+│   └── clasificacion.py
 ├── datos/
 │   ├── README.md
 │   ├── diccionario_variables.md
@@ -98,6 +103,7 @@ proyecto/
 │   ├── entrega_1_propuesta.md
 │   ├── entrega_2_preparacion_y_baselines.md
 │   ├── entrega_3_regresion.md
+│   ├── entrega_4_clasificacion.md
 │   ├── bitacora.md
 │   └── figuras/
 └── tests/
@@ -115,6 +121,13 @@ python -m src.preparar_datos
 python -m src.baselines
 python -m src.clima --merge
 python -m src.regresion
+python -m src.clasificacion
+```
+
+App Flask:
+
+```bash
+py -m flask --app app run --debug
 ```
 
 Notebooks:
@@ -178,11 +191,28 @@ Lectura:
 - La precipitación de la ventana es la variable más importante. El clima explica bien la soja y algo del maíz, pero no el trigo ni el girasol.
 - Por la regresión hacia la media, la alerta obtenida desde la regresión detecta solo el 23% de las campañas malas.
 
+## Resultados principales de la Entrega 4
+
+Se compararon 228 configuraciones de árbol y KNN como clasificadores directos. El criterio de selección es el menor costo total en validación (FN = 2 × FP). Campañas malas reales en test: 470 (21,3%).
+
+| Modelo (test) | Recall | Precision | F1 | Costo | TP | FP | FN |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Dummy | 0,00 | — | 0,00 | 940 | 0 | 0 | 470 |
+| Regresión + umbral (E3) | 0,23 | 0,77 | 0,35 | 758 | 107 | 32 | 363 |
+| KNeighborsClassifier con_clima (seleccionado) | 0,08 | **0,95** | 0,14 | 870 | 36 | 2 | 434 |
+| **DecisionTreeClassifier con_clima** (prof=5) | **0,67** | 0,42 | **0,51** | **752** | 315 | 442 | 155 |
+
+Lectura:
+
+- El árbol con_clima tiene el mayor recall (67%) y el menor costo total (752), por debajo de la regresión (758).
+- El KNN fue seleccionado por costo de validación pero no generaliza al período de test (sequía 2022/23).
+- El clasificador directo (árbol) supera al sistema de regresión + umbral en recall, F1 y costo total.
+
 ## Próximos pasos
 
-1. Entrenar los clasificadores y comparar el clasificador directo con la alerta por regresión.
-2. Definir el esquema de costos de falsos positivos y falsos negativos.
-3. Construir la app Flask y desplegarla en Vercel.
+1. Regenerar `modelos/regresor.joblib` con scikit-learn 1.9.0 para eliminar los warnings de versión.
+2. Agregar un modelo por cultivo (especialmente soja y maíz, donde el clima explica más).
+3. Recalibrar el nivel del regresor sin usar el test.
 
 ## Equipo
 

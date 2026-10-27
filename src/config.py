@@ -38,6 +38,20 @@ REGRESION_POR_CULTIVO = PROCESADO_DIR / "regresion_por_cultivo_test.csv"
 REGRESION_POR_CAMPANIA = PROCESADO_DIR / "regresion_por_campania_test.csv"
 REGRESION_PREDICCIONES = PROCESADO_DIR / "regresion_predicciones_test.csv"
 
+CLASIFICADOR_FILE = MODELOS_DIR / "clasificador.joblib"
+CLASIFICADOR_METADATA = MODELOS_DIR / "clasificador_metadata.json"
+CLASIFICACION_BUSQUEDA = PROCESADO_DIR / "clasificacion_busqueda_validacion.csv"
+CLASIFICACION_COMPARACION = PROCESADO_DIR / "clasificacion_comparacion.csv"
+CLASIFICACION_POR_CULTIVO = PROCESADO_DIR / "clasificacion_por_cultivo_test.csv"
+CLASIFICACION_POR_CAMPANIA = PROCESADO_DIR / "clasificacion_por_campania_test.csv"
+CLASIFICACION_PREDICCIONES = PROCESADO_DIR / "clasificacion_predicciones_test.csv"
+
+# Esquema de costos de la alerta de campaña mala.
+# Un falso negativo (campaña mala no anticipada) se penaliza el doble que un
+# falso positivo (alerta en una campaña normal).
+COST_FN = 2.0
+COST_FP = 1.0
+
 SOURCE_URL = (
     "https://catalogo.datos.gba.gob.ar/dataset/4ee50a8f-6866-4191-9bf8-aebb30b0d718/"
     "resource/d3e23031-164a-43e0-b104-01ced63e4abd/download/"
