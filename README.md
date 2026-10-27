@@ -4,7 +4,7 @@ Trabajo Práctico Integrador de **Aprendizaje Automático**.
 
 **Repositorio:** https://github.com/GalvanAlexis/tp-integrador-rendimiento-cultivos
 
-**Estado:** Entrega 4 terminada. Clasificadores entrenados, comparacion con la regresión+umbral realizada, app Flask operativa.
+**Estado:** Entrega 4 terminada. Clasificadores comparados con validación, contrastados con la alerta por regresión y guardados en `modelos/`; app Flask funcionando localmente.
 
 ---
 
@@ -85,7 +85,8 @@ proyecto/
 ├── public/
 ├── notebooks/
 │   ├── 02_preparacion_y_baselines.ipynb
-│   └── 03_regresion.ipynb
+│   ├── 03_regresion.ipynb
+│   └── 04_clasificacion.ipynb
 ├── src/
 │   ├── config.py
 │   ├── descargar_datos.py
@@ -127,7 +128,7 @@ python -m src.clasificacion
 App Flask:
 
 ```bash
-py -m flask --app app run --debug
+python -m flask --app app run --debug
 ```
 
 Notebooks:
@@ -135,6 +136,7 @@ Notebooks:
 ```bash
 python -m nbconvert --to notebook --execute --inplace notebooks/02_preparacion_y_baselines.ipynb
 python -m nbconvert --to notebook --execute --inplace notebooks/03_regresion.ipynb
+python -m nbconvert --to notebook --execute --inplace notebooks/04_clasificacion.ipynb
 ```
 
 Tests:
@@ -193,26 +195,28 @@ Lectura:
 
 ## Resultados principales de la Entrega 4
 
-Se compararon 228 configuraciones de árbol y KNN como clasificadores directos. El criterio de selección es el menor costo total en validación (FN = 2 × FP). Campañas malas reales en test: 470 (21,3%).
+Se compararon DummyClassifier, DecisionTreeClassifier, KNeighborsClassifier (con StandardScaler en el Pipeline) y GaussianNB, con y sin clima: 268 configuraciones, cada una con 19 umbrales de decisión. Se eligió por el menor costo total en validación (FN = 2 × FP). El clasificador seleccionado es un **árbol con clima, profundidad 5, hojas de al menos 50 filas y umbral 0,65**. Campañas malas reales en test: 470 (21,3%).
 
-| Modelo (test) | Recall | Precision | F1 | Costo | TP | FP | FN |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| Dummy | 0,00 | — | 0,00 | 940 | 0 | 0 | 470 |
-| Regresión + umbral (E3) | 0,23 | 0,77 | 0,35 | 758 | 107 | 32 | 363 |
-| KNeighborsClassifier con_clima (seleccionado) | 0,08 | **0,95** | 0,14 | 870 | 36 | 2 | 434 |
-| **DecisionTreeClassifier con_clima** (prof=5) | **0,67** | 0,42 | **0,51** | **752** | 315 | 442 | 155 |
+| Sistema (test) | Accuracy | Precisión | Recall | F1 | Costo | TP | FP | FN |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Dummy | 0,787 | — | 0,00 | 0,00 | 940 | 0 | 0 | 470 |
+| Regresión + umbral (E3) | 0,821 | **0,77** | 0,23 | 0,35 | 758 | 107 | 32 | 363 |
+| **Árbol con clima (seleccionado)** | **0,823** | 0,65 | **0,37** | **0,47** | **687** | 173 | 93 | 297 |
 
 Lectura:
 
-- El árbol con_clima tiene el mayor recall (67%) y el menor costo total (752), por debajo de la regresión (758).
-- El KNN fue seleccionado por costo de validación pero no generaliza al período de test (sequía 2022/23).
-- El clasificador directo (árbol) supera al sistema de regresión + umbral en recall, F1 y costo total.
+- Sin clima, ningún clasificador supera al Dummy. Con clima, solo el árbol se separa con claridad en validación (costo 443 contra 540).
+- El clasificador directo detecta 66 campañas malas más que la regresión, con 61 falsas alarmas más, y reduce el costo un 9%. La regresión es más precisa, pero se pierde tres de cada cuatro campañas malas.
+- La mitad de los falsos negativos son campañas apenas malas (ratio de 0,75 a 0,85). Los falsos positivos son campañas secas que terminaron bien.
+- Cuando los dos sistemas alertan, el 89% de las alertas son correctas. La app usa el clasificador como alerta principal y la coincidencia con la regresión como señal de alta confianza.
+
+Detalle en [informe/entrega_4_clasificacion.md](informe/entrega_4_clasificacion.md).
 
 ## Próximos pasos
 
-1. Regenerar `modelos/regresor.joblib` con scikit-learn 1.9.0 para eliminar los warnings de versión.
-2. Agregar un modelo por cultivo (especialmente soja y maíz, donde el clima explica más).
-3. Recalibrar el nivel del regresor sin usar el test.
+1. Desplegar la app Flask en Vercel.
+2. Calibrar las probabilidades del clasificador con validación.
+3. Evaluar modelos por grupo de cultivos (verano e invierno), donde el clima tiene un efecto distinto.
 
 ## Equipo
 

@@ -1,0 +1,13 @@
+modelo,banda_ratio,n,alertas,fn,fp,tasa_alerta
+DecisionTreeClassifier (con_clima),"< 0,50",84,57,27,0,0.6785714285714286
+DecisionTreeClassifier (con_clima),"0,50-0,75",217,98,119,0,0.45161290322580644
+DecisionTreeClassifier (con_clima),"0,75-0,85",169,18,151,0,0.10650887573964497
+DecisionTreeClassifier (con_clima),"0,85-0,95",452,22,0,22,0.048672566371681415
+DecisionTreeClassifier (con_clima),"0,95-1,05",556,36,0,36,0.06474820143884892
+DecisionTreeClassifier (con_clima),">= 1,05",726,35,0,35,0.048209366391184574
+Regresión + umbral (Entrega 3),"< 0,50",84,27,57,0,0.32142857142857145
+Regresión + umbral (Entrega 3),"0,50-0,75",217,78,139,0,0.35944700460829493
+Regresión + umbral (Entrega 3),"0,75-0,85",169,2,167,0,0.011834319526627219
+Regresión + umbral (Entrega 3),"0,85-0,95",452,6,0,6,0.01327433628318584
+Regresión + umbral (Entrega 3),"0,95-1,05",556,13,0,13,0.023381294964028777
+Regresión + umbral (Entrega 3),">= 1,05",726,13,0,13,0.01790633608815427

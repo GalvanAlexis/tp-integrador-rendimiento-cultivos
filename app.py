@@ -20,14 +20,15 @@ import numpy as np
 import pandas as pd
 from flask import Flask, jsonify, render_template, request
 
+from src.clasificacion import CLIMA_COLS
+from src.config import THRESHOLD
+
 ROOT = Path(__file__).resolve().parent
 MODELOS_DIR = ROOT / "modelos"
 PROCESADO_DIR = ROOT / "datos" / "procesado"
 DATASET_CLIMA = PROCESADO_DIR / "dataset_modelado_con_clima.csv"
 REGRESOR_META = MODELOS_DIR / "regresor_metadata.json"
 CLASIFICADOR_META = MODELOS_DIR / "clasificador_metadata.json"
-
-THRESHOLD = 0.85
 
 app = Flask(__name__)
 
@@ -88,17 +89,6 @@ def _autocompletar(partido: str, cultivo: str, anio: int) -> dict:
     if fila.empty:
         return {}
     row = fila.iloc[0]
-    clima_cols = [
-        "clima_precip_total_mm",
-        "clima_dias_tmax_30",
-        "clima_tmax_media_c",
-        "clima_tmin_media_c",
-        "clima_humedad_media_pct",
-        "clima_sequia_max_dias",
-        "clima_precip_pre_siembra_mm",
-        "clima_dias_helada",
-        "clima_dias_lluvia",
-    ]
     resultado = {
         "prev5": float(row.get("prev5", 0)),
         "prev5_ceros": int(row.get("prev5_ceros", 0)),
@@ -107,7 +97,7 @@ def _autocompletar(partido: str, cultivo: str, anio: int) -> dict:
         "ratio_real": float(row.get("ratio", 0)),
         "mala85_real": int(row.get("mala85", 0)),
     }
-    for col in clima_cols:
+    for col in CLIMA_COLS:
         if col in row:
             resultado[col] = float(row[col])
     return resultado
@@ -120,18 +110,7 @@ def _predecir(data: dict) -> dict:
     prev5_ceros = int(data["prev5_ceros"])
     superficie = float(data["superficie_sembrada"])
 
-    clima_cols = [
-        "clima_precip_total_mm",
-        "clima_dias_tmax_30",
-        "clima_tmax_media_c",
-        "clima_tmin_media_c",
-        "clima_humedad_media_pct",
-        "clima_sequia_max_dias",
-        "clima_precip_pre_siembra_mm",
-        "clima_dias_helada",
-        "clima_dias_lluvia",
-    ]
-    clima = {col: float(data.get(col, 0)) for col in clima_cols}
+    clima = {col: float(data.get(col, 0)) for col in CLIMA_COLS}
 
     fila = pd.DataFrame(
         [
@@ -156,14 +135,27 @@ def _predecir(data: dict) -> dict:
 
     if _clasificador is not None:
         cols_clf = list(_clasificador.feature_names_in_)
-        alerta_clf = int(_clasificador.predict(fila[cols_clf])[0])
-        resultado["alerta_clasificador"] = alerta_clf
+        resultado["alerta_clasificador"] = int(_clasificador.predict(fila[cols_clf])[0])
+        proba = _clasificador.estimator_.predict_proba(fila[cols_clf])[0, 1]
+        resultado["proba_clasificador"] = round(float(proba), 4)
+        resultado["umbral_clasificador"] = float(_clasificador.threshold)
 
-    # Alerta final: si alguno de los dos sistemas emite alerta
-    alerta_alguno = int(
-        resultado.get("alerta_regresion", 0) or resultado.get("alerta_clasificador", 0)
-    )
-    resultado["alerta_final"] = alerta_alguno
+    # La alerta principal es la del clasificador, elegido por costo en validación.
+    # La regresión se muestra como segunda opinión: en test, la alerta combinada
+    # (alerta si alguno alerta) costó más que el clasificador solo.
+    alerta_clf = resultado.get("alerta_clasificador")
+    alerta_reg = resultado.get("alerta_regresion", 0)
+    if alerta_clf is None:
+        alerta_clf = alerta_reg
+    resultado["alerta_final"] = alerta_clf
+    if alerta_clf and alerta_reg:
+        resultado["nivel"] = "alta"
+    elif alerta_clf:
+        resultado["nivel"] = "clasificador"
+    elif alerta_reg:
+        resultado["nivel"] = "solo_regresion"
+    else:
+        resultado["nivel"] = "normal"
 
     return resultado
 

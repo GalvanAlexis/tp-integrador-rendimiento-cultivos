@@ -1,10 +1,10 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Predecir campana | Rendimiento de cultivos</title>
-  <meta name="description" content="Formulario de prediccion de rendimiento y alerta de campana mala.">
+  <title>Predecir campaña | Rendimiento de cultivos</title>
+  <meta name="description" content="Formulario de predicción de rendimiento y alerta de campaña mala.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -159,7 +159,7 @@
     .chip-alerta { background: var(--rojo-bg); color: var(--rojo); border: 1px solid var(--rojo-borde); }
     .chip-ok { background: var(--verde-claro); color: var(--verde); border: 1px solid var(--borde); }
     .chip-gris { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
-    .chip-dot { width: 7px; height: 7px; border-radius: 50; background: currentColor; }
+    .chip-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
     /* Info autocompletado */
     .info-real {
       background: var(--amber-bg);
@@ -185,29 +185,41 @@
   </header>
 
   <main>
-    <h1>Prediccion de campana</h1>
+    <h1>Predicción de campaña</h1>
     <p class="subtitulo">
-      Selecciona partido, cultivo y campana. Los valores historicos se autocompletan.
-      Podes editar las variables climaticas para simular escenarios.
+      Seleccioná partido, cultivo y campaña. Los valores históricos se autocompletan.
+      Podés editar las variables climáticas para simular escenarios.
     </p>
 
     <!-- RESULTADO -->
     {% if resultado and not resultado.get("error") %}
     {% set alerta = resultado.get("alerta_final", 0) %}
+    {% set nivel = resultado.get("nivel", "") %}
     <div class="resultado-alerta {{ 'mala' if alerta else 'normal' }}">
       <div class="alerta-icon">{{ "🚨" if alerta else "✅" }}</div>
       <div class="alerta-titulo {{ 'mala' if alerta else 'normal' }}">
-        {{ "Alerta: campana mala esperada" if alerta else "Campana dentro de lo normal" }}
+        {{ "Alerta: campaña mala esperada" if alerta else "Campaña dentro de lo normal" }}
       </div>
       <p class="alerta-desc">
-        {% if alerta %}
-          Uno o ambos sistemas predicen que el rendimiento sera inferior al 85% del promedio de las 5 campanas anteriores.
+        {% if nivel == "alta" %}
+          El clasificador y la regresión coinciden: se espera un rendimiento inferior al 85% del promedio de las 5 campañas anteriores. Es la señal más confiable del sistema.
+        {% elif nivel == "clasificador" %}
+          El clasificador emite alerta; la regresión no. Se espera un rendimiento inferior al 85% del promedio de las 5 campañas anteriores, con menor certeza que cuando ambos coinciden.
+        {% elif nivel == "solo_regresion" %}
+          Solo la regresión predice un ratio menor a 0,85. El clasificador, que es el sistema de alerta seleccionado, no alerta: tomalo como una señal débil.
         {% else %}
-          Ambos sistemas coinciden en que no se espera una campana significativamente mala.
+          Ninguno de los dos sistemas espera una campaña significativamente mala.
         {% endif %}
       </p>
 
       <div class="metricas">
+        {% if resultado.get("proba_clasificador") is not none %}
+        <div class="metrica">
+          <div class="metrica-label">P(campaña mala)</div>
+          <div class="metrica-valor">{{ "%.0f"|format(resultado.proba_clasificador * 100) }}%</div>
+          <div class="metrica-label">alerta desde {{ "%.0f"|format(resultado.umbral_clasificador * 100) }}%</div>
+        </div>
+        {% endif %}
         {% if resultado.get("ratio_pred") is not none %}
         <div class="metrica">
           <div class="metrica-label">Ratio predicho</div>
@@ -226,7 +238,7 @@
         {% if resultado.get("alerta_regresion") is not none %}
         <span class="chip {{ 'chip-alerta' if resultado.alerta_regresion else 'chip-ok' }}">
           <span class="chip-dot"></span>
-          Regresion: {{ "ALERTA" if resultado.alerta_regresion else "normal" }}
+          Regresión: {{ "ALERTA" if resultado.alerta_regresion else "normal" }}
         </span>
         {% endif %}
         {% if resultado.get("alerta_clasificador") is not none %}
@@ -241,7 +253,7 @@
       <div class="info-real">
         📊 Valor real (del dataset): rendimiento {{ "{:,.0f}".format(autocomp.rendimiento_real) }} kg/ha &mdash;
         ratio {{ "%.3f"|format(autocomp.ratio_real) }} &mdash;
-        campana {{ "mala" if autocomp.mala85_real else "normal" }}
+        campaña {{ "mala" if autocomp.mala85_real else "normal" }}
       </div>
       {% endif %}
     </div>
@@ -254,7 +266,7 @@
     <!-- FORMULARIO -->
     <form method="POST" action="/predecir" id="form-pred">
       <div class="card">
-        <h2>🌾 Campana a predecir</h2>
+        <h2>🌾 Campaña a predecir</h2>
         <div class="grid-3">
           <div>
             <label for="partido">Partido</label>
@@ -275,7 +287,7 @@
             </select>
           </div>
           <div>
-            <label for="anio">Campana (inicio)</label>
+            <label for="anio">Campaña (inicio)</label>
             <select id="anio" name="anio" required>
               <option value="">Seleccionar...</option>
               {% for a in anios %}
@@ -286,7 +298,7 @@
         </div>
         <div style="margin-top:12px">
           <button type="button" id="btn-autocompletar" class="btn-secondary">
-            ↻ Autocompletar desde historico
+            ↻ Autocompletar desde histórico
           </button>
         </div>
       </div>
@@ -301,14 +313,14 @@
               min="0" step="0.1" required>
           </div>
           <div>
-            <label for="prev5">Prom. 5 campanas ant. (kg/ha)</label>
+            <label for="prev5">Prom. 5 campañas ant. (kg/ha)</label>
             <input type="number" id="prev5" name="prev5"
               value="{{ form_data.get('prev5', autocomp.get('prev5', '')) }}"
               min="0" step="0.01" required>
-            <p class="hint">Rendimiento promedio de las 5 campanas anteriores en este partido</p>
+            <p class="hint">Rendimiento promedio de las 5 campañas anteriores en este partido</p>
           </div>
           <div>
-            <label for="prev5_ceros">Campanas sin cosecha (0-5)</label>
+            <label for="prev5_ceros">Campañas sin cosecha (0-5)</label>
             <input type="number" id="prev5_ceros" name="prev5_ceros"
               value="{{ form_data.get('prev5_ceros', autocomp.get('prev5_ceros', 0)) }}"
               min="0" max="5" step="1" required>
@@ -317,7 +329,7 @@
       </div>
 
       <div class="card">
-        <h2>☁️ Variables climaticas (ventana por cultivo)</h2>
+        <h2>☁️ Variables climáticas (ventana por cultivo)</h2>
         <div class="grid-3">
           <div>
             <label for="clima_precip_total_mm">Precip. total (mm)</label>
@@ -332,7 +344,7 @@
               step="0.1">
           </div>
           <div>
-            <label for="clima_dias_lluvia">Dias de lluvia</label>
+            <label for="clima_dias_lluvia">Días de lluvia</label>
             <input type="number" id="clima_dias_lluvia" name="clima_dias_lluvia"
               value="{{ form_data.get('clima_dias_lluvia', autocomp.get('clima_dias_lluvia', '')) }}"
               step="1">
@@ -356,19 +368,19 @@
               step="0.01">
           </div>
           <div>
-            <label for="clima_dias_tmax_30">Dias con Tmax gt 30C</label>
+            <label for="clima_dias_tmax_30">Días con Tmax &gt; 30 °C</label>
             <input type="number" id="clima_dias_tmax_30" name="clima_dias_tmax_30"
               value="{{ form_data.get('clima_dias_tmax_30', autocomp.get('clima_dias_tmax_30', '')) }}"
               step="1">
           </div>
           <div>
-            <label for="clima_sequia_max_dias">Sequia maxima (dias)</label>
+            <label for="clima_sequia_max_dias">Sequía máxima (días)</label>
             <input type="number" id="clima_sequia_max_dias" name="clima_sequia_max_dias"
               value="{{ form_data.get('clima_sequia_max_dias', autocomp.get('clima_sequia_max_dias', '')) }}"
               step="1">
           </div>
           <div>
-            <label for="clima_dias_helada">Dias de helada</label>
+            <label for="clima_dias_helada">Días de helada</label>
             <input type="number" id="clima_dias_helada" name="clima_dias_helada"
               value="{{ form_data.get('clima_dias_helada', autocomp.get('clima_dias_helada', '')) }}"
               step="1">
@@ -377,7 +389,7 @@
       </div>
 
       <div class="acciones">
-        <button type="submit" class="btn-primary" id="btn-submit">Predecir campana</button>
+        <button type="submit" class="btn-primary" id="btn-submit">Predecir campaña</button>
         <a href="/predecir" style="color:var(--gris);font-size:14px;text-decoration:none;">Limpiar</a>
       </div>
     </form>
@@ -390,7 +402,7 @@
       var cultivo = document.getElementById("cultivo").value;
       var anio = document.getElementById("anio").value;
       if (!partido || !cultivo || !anio) {
-        alert("Selecciona partido, cultivo y campana antes de autocompletar.");
+        alert("Seleccioná partido, cultivo y campaña antes de autocompletar.");
         return;
       }
       var url = "/predecir?partido=" + encodeURIComponent(partido) +
