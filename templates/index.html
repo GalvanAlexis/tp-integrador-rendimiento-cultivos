@@ -1,70 +1,10 @@
-﻿<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Rendimiento de cultivos | TP Integrador</title>
-  <meta name="description" content="Prediccion del rendimiento de cultivos en partidos bonaerenses con alerta de campana mala.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --verde: #166534;
-      --verde-mid: #15803d;
-      --verde-claro: #dcfce7;
-      --tinta: #0f172a;
-      --gris: #475569;
-      --borde: #d1fae5;
-      --fondo: #f0fdf4;
-      --blanco: #ffffff;
-      --rojo: #dc2626;
-      --amarillo: #d97706;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: "Inter", system-ui, sans-serif;
-      background: var(--fondo);
-      color: var(--tinta);
-      line-height: 1.6;
-    }
-    header {
-      background: var(--verde);
-      color: var(--blanco);
-      padding: 0 24px;
-    }
-    .header-inner {
-      max-width: 960px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 60px;
-    }
-    .logo { font-weight: 700; font-size: 15px; letter-spacing: -.02em; }
-    nav a {
-      color: var(--verde-claro);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      margin-left: 20px;
-      transition: color .15s;
-    }
-    nav a:hover { color: var(--blanco); }
-    main {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 56px 24px 80px;
-    }
-    .hero {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      margin-bottom: 48px;
-    }
+{% extends "base.html" %}
+{% block title %}Rendimiento de cultivos | TP Integrador{% endblock %}
+
+{% block css %}
+    .hero { display: flex; flex-direction: column; gap: 16px; margin-bottom: 48px; }
     .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      align-self: flex-start;
       background: var(--verde-claro);
       color: var(--verde);
       border: 1px solid var(--borde);
@@ -73,142 +13,194 @@
       font-size: 13px;
       font-weight: 600;
     }
-    .badge-dot {
-      width: 7px; height: 7px;
-      background: var(--verde-mid);
-      border-radius: 50%;
-      animation: pulse 1.8s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: .3; }
-    }
-    h1 {
-      font-size: clamp(30px, 4vw, 48px);
-      line-height: 1.1;
-      color: var(--verde);
-      font-weight: 700;
-    }
-    .subtitle { color: var(--gris); font-size: 17px; max-width: 60ch; }
-    .cta {
-      display: inline-block;
-      background: var(--verde-mid);
-      color: var(--blanco);
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 15px;
-      text-decoration: none;
-      margin-top: 8px;
-      transition: background .15s, transform .1s;
-    }
-    .cta:hover { background: var(--verde); transform: translateY(-1px); }
-    .tarjetas {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 16px;
-      margin-bottom: 40px;
-    }
-    .tarjeta {
+    .hero h1 { font-size: clamp(30px, 4vw, 46px); }
+    .subtitle { color: var(--gris); font-size: 17px; max-width: 62ch; }
+    .hero-acciones { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+    section { margin-bottom: 44px; }
+    section > h2 { font-size: 22px; color: var(--tinta); margin-bottom: 6px; }
+    .intro { color: var(--gris); font-size: 15px; margin-bottom: 20px; max-width: 70ch; }
+    .card {
       background: var(--blanco);
       border: 1px solid var(--borde);
       border-radius: 14px;
-      padding: 22px 24px;
-      transition: box-shadow .2s;
+      padding: 24px;
     }
-    .tarjeta:hover { box-shadow: 0 4px 20px rgba(22,101,52,.08); }
-    .tarjeta-icon { font-size: 24px; margin-bottom: 10px; }
-    .tarjeta h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--verde); margin-bottom: 8px; }
-    .tarjeta p { font-size: 14px; color: var(--gris); }
-    .estado {
-      background: var(--blanco);
-      border: 1px solid var(--borde);
-      border-radius: 14px;
-      padding: 20px 24px;
-      display: flex;
-      gap: 24px;
-      flex-wrap: wrap;
+    /* Que es una campana mala */
+    .escala { position: relative; height: 14px; border-radius: 999px; margin: 34px 0 30px;
+      background: linear-gradient(to right, var(--rojo-borde) 0 45%, var(--verde-claro) 45% 100%); }
+    .escala .marca { position: absolute; top: -6px; bottom: -6px; width: 2px; background: var(--tinta); }
+    .escala .marca span { position: absolute; top: -24px; left: 50%; transform: translateX(-50%);
+      font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .escala .tick { position: absolute; top: 20px; transform: translateX(-50%); font-size: 12px; color: var(--gris); white-space: nowrap; }
+    .zonas { display: flex; justify-content: space-between; gap: 16px; font-size: 14px; }
+    .zonas strong { display: block; }
+    .zona-mala strong { color: var(--rojo); }
+    .zona-normal { text-align: right; }
+    .zona-normal strong { color: var(--verde); }
+    /* Dos modelos */
+    .modelos { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .modelo { border-radius: 14px; padding: 24px; background: var(--blanco); }
+    .modelo-reg { border: 1px solid var(--reg-borde); border-top: 4px solid var(--reg); }
+    .modelo-clf { border: 1px solid var(--clf-borde); border-top: 4px solid var(--clf); }
+    .modelo h3 { font-size: 20px; margin: 10px 0 4px; }
+    .modelo .que { font-size: 14px; color: var(--gris); margin-bottom: 14px; }
+    .respuesta { border-radius: 10px; padding: 12px 14px; font-size: 15px; margin-bottom: 14px; }
+    .modelo-reg .respuesta { background: var(--reg-bg); }
+    .modelo-clf .respuesta { background: var(--clf-bg); }
+    .respuesta small { display: block; font-size: 12px; color: var(--gris); text-transform: uppercase; letter-spacing: .05em; }
+    .modelo dl { font-size: 14px; }
+    .modelo dt { font-weight: 600; margin-top: 8px; }
+    .modelo dd { color: var(--gris); }
+    /* Como leer el resultado */
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--linea); }
+    th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--gris); font-weight: 600; }
+    td.num { text-align: right; font-weight: 600; white-space: nowrap; }
+    th.num { text-align: right; }
+    .si { color: var(--rojo); font-weight: 600; }
+    .no { color: var(--verde); font-weight: 600; }
+    .nota { font-size: 13px; color: var(--gris); margin-top: 12px; }
+    .tabla-scroll { overflow-x: auto; }
+    @media (max-width: 700px) {
+      .modelos { grid-template-columns: 1fr; }
     }
-    .estado-item { display: flex; align-items: center; gap: 8px; font-size: 14px; }
-    .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-    .dot-ok { background: #16a34a; }
-    .dot-err { background: #dc2626; }
-    footer {
-      text-align: center;
-      color: var(--gris);
-      font-size: 13px;
-      padding: 32px 24px;
-      border-top: 1px solid var(--borde);
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <div class="header-inner">
-      <span class="logo">Rendimiento de cultivos</span>
-      <nav>
-        <a href="/">Inicio</a>
-        <a href="/predecir">Predecir</a>
-        <a href="/health">Health</a>
-      </nav>
-    </div>
-  </header>
+{% endblock %}
 
-  <main>
+{% block content %}
+{% set reg = resumen.get("reg") %}
+{% set clf = resumen.get("clf") %}
+{% set acuerdo = resumen.get("acuerdo", {}) %}
     <div class="hero">
-      <div>
-        <span class="badge">
-          <span class="badge-dot"></span>
-          Entrega 4 &middot; Clasificacion y app
-        </span>
-      </div>
-      <h1>Rendimiento de cultivos<br>por partido</h1>
+      <span class="badge">Entrega 4 &middot; Clasificación y app</span>
+      <h1>¿Se viene una campaña mala?</h1>
       <p class="subtitle">
-        Prediccion del rendimiento de maiz, trigo, girasol y soja en partidos de la
-        Provincia de Buenos Aires, con alerta de campana mala antes de la cosecha.
+        Estimamos el rendimiento de maíz, trigo, girasol y soja en los partidos de la
+        Provincia de Buenos Aires y avisamos, antes de la cosecha, si la campaña
+        puede quedar muy por debajo de lo habitual.
       </p>
-      <a href="/predecir" class="cta">Hacer una prediccion &rarr;</a>
-    </div>
-
-    <div class="tarjetas">
-      <div class="tarjeta">
-        <div class="tarjeta-icon">📊</div>
-        <h2>Variable numerica</h2>
-        <p>Rendimiento en kg/ha, expresado como ratio sobre el promedio de las cinco campanas anteriores.</p>
-      </div>
-      <div class="tarjeta">
-        <div class="tarjeta-icon">🚨</div>
-        <h2>Alerta</h2>
-        <p>Campana mala si el ratio es menor a 0,85. Se comparan clasificador directo y regresion mas umbral.</p>
-      </div>
-      <div class="tarjeta">
-        <div class="tarjeta-icon">☁️</div>
-        <h2>Variables climaticas</h2>
-        <p>Precipitacion, temperatura, humedad y variables derivadas de NASA POWER, ventana por cultivo.</p>
-      </div>
-      <div class="tarjeta">
-        <div class="tarjeta-icon">🗓️</div>
-        <h2>Datos</h2>
-        <p>Estimaciones Agricolas PBA (CC BY 4.0) y clima diario NASA POWER. Campanas 1981/82 a 2024/25.</p>
+      <div class="hero-acciones">
+        <a href="/predecir" class="btn-primary">Hacer una predicción &rarr;</a>
+        <a href="/predecir?partido=Pergamino&amp;cultivo=Soja%20total&amp;anio=2022&amp;predecir=1#resultado" class="btn-secondary">
+          Ver un ejemplo: soja en Pergamino, sequía 2022/23
+        </a>
       </div>
     </div>
 
-    <div class="estado">
-      <div class="estado-item">
-        <span class="dot {{ 'dot-ok' if reg_ok else 'dot-err' }}"></span>
-        Regresor: {{ 'cargado' if reg_ok else 'no encontrado' }}
+    <section>
+      <h2>¿Qué es una campaña mala?</h2>
+      <p class="intro">
+        Comparamos el rendimiento de cada campaña con el promedio de las cinco anteriores en
+        el mismo partido. Ese cociente es el <strong>ratio</strong>: 1 es una campaña normal.
+        Una campaña es <strong>mala</strong> cuando rinde más de un 15% menos de lo habitual
+        (ratio menor a 0,85).
+      </p>
+      <div class="card">
+        <div class="escala" aria-hidden="true">
+          <div class="marca" style="left:45%"><span>0,85</span></div>
+          <span class="tick" style="left:10%">0,50</span>
+          <span class="tick" style="left:60%">1,00</span>
+          <span class="tick" style="left:90%">1,30</span>
+        </div>
+        <div class="zonas">
+          <div class="zona-mala"><strong>Campaña mala</strong>rinde menos del 85% de lo habitual</div>
+          <div class="zona-normal"><strong>Campaña normal o buena</strong>rinde el 85% o más</div>
+        </div>
       </div>
-      <div class="estado-item">
-        <span class="dot {{ 'dot-ok' if clf_ok else 'dot-err' }}"></span>
-        Clasificador: {{ 'cargado' if clf_ok else 'no encontrado' }}
-      </div>
-    </div>
-  </main>
+    </section>
 
-  <footer>
-    Francisco Calahorra &middot; Federico Valdes &middot; Alexis Galvan &mdash;
-    Aprendizaje Automatico 2026 &middot;
-    Datos: Estimaciones Agricolas PBA (CC BY 4.0)
-  </footer>
-</body>
-</html>
+    <section>
+      <h2>Dos preguntas, dos modelos</h2>
+      <p class="intro">
+        La app consulta dos modelos de aprendizaje automático. Cada uno responde una pregunta
+        distinta y sus respuestas se complementan.
+      </p>
+      <div class="modelos">
+        <article class="modelo modelo-reg">
+          <span class="etiqueta-modelo etiqueta-reg">Regresión</span>
+          <h3>¿Cuánto va a rendir?</h3>
+          <p class="que">{{ resumen.get("regresor_desc", "Regresor") }}</p>
+          <div class="respuesta">
+            <small>Responde con un número</small>
+            «Unos 2.300 kg/ha, el 72% de lo habitual.»
+          </div>
+          <dl>
+            <dt>Fortaleza</dt>
+            <dd>Estima la magnitud: cuántos kilos por hectárea esperar.</dd>
+            <dt>Límite</dt>
+            <dd>
+              Tiende a predecir valores cercanos a lo normal, así que pocas veces baja de 0,85.
+              {% if reg %}En las campañas de prueba detectó {{ reg.tp }} de {{ reg.positivos }} campañas malas ({{ "%.0f"|format(reg.recall * 100) }}%).{% endif %}
+            </dd>
+          </dl>
+        </article>
+        <article class="modelo modelo-clf">
+          <span class="etiqueta-modelo etiqueta-clf">Clasificación</span>
+          <h3>¿Será una campaña mala?</h3>
+          <p class="que">{{ resumen.get("clasificador_desc", "Clasificador") }}</p>
+          <div class="respuesta">
+            <small>Responde sí o no, con un nivel de riesgo</small>
+            «Sí: riesgo del 78%.»
+          </div>
+          <dl>
+            <dt>Fortaleza</dt>
+            <dd>
+              Se entrenó solo para detectar campañas malas y para no perdérselas.
+              {% if clf %}Detectó {{ clf.tp }} de {{ clf.positivos }} ({{ "%.0f"|format(clf.recall * 100) }}%).{% endif %}
+            </dd>
+            <dt>Límite</dt>
+            <dd>
+              No dice cuánto va a rendir y da más falsas alarmas{% if clf and reg %}: {{ clf.fp }}, contra {{ reg.fp }} de la regresión{% endif %}.
+            </dd>
+          </dl>
+        </article>
+      </div>
+    </section>
+
+    {% if acuerdo %}
+    <section>
+      <h2>Cómo leer el resultado</h2>
+      <p class="intro">
+        La alerta la da el clasificador. La regresión sirve para medir la confianza:
+        cuando los dos coinciden, la alerta es mucho más confiable.
+      </p>
+      <div class="card tabla-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Clasificación</th>
+              <th>Regresión</th>
+              <th>Qué muestra la app</th>
+              <th class="num">Campañas malas reales</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for clave, texto in [((true, true), "Alerta de alta confianza"), ((true, false), "Alerta"), ((false, true), "Sin alerta, señal débil"), ((false, false), "Sin alerta")] %}
+            {% set fila = acuerdo.get(clave) %}
+            {% if fila %}
+            <tr>
+              <td class="{{ 'si' if clave[0] else 'no' }}">{{ "Mala" if clave[0] else "Normal" }}</td>
+              <td class="{{ 'si' if clave[1] else 'no' }}">{{ "Menor a 0,85" if clave[1] else "0,85 o más" }}</td>
+              <td>{{ texto }}</td>
+              <td class="num">{{ "%.0f"|format(fila.precision * 100) }}%</td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+        <p class="nota">
+          Porcentaje de campañas que resultaron malas en cada caso, en las campañas de prueba
+          (2019/20 a 2024/25), que los modelos no vieron al entrenar.
+        </p>
+      </div>
+    </section>
+    {% endif %}
+
+    <section>
+      <h2>Con qué datos</h2>
+      <p class="intro">
+        Estimaciones Agrícolas de la Provincia de Buenos Aires (campañas 1981/82 a 2024/25) y
+        clima diario de NASA POWER: lluvia, temperatura, humedad, sequía y heladas, medidos en la
+        ventana de cada cultivo, desde la siembra hasta antes de la cosecha.
+      </p>
+    </section>
+{% endblock %}

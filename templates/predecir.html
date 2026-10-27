@@ -1,88 +1,42 @@
-﻿<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Predecir campana | Rendimiento de cultivos</title>
-  <meta name="description" content="Formulario de prediccion de rendimiento y alerta de campana mala.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --verde: #166534;
-      --verde-mid: #15803d;
-      --verde-claro: #dcfce7;
-      --tinta: #0f172a;
-      --gris: #475569;
-      --borde: #d1fae5;
-      --fondo: #f0fdf4;
-      --blanco: #ffffff;
-      --rojo-bg: #fef2f2;
-      --rojo: #991b1b;
-      --rojo-borde: #fecaca;
-      --amber-bg: #fffbeb;
-      --amber: #92400e;
-      --amber-borde: #fde68a;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: "Inter", system-ui, sans-serif;
-      background: var(--fondo);
-      color: var(--tinta);
-      line-height: 1.6;
-    }
-    header {
-      background: var(--verde);
-      color: var(--blanco);
-      padding: 0 24px;
-    }
-    .header-inner {
-      max-width: 960px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 60px;
-    }
-    .logo { font-weight: 700; font-size: 15px; }
-    nav a {
-      color: var(--verde-claro);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      margin-left: 20px;
-      transition: color .15s;
-    }
-    nav a:hover { color: var(--blanco); }
-    main {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 40px 24px 80px;
-    }
-    h1 { font-size: 26px; color: var(--verde); margin-bottom: 4px; }
-    .subtitulo { color: var(--gris); font-size: 14px; margin-bottom: 32px; }
+{% extends "base.html" %}
+{% block title %}Predecir campaña | Rendimiento de cultivos{% endblock %}
+{% block description %}Formulario de predicción de rendimiento y alerta de campaña mala.{% endblock %}
+
+{% macro num(v) -%}
+  {%- if v is number -%}{{ "%g"|format(v|round(2)) }}{%- else -%}{{ v }}{%- endif -%}
+{%- endmacro %}
+{% macro dec(v) -%}{{ num(v) | replace(".", ",") }}{%- endmacro %}
+{% macro miles(v) -%}{{ "{:,.0f}".format(v).replace(",", ".") }}{%- endmacro %}
+{% macro pct(v) -%}{{ "%.0f"|format(v * 100) }}%{%- endmacro %}
+{% macro coma(v, d=2) -%}{{ ("%." ~ d ~ "f")|format(v) | replace(".", ",") }}{%- endmacro %}
+
+{% block css %}
+    main { max-width: 860px; }
+    h1 { font-size: 28px; margin-bottom: 6px; }
+    .subtitulo { color: var(--gris); font-size: 15px; margin-bottom: 28px; }
+    .pasos { display: flex; gap: 8px 20px; flex-wrap: wrap; font-size: 14px; color: var(--gris); margin-bottom: 28px; padding: 0; list-style: none; }
+    .pasos li { display: flex; align-items: center; gap: 8px; }
+    .pasos b { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--verde-claro); color: var(--verde); font-size: 12px; }
     .card {
       background: var(--blanco);
       border: 1px solid var(--borde);
       border-radius: 16px;
-      padding: 28px 28px;
-      margin-bottom: 24px;
+      padding: 24px;
+      margin-bottom: 20px;
     }
-    .card h2 {
+    .card > h2, details > summary {
       font-size: 13px;
       text-transform: uppercase;
       letter-spacing: .06em;
       color: var(--gris);
-      margin-bottom: 20px;
+      font-weight: 600;
     }
+    .card > h2 { margin-bottom: 18px; }
     .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-    @media (max-width: 600px) {
-      .grid-3, .grid-2 { grid-template-columns: 1fr; }
-    }
-    label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: var(--tinta); }
-    .hint { font-size: 11px; color: var(--gris); margin-top: 3px; }
-    input[type=number], input[type=text], select {
+    label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; }
+    label .unidad { color: var(--gris); font-weight: 400; }
+    .hint { font-size: 12px; color: var(--gris); margin-top: 4px; }
+    input[type=number], select {
       width: 100%;
       border: 1px solid #cbd5e1;
       border-radius: 8px;
@@ -91,174 +45,271 @@
       font-family: inherit;
       background: var(--blanco);
       color: var(--tinta);
-      transition: border-color .15s;
+      transition: border-color .15s, background .15s;
     }
-    input[type=number]:focus, input[type=text]:focus, select:focus {
+    input[type=number]:focus, select:focus {
       outline: none;
       border-color: var(--verde-mid);
       box-shadow: 0 0 0 3px rgba(21,128,61,.12);
     }
-    .btn-primary {
-      background: var(--verde-mid);
-      color: var(--blanco);
-      border: none;
-      border-radius: 8px;
-      padding: 12px 28px;
-      font-size: 15px;
-      font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-      transition: background .15s, transform .1s;
-    }
-    .btn-primary:hover { background: var(--verde); transform: translateY(-1px); }
-    .btn-secondary {
-      background: transparent;
-      color: var(--verde-mid);
-      border: 1px solid var(--verde-mid);
-      border-radius: 8px;
-      padding: 11px 20px;
-      font-size: 14px;
-      font-weight: 500;
-      font-family: inherit;
-      cursor: pointer;
-      transition: background .15s;
-    }
-    .btn-secondary:hover { background: var(--verde-claro); }
-    .acciones { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    input.modificado { border-color: var(--amber-mid); background: var(--amber-bg); }
+    .estado-historico { font-size: 13px; margin-top: 14px; min-height: 20px; color: var(--gris); }
+    .estado-historico.ok { color: var(--verde); }
+    .estado-historico.error { color: var(--rojo); }
+    details.card summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    details.card summary::-webkit-details-marker { display: none; }
+    details.card summary::after { content: "Mostrar ▾"; font-size: 13px; text-transform: none; letter-spacing: 0; color: var(--verde-mid); white-space: nowrap; }
+    details.card[open] summary::after { content: "Ocultar ▴"; }
+    details.card[open] summary { margin-bottom: 14px; }
+    .contador-cambios { color: var(--amber); text-transform: none; letter-spacing: 0; font-weight: 600; margin-left: 6px; }
+    .escenario-ayuda { font-size: 14px; color: var(--gris); margin-bottom: 16px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .btn-link { background: none; border: none; color: var(--verde-mid); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; padding: 0; }
+    .btn-link:disabled { color: var(--gris-claro); cursor: default; }
+    .acciones { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+    .acciones a { color: var(--gris); font-size: 14px; }
+
     /* Resultado */
-    .resultado-alerta {
-      border-radius: 16px;
-      padding: 28px;
-      margin-bottom: 24px;
-      animation: fadeIn .4s ease;
-    }
-    .resultado-alerta.mala {
-      background: var(--rojo-bg);
-      border: 2px solid var(--rojo-borde);
-    }
-    .resultado-alerta.normal {
-      background: var(--verde-claro);
-      border: 2px solid var(--borde);
-    }
-    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
-    .alerta-icon { font-size: 36px; margin-bottom: 10px; }
-    .alerta-titulo { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
-    .alerta-titulo.mala { color: var(--rojo); }
-    .alerta-titulo.normal { color: var(--verde); }
-    .alerta-desc { font-size: 14px; color: var(--gris); margin-bottom: 20px; }
-    .metricas { display: flex; gap: 20px; flex-wrap: wrap; }
-    .metrica { background: var(--blanco); border-radius: 10px; padding: 14px 18px; min-width: 140px; }
-    .metrica-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--gris); margin-bottom: 4px; }
-    .metrica-valor { font-size: 22px; font-weight: 700; color: var(--tinta); }
-    .sistemas { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
-    .chip {
-      display: inline-flex; align-items: center; gap: 6px;
-      border-radius: 999px; padding: 5px 12px;
-      font-size: 13px; font-weight: 500;
-    }
-    .chip-alerta { background: var(--rojo-bg); color: var(--rojo); border: 1px solid var(--rojo-borde); }
-    .chip-ok { background: var(--verde-claro); color: var(--verde); border: 1px solid var(--borde); }
-    .chip-gris { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
-    .chip-dot { width: 7px; height: 7px; border-radius: 50; background: currentColor; }
-    /* Info autocompletado */
-    .info-real {
-      background: var(--amber-bg);
-      border: 1px solid var(--amber-borde);
-      border-radius: 10px;
-      padding: 12px 16px;
-      font-size: 13px;
-      color: var(--amber);
-      margin-top: 16px;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <div class="header-inner">
-      <span class="logo">Rendimiento de cultivos</span>
-      <nav>
-        <a href="/">Inicio</a>
-        <a href="/predecir">Predecir</a>
-        <a href="/health">Health</a>
-      </nav>
-    </div>
-  </header>
+    #resultado { scroll-margin-top: 16px; }
+    .errores { background: var(--rojo-bg); border: 1px solid var(--rojo-borde); color: var(--rojo); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; font-size: 14px; }
+    .errores ul { margin: 6px 0 0 18px; }
+    .contexto { display: flex; gap: 8px 14px; flex-wrap: wrap; align-items: center; font-size: 14px; color: var(--gris); margin-bottom: 12px; }
+    .contexto strong { color: var(--tinta); font-size: 16px; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 3px 10px; font-size: 12px; font-weight: 600; }
+    .chip-prueba { background: var(--verde-claro); color: var(--verde); }
+    .chip-entrenamiento { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-borde); }
+    .chip-escenario { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-borde); }
+    .veredicto { border-radius: 16px; padding: 22px 24px; margin-bottom: 16px; display: flex; gap: 16px; align-items: flex-start; animation: aparecer .35s ease; }
+    .veredicto .icono { font-size: 30px; line-height: 1; }
+    .veredicto h2 { font-size: 21px; margin-bottom: 4px; }
+    .veredicto p { font-size: 14px; color: var(--tinta); }
+    .veredicto .historico { margin-top: 8px; color: var(--gris); font-size: 13px; }
+    .v-alta { background: var(--rojo-bg); border: 2px solid var(--rojo-mid); }
+    .v-alta h2 { color: var(--rojo); }
+    .v-clasificador { background: var(--rojo-bg); border: 2px solid var(--rojo-borde); }
+    .v-clasificador h2 { color: var(--rojo); }
+    .v-solo_regresion { background: var(--amber-bg); border: 2px solid var(--amber-borde); }
+    .v-solo_regresion h2 { color: var(--amber); }
+    .v-normal { background: var(--verde-claro); border: 2px solid var(--borde); }
+    .v-normal h2 { color: var(--verde); }
+    @keyframes aparecer { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-  <main>
-    <h1>Prediccion de campana</h1>
-    <p class="subtitulo">
-      Selecciona partido, cultivo y campana. Los valores historicos se autocompletan.
-      Podes editar las variables climaticas para simular escenarios.
-    </p>
+    .paneles { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .panel { background: var(--blanco); border-radius: 14px; padding: 20px 22px; }
+    .panel-reg { border: 1px solid var(--reg-borde); border-top: 4px solid var(--reg); }
+    .panel-clf { border: 1px solid var(--clf-borde); border-top: 4px solid var(--clf); }
+    .panel h3 { font-size: 17px; margin: 8px 0 0; }
+    .panel .modelo-desc { font-size: 12px; color: var(--gris); margin-bottom: 14px; }
+    .panel .valor { font-size: 30px; font-weight: 700; line-height: 1.1; }
+    .panel-reg .valor { color: var(--reg); }
+    .panel-clf .valor { color: var(--clf); }
+    .panel .sub { font-size: 14px; color: var(--gris); margin-bottom: 6px; }
+    .panel .lectura { font-size: 14px; margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--linea); }
+    .panel .lectura strong.si { color: var(--rojo); }
+    .panel .lectura strong.no { color: var(--verde); }
 
-    <!-- RESULTADO -->
-    {% if resultado and not resultado.get("error") %}
-    {% set alerta = resultado.get("alerta_final", 0) %}
-    <div class="resultado-alerta {{ 'mala' if alerta else 'normal' }}">
-      <div class="alerta-icon">{{ "🚨" if alerta else "✅" }}</div>
-      <div class="alerta-titulo {{ 'mala' if alerta else 'normal' }}">
-        {{ "Alerta: campana mala esperada" if alerta else "Campana dentro de lo normal" }}
+    .barra { position: relative; height: 12px; border-radius: 999px; margin: 34px 0 34px; }
+    .barra-ratio { background: linear-gradient(to right, var(--rojo-borde) 0 {{ resultado.pos_umbral if resultado else 45 }}%, var(--verde-claro) {{ resultado.pos_umbral if resultado else 45 }}% 100%); }
+    .barra-riesgo { background: var(--linea); overflow: visible; }
+    .barra-riesgo .relleno { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: var(--clf); opacity: .85; }
+    .barra .umbral { position: absolute; top: -7px; bottom: -7px; width: 2px; background: var(--tinta); }
+    .barra .umbral span { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .barra .punto { position: absolute; top: 50%; width: 18px; height: 18px; border-radius: 50%; transform: translate(-50%, -50%); border: 3px solid var(--blanco); box-shadow: 0 0 0 1px rgba(15,23,42,.25); }
+    .barra .punto-pred { background: var(--reg); }
+    .barra .punto-real { background: var(--tinta); width: 12px; height: 12px; border-width: 2px; }
+    .barra .rotulo { position: absolute; top: 18px; transform: translateX(-50%); font-size: 11px; white-space: nowrap; color: var(--gris); }
+    .barra .rotulo-pred { color: var(--reg); font-weight: 600; }
+    .barra .rotulo-real { top: -22px; color: var(--tinta); }
+    .barra .extremo { position: absolute; top: 18px; font-size: 11px; color: var(--gris-claro); }
+
+    .explicacion { background: var(--blanco); border: 1px dashed #cbd5e1; border-radius: 12px; padding: 14px 18px; font-size: 14px; color: var(--gris); margin-bottom: 16px; }
+    .explicacion strong { color: var(--tinta); }
+    .bloque { background: var(--blanco); border: 1px solid var(--linea); border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; font-size: 14px; }
+    .bloque h3 { font-size: 14px; margin-bottom: 8px; }
+    .bloque ul { margin-left: 18px; }
+    .aciertos { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+    .acierto { border-radius: 999px; padding: 3px 12px; font-size: 13px; font-weight: 600; }
+    .acierto.ok { background: var(--verde-claro); color: var(--verde); }
+    .acierto.mal { background: var(--rojo-bg); color: var(--rojo); }
+    .nota-riesgo { font-size: 12px; color: var(--gris); margin-bottom: 32px; }
+
+    @media (max-width: 700px) {
+      .paneles { grid-template-columns: 1fr; }
+      .grid-3 { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 460px) {
+      .grid-3 { grid-template-columns: 1fr; }
+      .veredicto { flex-direction: column; gap: 8px; }
+    }
+{% endblock %}
+
+{% block content %}
+    <h1>Predicción de campaña</h1>
+    <ol class="pasos">
+      <li><b>1</b>Elegí partido, cultivo y campaña</li>
+      <li><b>2</b>Los datos históricos se completan solos</li>
+      <li><b>3</b>Si querés, modificá el clima para simular un escenario</li>
+    </ol>
+
+    <div id="resultado">
+    {% if errores %}
+      <div class="errores" role="alert">
+        <strong>No se pudo hacer la predicción.</strong>
+        <ul>{% for e in errores %}<li>{{ e }}</li>{% endfor %}</ul>
       </div>
-      <p class="alerta-desc">
-        {% if alerta %}
-          Uno o ambos sistemas predicen que el rendimiento sera inferior al 85% del promedio de las 5 campanas anteriores.
-        {% else %}
-          Ambos sistemas coinciden en que no se espera una campana significativamente mala.
-        {% endif %}
-      </p>
-
-      <div class="metricas">
-        {% if resultado.get("ratio_pred") is not none %}
-        <div class="metrica">
-          <div class="metrica-label">Ratio predicho</div>
-          <div class="metrica-valor">{{ "%.3f"|format(resultado.ratio_pred) }}</div>
-        </div>
-        {% endif %}
-        {% if resultado.get("rend_pred_kg") is not none %}
-        <div class="metrica">
-          <div class="metrica-label">Rendimiento estimado</div>
-          <div class="metrica-valor">{{ "{:,.0f}".format(resultado.rend_pred_kg) }} kg/ha</div>
-        </div>
-        {% endif %}
-      </div>
-
-      <div class="sistemas">
-        {% if resultado.get("alerta_regresion") is not none %}
-        <span class="chip {{ 'chip-alerta' if resultado.alerta_regresion else 'chip-ok' }}">
-          <span class="chip-dot"></span>
-          Regresion: {{ "ALERTA" if resultado.alerta_regresion else "normal" }}
-        </span>
-        {% endif %}
-        {% if resultado.get("alerta_clasificador") is not none %}
-        <span class="chip {{ 'chip-alerta' if resultado.alerta_clasificador else 'chip-ok' }}">
-          <span class="chip-dot"></span>
-          Clasificador: {{ "ALERTA" if resultado.alerta_clasificador else "normal" }}
-        </span>
-        {% endif %}
-      </div>
-
-      {% if autocomp.get("rendimiento_real") %}
-      <div class="info-real">
-        📊 Valor real (del dataset): rendimiento {{ "{:,.0f}".format(autocomp.rendimiento_real) }} kg/ha &mdash;
-        ratio {{ "%.3f"|format(autocomp.ratio_real) }} &mdash;
-        campana {{ "mala" if autocomp.mala85_real else "normal" }}
-      </div>
-      {% endif %}
-    </div>
-    {% elif resultado and resultado.get("error") %}
-    <div class="resultado-alerta mala">
-      <p>⚠️ Error al predecir: {{ resultado.error }}</p>
-    </div>
     {% endif %}
 
-    <!-- FORMULARIO -->
-    <form method="POST" action="/predecir" id="form-pred">
+    {% if resultado %}
+      {% set acuerdo = resultado.acuerdo %}
+      <div class="contexto">
+        <strong>{{ cultivo }}{% if partido %} · {{ partido }}{% endif %}{% if anio %} · {{ anio }}/{{ "%02d"|format((anio + 1) % 100) }}{% endif %}</strong>
+        {% if anio %}
+          {% if anio_prueba %}
+          <span class="chip chip-prueba">Campaña de prueba: los modelos no la vieron</span>
+          {% else %}
+          <span class="chip chip-entrenamiento">Campaña usada para entrenar: el resultado es optimista</span>
+          {% endif %}
+        {% endif %}
+        {% if cambios %}<span class="chip chip-escenario">Escenario modificado</span>{% endif %}
+      </div>
+
+      <div class="veredicto v-{{ resultado.nivel }}" role="status">
+        <div class="icono" aria-hidden="true">{{ {"alta": "🚨", "clasificador": "⚠️", "solo_regresion": "🔎", "normal": "✅"}[resultado.nivel] }}</div>
+        <div>
+          {% if resultado.nivel == "alta" %}
+            <h2>Alerta de alta confianza</h2>
+            <p>Los dos modelos coinciden: se espera una campaña mala, con un rendimiento por debajo del 85% de lo habitual.</p>
+          {% elif resultado.nivel == "clasificador" %}
+            <h2>Alerta: posible campaña mala</h2>
+            <p>El clasificador ve un riesgo alto de campaña mala. La regresión espera un rendimiento algo por encima del umbral, así que la señal es menos firme que cuando coinciden.</p>
+          {% elif resultado.nivel == "solo_regresion" %}
+            <h2>Sin alerta, con una señal débil</h2>
+            <p>Solo la regresión queda por debajo de 0,85. El clasificador, que es el que da la alerta, no ve un riesgo suficiente.</p>
+          {% else %}
+            <h2>Campaña dentro de lo normal</h2>
+            <p>Ninguno de los dos modelos espera una campaña mala.</p>
+          {% endif %}
+          {% if acuerdo %}
+          <p class="historico">
+            En las campañas de prueba, {{ pct(acuerdo.precision) }} de los casos con este resultado
+            ({{ acuerdo.malas }} de {{ miles(acuerdo.n) }}) terminaron siendo campañas malas{% if resultado.nivel == "normal" %}: el sistema no detecta todas{% endif %}.
+          </p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="paneles">
+        {% if resultado.ratio_pred is defined %}
+        <section class="panel panel-reg" aria-label="Resultado de la regresión">
+          <span class="etiqueta-modelo etiqueta-reg">Regresión</span>
+          <h3>¿Cuánto va a rendir?</h3>
+          <p class="modelo-desc">{{ resumen.get("regresor_desc", "") }}</p>
+          <div class="valor">{{ miles(resultado.rend_pred_kg) }} kg/ha</div>
+          <div class="sub">{{ pct(resultado.ratio_pred) }} de lo habitual ({{ miles(form_data.get("prev5", autocomp.get("prev5", 0))|float) }} kg/ha)</div>
+          <div class="barra barra-ratio" role="img" aria-label="Ratio predicho {{ coma(resultado.ratio_pred) }} sobre una escala con el umbral en 0,85">
+            <span class="extremo" style="left:0">{{ coma(ratio_min) }}</span>
+            <span class="extremo" style="right:0">{{ coma(ratio_max) }}</span>
+            <div class="umbral" style="left:{{ resultado.pos_umbral }}%"><span>0,85</span></div>
+            {% if real and not cambios %}
+            <div class="punto punto-real" style="left:{{ real.pos }}%" title="Ratio real"></div>
+            <span class="rotulo rotulo-real" style="left:{{ real.pos }}%">real {{ coma(real.ratio) }}</span>
+            {% endif %}
+            <div class="punto punto-pred" style="left:{{ resultado.pos_ratio }}%"></div>
+            <span class="rotulo rotulo-pred" style="left:{{ resultado.pos_ratio }}%">predicho {{ coma(resultado.ratio_pred) }}</span>
+          </div>
+          <p class="lectura">
+            {% if resultado.alerta_regresion %}
+              <strong class="si">Por debajo de 0,85:</strong> indica campaña mala.
+            {% else %}
+              <strong class="no">Por encima de 0,85:</strong> no indica campaña mala.
+            {% endif %}
+          </p>
+        </section>
+        {% endif %}
+
+        {% if resultado.proba_clasificador is defined %}
+        {% set pos_riesgo = (resultado.proba_clasificador * 100)|round(1) %}
+        {% set pos_umbral_clf = (resultado.umbral_clasificador * 100)|round(1) %}
+        <section class="panel panel-clf" aria-label="Resultado de la clasificación">
+          <span class="etiqueta-modelo etiqueta-clf">Clasificación</span>
+          <h3>¿Será una campaña mala?</h3>
+          <p class="modelo-desc">{{ resumen.get("clasificador_desc", "") }}</p>
+          <div class="valor">Riesgo {{ pct(resultado.proba_clasificador) }}</div>
+          <div class="sub">Alerta a partir de {{ pct(resultado.umbral_clasificador) }}</div>
+          <div class="barra barra-riesgo" role="img" aria-label="Riesgo {{ pct(resultado.proba_clasificador) }}, umbral de alerta {{ pct(resultado.umbral_clasificador) }}">
+            <span class="extremo" style="left:0">0%</span>
+            <span class="extremo" style="right:0">100%</span>
+            <div class="relleno" style="width:{{ pos_riesgo }}%"></div>
+            <div class="umbral" style="left:{{ pos_umbral_clf }}%"><span>alerta</span></div>
+          </div>
+          <p class="lectura">
+            {% if resultado.alerta_clasificador %}
+              <strong class="si">Supera el umbral:</strong> alerta de campaña mala.
+            {% else %}
+              <strong class="no">No llega al umbral:</strong> sin alerta.
+            {% endif %}
+          </p>
+        </section>
+        {% endif %}
+      </div>
+
+      {% if resultado.nivel in ("clasificador", "solo_regresion") %}
+      <div class="explicacion">
+        <strong>¿Por qué los modelos no coinciden?</strong>
+        La regresión estima el rendimiento esperado y tiende a quedarse cerca de lo normal, así que
+        pocas veces baja de 0,85. El clasificador se entrenó solo para reconocer campañas malas y
+        da más peso a no perderse una. Por eso el clasificador alerta más seguido, y la alerta es
+        más confiable cuando la regresión también la acompaña.
+      </div>
+      {% endif %}
+
+      {% if cambios %}
+      <div class="bloque">
+        <h3>Escenario simulado</h3>
+        <ul>
+          {% for c in cambios %}
+          <li>{{ c.etiqueta }}: {{ dec(c.real) }} → <strong>{{ dec(c.nuevo) }}</strong>{% if c.unidad %} {{ c.unidad }}{% endif %}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      {% if real %}
+      <div class="bloque">
+        <h3>Lo que pasó realmente</h3>
+        <p>
+          Rindió <strong>{{ miles(real.rendimiento) }} kg/ha</strong>, el {{ pct(real.ratio) }} de lo habitual
+          (ratio {{ coma(real.ratio) }}): fue una campaña
+          <strong class="{{ 'si' if real.mala else 'no' }}">{{ "mala" if real.mala else "normal" }}</strong>.
+        </p>
+        {% if cambios %}
+        <p class="hint">Como el escenario fue modificado, no se compara con lo que pasó.</p>
+        {% else %}
+        <div class="aciertos">
+          {% if real.acierto_clasificador is defined %}
+          <span class="acierto {{ 'ok' if real.acierto_clasificador else 'mal' }}">{{ "✓" if real.acierto_clasificador else "✗" }} Clasificación {{ "acertó" if real.acierto_clasificador else "se equivocó" }}</span>
+          {% endif %}
+          {% if real.acierto_regresion is defined %}
+          <span class="acierto {{ 'ok' if real.acierto_regresion else 'mal' }}">{{ "✓" if real.acierto_regresion else "✗" }} Regresión {{ "acertó" if real.acierto_regresion else "se equivocó" }}</span>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <p class="nota-riesgo">
+        El riesgo es la proporción de campañas malas entre las campañas históricas más parecidas que
+        encontró el árbol de decisión. Sirve para comparar casos, no como una probabilidad exacta.
+      </p>
+    {% endif %}
+    </div>
+
+    <form method="POST" action="/predecir#resultado" id="form-pred" novalidate>
       <div class="card">
-        <h2>🌾 Campana a predecir</h2>
+        <h2>🌾 Campaña a predecir</h2>
         <div class="grid-3">
           <div>
             <label for="partido">Partido</label>
-            <select id="partido" name="partido" required>
+            <select id="partido" name="partido">
               <option value="">Seleccionar...</option>
               {% for p in partidos %}
               <option value="{{ p }}" {{ "selected" if p == partido }}>{{ p }}</option>
@@ -275,134 +326,134 @@
             </select>
           </div>
           <div>
-            <label for="anio">Campana (inicio)</label>
-            <select id="anio" name="anio" required>
+            <label for="anio">Campaña</label>
+            <select id="anio" name="anio">
               <option value="">Seleccionar...</option>
-              {% for a in anios %}
-              <option value="{{ a }}" {{ "selected" if a == anio }}>{{ a }}/{{ a+1 }}</option>
-              {% endfor %}
+              <optgroup label="Prueba: los modelos no las vieron">
+                {% for a in anios.prueba %}
+                <option value="{{ a }}" {{ "selected" if a == anio }}>{{ a }}/{{ "%02d"|format((a + 1) % 100) }}</option>
+                {% endfor %}
+              </optgroup>
+              <optgroup label="Usadas para entrenar">
+                {% for a in anios.entrenamiento %}
+                <option value="{{ a }}" {{ "selected" if a == anio }}>{{ a }}/{{ "%02d"|format((a + 1) % 100) }}</option>
+                {% endfor %}
+              </optgroup>
             </select>
           </div>
         </div>
-        <div style="margin-top:12px">
-          <button type="button" id="btn-autocompletar" class="btn-secondary">
-            ↻ Autocompletar desde historico
-          </button>
-        </div>
+        <p class="estado-historico{% if autocomp %} ok{% elif partido and cultivo and anio %} error{% endif %}" id="estado-historico" aria-live="polite">
+          {% if autocomp %}Datos históricos cargados.{% elif partido and cultivo and anio %}No hay datos de {{ cultivo }} en {{ partido }} para esa campaña. Probá con otra o completá los valores a mano.{% endif %}
+        </p>
       </div>
 
       <div class="card">
-        <h2>📈 Variables agronomicas</h2>
+        <h2>📈 Variables agronómicas</h2>
         <div class="grid-3">
+          {% for col, (etiqueta, unidad, minimo, maximo, entero) in agro_fields.items() %}
           <div>
-            <label for="superficie_sembrada">Sup. sembrada (ha)</label>
-            <input type="number" id="superficie_sembrada" name="superficie_sembrada"
-              value="{{ form_data.get('superficie_sembrada', autocomp.get('superficie_sembrada', '')) }}"
-              min="0" step="0.1" required>
+            <label for="{{ col }}">{{ etiqueta }}{% if unidad %} <span class="unidad">({{ unidad }})</span>{% endif %}</label>
+            <input type="number" id="{{ col }}" name="{{ col }}" class="campo"
+              value="{{ num(form_data.get(col, autocomp.get(col, ''))) }}"
+              data-original="{{ num(autocomp.get(col, '')) }}"
+              min="{{ minimo }}" max="{{ maximo }}" step="{{ 1 if entero else 'any' }}" required>
+            {% if col == "prev5_ceros" %}<p class="hint">De las 5 anteriores, cuántas no tuvieron cosecha</p>{% endif %}
           </div>
-          <div>
-            <label for="prev5">Prom. 5 campanas ant. (kg/ha)</label>
-            <input type="number" id="prev5" name="prev5"
-              value="{{ form_data.get('prev5', autocomp.get('prev5', '')) }}"
-              min="0" step="0.01" required>
-            <p class="hint">Rendimiento promedio de las 5 campanas anteriores en este partido</p>
-          </div>
-          <div>
-            <label for="prev5_ceros">Campanas sin cosecha (0-5)</label>
-            <input type="number" id="prev5_ceros" name="prev5_ceros"
-              value="{{ form_data.get('prev5_ceros', autocomp.get('prev5_ceros', 0)) }}"
-              min="0" max="5" step="1" required>
-          </div>
+          {% endfor %}
         </div>
       </div>
 
-      <div class="card">
-        <h2>☁️ Variables climaticas (ventana por cultivo)</h2>
-        <div class="grid-3">
-          <div>
-            <label for="clima_precip_total_mm">Precip. total (mm)</label>
-            <input type="number" id="clima_precip_total_mm" name="clima_precip_total_mm"
-              value="{{ form_data.get('clima_precip_total_mm', autocomp.get('clima_precip_total_mm', '')) }}"
-              step="0.1">
-          </div>
-          <div>
-            <label for="clima_precip_pre_siembra_mm">Precip. pre-siembra (mm)</label>
-            <input type="number" id="clima_precip_pre_siembra_mm" name="clima_precip_pre_siembra_mm"
-              value="{{ form_data.get('clima_precip_pre_siembra_mm', autocomp.get('clima_precip_pre_siembra_mm', '')) }}"
-              step="0.1">
-          </div>
-          <div>
-            <label for="clima_dias_lluvia">Dias de lluvia</label>
-            <input type="number" id="clima_dias_lluvia" name="clima_dias_lluvia"
-              value="{{ form_data.get('clima_dias_lluvia', autocomp.get('clima_dias_lluvia', '')) }}"
-              step="1">
-          </div>
-          <div>
-            <label for="clima_tmax_media_c">Tmax media (C)</label>
-            <input type="number" id="clima_tmax_media_c" name="clima_tmax_media_c"
-              value="{{ form_data.get('clima_tmax_media_c', autocomp.get('clima_tmax_media_c', '')) }}"
-              step="0.01">
-          </div>
-          <div>
-            <label for="clima_tmin_media_c">Tmin media (C)</label>
-            <input type="number" id="clima_tmin_media_c" name="clima_tmin_media_c"
-              value="{{ form_data.get('clima_tmin_media_c', autocomp.get('clima_tmin_media_c', '')) }}"
-              step="0.01">
-          </div>
-          <div>
-            <label for="clima_humedad_media_pct">Humedad media (%)</label>
-            <input type="number" id="clima_humedad_media_pct" name="clima_humedad_media_pct"
-              value="{{ form_data.get('clima_humedad_media_pct', autocomp.get('clima_humedad_media_pct', '')) }}"
-              step="0.01">
-          </div>
-          <div>
-            <label for="clima_dias_tmax_30">Dias con Tmax gt 30C</label>
-            <input type="number" id="clima_dias_tmax_30" name="clima_dias_tmax_30"
-              value="{{ form_data.get('clima_dias_tmax_30', autocomp.get('clima_dias_tmax_30', '')) }}"
-              step="1">
-          </div>
-          <div>
-            <label for="clima_sequia_max_dias">Sequia maxima (dias)</label>
-            <input type="number" id="clima_sequia_max_dias" name="clima_sequia_max_dias"
-              value="{{ form_data.get('clima_sequia_max_dias', autocomp.get('clima_sequia_max_dias', '')) }}"
-              step="1">
-          </div>
-          <div>
-            <label for="clima_dias_helada">Dias de helada</label>
-            <input type="number" id="clima_dias_helada" name="clima_dias_helada"
-              value="{{ form_data.get('clima_dias_helada', autocomp.get('clima_dias_helada', '')) }}"
-              step="1">
-          </div>
+      <details class="card" id="escenario" {% if cambios or not autocomp %}open{% endif %}>
+        <summary><span>☁️ Clima de la campaña <span class="contador-cambios" id="contador-cambios"></span></span></summary>
+        <div class="escenario-ayuda">
+          <span>Se completa con el clima real de la ventana de cada cultivo. Cambiá los valores para simular un escenario, por ejemplo, menos lluvia.</span>
+          <button type="button" class="btn-link" id="btn-restaurar" disabled>Restaurar valores reales</button>
         </div>
-      </div>
+        <div class="grid-3">
+          {% for col, (etiqueta, unidad, minimo, maximo, entero) in clima_fields.items() %}
+          <div>
+            <label for="{{ col }}">{{ etiqueta }} <span class="unidad">({{ unidad }})</span></label>
+            <input type="number" id="{{ col }}" name="{{ col }}" class="campo"
+              value="{{ num(form_data.get(col, autocomp.get(col, ''))) }}"
+              data-original="{{ num(autocomp.get(col, '')) }}"
+              min="{{ minimo }}" max="{{ maximo }}" step="{{ 1 if entero else 'any' }}" required>
+          </div>
+          {% endfor %}
+        </div>
+      </details>
 
       <div class="acciones">
-        <button type="submit" class="btn-primary" id="btn-submit">Predecir campana</button>
-        <a href="/predecir" style="color:var(--gris);font-size:14px;text-decoration:none;">Limpiar</a>
+        <button type="submit" class="btn-primary">Predecir campaña</button>
+        <a href="/predecir">Empezar de nuevo</a>
       </div>
     </form>
-  </main>
+{% endblock %}
 
+{% block scripts %}
   <script>
-    // Autocompletar via GET con los selectores de partido/cultivo/anio
-    document.getElementById("btn-autocompletar").addEventListener("click", function() {
-      var partido = document.getElementById("partido").value;
-      var cultivo = document.getElementById("cultivo").value;
-      var anio = document.getElementById("anio").value;
-      if (!partido || !cultivo || !anio) {
-        alert("Selecciona partido, cultivo y campana antes de autocompletar.");
-        return;
-      }
-      var url = "/predecir?partido=" + encodeURIComponent(partido) +
-                "&cultivo=" + encodeURIComponent(cultivo) +
-                "&anio=" + encodeURIComponent(anio);
-      window.location.href = url;
-    });
-  </script>
+    (function () {
+      var selects = ["partido", "cultivo", "anio"].map(function (id) { return document.getElementById(id); });
+      var estado = document.getElementById("estado-historico");
+      var campos = Array.prototype.slice.call(document.querySelectorAll("input.campo"));
+      var climaCampos = Array.prototype.slice.call(document.querySelectorAll("#escenario input.campo"));
+      var contador = document.getElementById("contador-cambios");
+      var restaurar = document.getElementById("btn-restaurar");
+      var escenario = document.getElementById("escenario");
 
-  <footer style="text-align:center;color:#475569;font-size:13px;padding:28px 24px;border-top:1px solid #d1fae5;">
-    Francisco Calahorra &middot; Federico Valdes &middot; Alexis Galvan &mdash;
-    Aprendizaje Automatico 2026
-  </footer>
-</body>
-</html>
+      function redondear(v) { return String(Math.round(v * 100) / 100); }
+
+      function marcarCambios() {
+        var n = 0;
+        campos.forEach(function (input) {
+          var original = input.dataset.original;
+          var cambiado = original !== "" && input.value !== "" &&
+            Math.abs(parseFloat(input.value) - parseFloat(original)) > 1e-6;
+          input.classList.toggle("modificado", cambiado);
+          if (cambiado && climaCampos.indexOf(input) >= 0) { n++; }
+        });
+        contador.textContent = n ? "· " + n + (n === 1 ? " modificada" : " modificadas") : "";
+        restaurar.disabled = !campos.some(function (i) { return i.classList.contains("modificado"); });
+      }
+
+      function cargarHistorico() {
+        var partido = selects[0].value, cultivo = selects[1].value, anio = selects[2].value;
+        if (!partido || !cultivo || !anio) { return; }
+        estado.className = "estado-historico";
+        estado.textContent = "Buscando datos históricos…";
+        var url = "/api/historico?partido=" + encodeURIComponent(partido) +
+          "&cultivo=" + encodeURIComponent(cultivo) + "&anio=" + encodeURIComponent(anio);
+        fetch(url).then(function (r) { return r.json(); }).then(function (data) {
+          if (!data.encontrado) {
+            campos.forEach(function (input) { input.dataset.original = ""; });
+            estado.className = "estado-historico error";
+            estado.textContent = "No hay datos de " + cultivo + " en " + partido +
+              " para esa campaña. Probá con otra o completá los valores a mano.";
+            escenario.open = true;
+            marcarCambios();
+            return;
+          }
+          campos.forEach(function (input) {
+            var v = data.valores[input.name];
+            if (v !== undefined) { input.value = redondear(v); input.dataset.original = redondear(v); }
+          });
+          estado.className = "estado-historico ok";
+          estado.textContent = "Datos históricos de " + cultivo + " en " + partido + " cargados.";
+          marcarCambios();
+        }).catch(function () {
+          estado.className = "estado-historico error";
+          estado.textContent = "No se pudieron cargar los datos históricos.";
+        });
+      }
+
+      selects.forEach(function (s) { s.addEventListener("change", cargarHistorico); });
+      campos.forEach(function (input) { input.addEventListener("input", marcarCambios); });
+      restaurar.addEventListener("click", function () {
+        campos.forEach(function (input) {
+          if (input.dataset.original !== "") { input.value = input.dataset.original; }
+        });
+        marcarCambios();
+      });
+      marcarCambios();
+    })();
+  </script>
+{% endblock %}

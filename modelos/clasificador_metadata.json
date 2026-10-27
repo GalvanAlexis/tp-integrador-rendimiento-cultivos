@@ -1,11 +1,14 @@
 {
-  "generado_utc": "2026-10-27T14:29:03+00:00",
-  "modelo": "KNeighborsClassifier",
+  "generado_utc": "2026-10-27T21:24:54+00:00",
+  "modelo": "DecisionTreeClassifier",
   "variables": "con_clima",
   "params": {
-    "n_neighbors": 500,
-    "weights": "distance"
+    "max_depth": 5,
+    "min_samples_leaf": 50,
+    "class_weight": null
   },
+  "umbral_decision": 0.65,
+  "umbral_teorico": 0.3333333333333333,
   "entrada": [
     "cultivo",
     "superficie_sembrada",
@@ -21,21 +24,28 @@
     "clima_dias_helada",
     "clima_dias_lluvia"
   ],
-  "salida": "mala85 = 1 si la campana se espera mala (ratio predicho < 0,85)",
-  "umbral_alerta": 0.85,
+  "salida": "mala85 = 1 (alerta) si P(campaña mala) >= umbral_decision; campaña mala significa ratio real < 0,85",
+  "umbral_ratio": 0.85,
   "costo_fn": 2.0,
   "costo_fp": 1.0,
-  "entrenado_con": "train + validacion (campanas 1981/82 a 2018/19)",
+  "entrenado_con": "train + validación (campañas 1981/82 a 2018/19)",
+  "metricas_val": {
+    "recall": 0.24814814814814815,
+    "precision": 0.6442307692307693,
+    "f1": 0.3582887700534759,
+    "accuracy": 0.8687089715536105,
+    "costo": 443.0
+  },
   "metricas_test": {
-    "recall": 0.07659574468085106,
-    "precision": 0.9473684210526315,
-    "f1": 0.14173228346456693,
-    "accuracy": 0.8021778584392014,
-    "costo": 870.0
+    "recall": 0.3680851063829787,
+    "precision": 0.650375939849624,
+    "f1": 0.4701086956521739,
+    "accuracy": 0.823049001814882,
+    "costo": 687.0
   },
   "semilla": 42,
   "versiones": {
-    "python": "3.13.13",
+    "python": "3.13.3",
     "scikit-learn": "1.9.0",
     "pandas": "3.0.2",
     "numpy": "2.4.4",

@@ -1,0 +1,5 @@
+clasificador,regresion,n,malas_reales,precision
+alerta,alerta,114,102,0.8947368421052632
+alerta,normal,152,71,0.46710526315789475
+normal,alerta,25,5,0.2
+normal,normal,1913,292,0.15263983272347098

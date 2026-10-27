@@ -1,18 +1,21 @@
-"""Clasificaci\u00f3n directa de campa\u00f1a mala para la Entrega 4.
+"""Clasificación directa de campaña mala para la Entrega 4.
 
-Protocolo (id\u00e9ntico al de regresion.py):
-1. B\u00fasqueda de hiperpar\u00e1metros: se entrena con train (1981/82 a 2013/14) y se
-   mide en validaci\u00f3n (2014/15 a 2018/19). El test no interviene.
-2. Por cada familia se elige la configuraci\u00f3n con menor costo ponderado por
-   costos en validaci\u00f3n. El clasificador final es el mejor de todos.
-3. Las configuraciones elegidas se reentrenan con train + validaci\u00f3n y se
-   eval\u00faan una sola vez en test (2019/20 a 2024/25).
-4. Se compara el clasificador directo con la alerta derivada del regresor.
+Protocolo (idéntico al de regresion.py):
+1. Búsqueda de hiperparámetros: se entrena con train (1981/82 a 2013/14) y se
+   mide en validación (2014/15 a 2018/19). El test no interviene.
+2. El umbral de decisión sobre la probabilidad estimada es un hiperparámetro
+   más: se elige en validación junto con el resto.
+3. Por cada familia se elige la configuración con menor costo total en
+   validación (FN = 2 × FP). El clasificador final es el mejor de todos.
+4. Las configuraciones elegidas se reentrenan con train + validación y se
+   evalúan una sola vez en test (2019/20 a 2024/25).
+5. Se compara el clasificador directo con la alerta derivada del regresor.
 
 Modelos:
-- Dummy (clase mayoritaria): baseline obligatorio de la consigna.
-- DecisionTreeClassifier con distintas profundidades y hojas m\u00ednimas.
+- DummyClassifier (clase mayoritaria): baseline obligatorio de la consigna.
+- DecisionTreeClassifier con distintas profundidades, hojas mínimas y peso de clases.
 - KNeighborsClassifier con StandardScaler dentro del Pipeline.
+- GaussianNB con distintos valores de suavizado de la varianza.
 """
 
 from __future__ import annotations
@@ -28,6 +31,8 @@ import pandas as pd
 import sklearn
 from sklearn.compose import ColumnTransformer
 from sklearn.dummy import DummyClassifier
+from sklearn.model_selection import FixedThresholdClassifier
+from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, OneHotEncoder, StandardScaler
@@ -35,8 +40,11 @@ from sklearn.tree import DecisionTreeClassifier
 
 from .baselines import classification_metrics
 from .config import (
+    CLASIFICACION_ACUERDO,
     CLASIFICACION_BUSQUEDA,
     CLASIFICACION_COMPARACION,
+    CLASIFICACION_ERRORES_PERFIL,
+    CLASIFICACION_ERRORES_RATIO,
     CLASIFICACION_POR_CAMPANIA,
     CLASIFICACION_POR_CULTIVO,
     CLASIFICACION_PREDICCIONES,
@@ -75,14 +83,24 @@ FEATURE_SETS = {
 
 TREE_DEPTHS = [2, 3, 4, 5, 6, 8, 10, 12, 15, None]
 TREE_MIN_LEAF = [1, 10, 30, 50, 100]
+TREE_CLASS_WEIGHT = [None, "balanced"]
 KNN_K = [1, 3, 5, 10, 15, 25, 50, 75, 100, 150, 200, 300, 500, 800]
 KNN_WEIGHTS = ["uniform", "distance"]
+NB_VAR_SMOOTHING = [1e-9, 1e-6, 1e-3, 1e-2, 1e-1, 0.3]
+
+# Umbrales de decisión sobre P(campaña mala). Con probabilidades bien
+# calibradas, el umbral que minimiza el costo esperado es
+# COST_FP / (COST_FP + COST_FN) = 1/3; en la práctica se elige en validación.
+UMBRALES = [round(u, 2) for u in np.arange(0.05, 0.951, 0.05)]
+UMBRAL_TEORICO = COST_FP / (COST_FP + COST_FN)
 
 MODEL_LABELS = {
     "dummy": "Dummy (clase mayoritaria)",
-    "regresion": "Regresi\u00f3n + umbral (Entrega 3)",
+    "regresion": "Regresión + umbral (Entrega 3)",
+    "combinada": "Clasificador o regresión (alerta combinada)",
     "arbol": "DecisionTreeClassifier",
     "knn": "KNeighborsClassifier",
+    "nb": "GaussianNB",
 }
 
 FORBIDDEN = {
@@ -95,6 +113,9 @@ FORBIDDEN = {
     "produccion",
     "superficie_cosechada",
 }
+
+METRICAS = ["recall", "precision", "f1", "accuracy", "costo", "costo_por_pos"]
+CONFUSION = ["tp", "fp", "fn", "tn"]
 
 
 def feature_columns(feature_set: str) -> list[str]:
@@ -136,7 +157,12 @@ def _preprocessor(feature_set: str, scale: bool) -> ColumnTransformer:
     )
 
 
-def make_tree(feature_set: str, max_depth: int | None, min_samples_leaf: int) -> Pipeline:
+def make_tree(
+    feature_set: str,
+    max_depth: int | None,
+    min_samples_leaf: int,
+    class_weight: str | None = "balanced",
+) -> Pipeline:
     return Pipeline(
         [
             ("prep", _preprocessor(feature_set, scale=False)),
@@ -145,7 +171,7 @@ def make_tree(feature_set: str, max_depth: int | None, min_samples_leaf: int) ->
                 DecisionTreeClassifier(
                     max_depth=max_depth,
                     min_samples_leaf=min_samples_leaf,
-                    class_weight="balanced",
+                    class_weight=class_weight,
                     random_state=RANDOM_STATE,
                 ),
             ),
@@ -162,12 +188,30 @@ def make_knn(feature_set: str, n_neighbors: int, weights: str) -> Pipeline:
     )
 
 
+def make_nb(feature_set: str, var_smoothing: float) -> Pipeline:
+    return Pipeline(
+        [
+            ("prep", _preprocessor(feature_set, scale=True)),
+            ("modelo", GaussianNB(var_smoothing=var_smoothing)),
+        ]
+    )
+
+
 def build_model(familia: str, feature_set: str, params: dict) -> Pipeline:
     if familia == "arbol":
-        return make_tree(feature_set, params["max_depth"], params["min_samples_leaf"])
+        return make_tree(
+            feature_set, params["max_depth"], params["min_samples_leaf"], params["class_weight"]
+        )
     if familia == "knn":
         return make_knn(feature_set, params["n_neighbors"], params["weights"])
+    if familia == "nb":
+        return make_nb(feature_set, params["var_smoothing"])
     raise ValueError(f"Familia desconocida: {familia}")
+
+
+def with_threshold(model: Pipeline, umbral: float) -> FixedThresholdClassifier:
+    """Envuelve el pipeline para que predict aplique el umbral elegido en validación."""
+    return FixedThresholdClassifier(model, threshold=umbral, response_method="predict_proba")
 
 
 def candidates() -> list[tuple[str, str, dict]]:
@@ -175,10 +219,19 @@ def candidates() -> list[tuple[str, str, dict]]:
     for feature_set in FEATURE_SETS:
         for depth in TREE_DEPTHS:
             for leaf in TREE_MIN_LEAF:
-                out.append(("arbol", feature_set, {"max_depth": depth, "min_samples_leaf": leaf}))
+                for cw in TREE_CLASS_WEIGHT:
+                    out.append(
+                        (
+                            "arbol",
+                            feature_set,
+                            {"max_depth": depth, "min_samples_leaf": leaf, "class_weight": cw},
+                        )
+                    )
         for k in KNN_K:
             for weights in KNN_WEIGHTS:
                 out.append(("knn", feature_set, {"n_neighbors": k, "weights": weights}))
+        for vs in NB_VAR_SMOOTHING:
+            out.append(("nb", feature_set, {"var_smoothing": vs}))
     return out
 
 
@@ -189,15 +242,19 @@ def params_label(params: dict) -> str:
 def _params_from_row(row: pd.Series) -> dict:
     if row["familia"] == "arbol":
         depth = row["max_depth"]
+        cw = row["class_weight"]
         return {
             "max_depth": None if pd.isna(depth) else int(depth),
             "min_samples_leaf": int(row["min_samples_leaf"]),
+            "class_weight": None if pd.isna(cw) else cw,
         }
-    return {"n_neighbors": int(row["n_neighbors"]), "weights": row["weights"]}
+    if row["familia"] == "knn":
+        return {"n_neighbors": int(row["n_neighbors"]), "weights": row["weights"]}
+    return {"var_smoothing": float(row["var_smoothing"])}
 
 
 def costo_total(tp: int, fp: int, fn: int, tn: int) -> float:
-    """Costo asimetrico: FN pesa COST_FN, FP pesa COST_FP."""
+    """Costo asimétrico: FN pesa COST_FN, FP pesa COST_FP."""
     return float(COST_FN * fn + COST_FP * fp)
 
 
@@ -209,61 +266,102 @@ def _clf_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict:
     return m
 
 
-def search(train: pd.DataFrame, val: pd.DataFrame) -> pd.DataFrame:
-    """Entrena cada candidato con train y lo mide en validacion.
+def apply_threshold(proba: np.ndarray, umbral: float) -> np.ndarray:
+    """Misma regla que FixedThresholdClassifier: alerta si P(mala) >= umbral."""
+    return (proba >= umbral).astype(int)
 
-    Recibe solo train y validacion: el test no puede influir en la busqueda.
-    Criterio de seleccion: menor costo total en validacion (FN pesa el doble).
+
+def _search_row(familia, feature_set, params, umbral, m_train, m_val) -> dict:
+    return {
+        "familia": familia,
+        "modelo": MODEL_LABELS[familia],
+        "variables": feature_set,
+        **params,
+        "params": params_label(params),
+        "umbral": umbral,
+        **{f"{k}_train": m_train[k] for k in ["recall", "precision", "f1", "costo"]},
+        **{f"{k}_val": m_val[k] for k in METRICAS},
+        **{f"{k}_val": m_val[k] for k in CONFUSION},
+    }
+
+
+def search(train: pd.DataFrame, val: pd.DataFrame) -> pd.DataFrame:
+    """Entrena cada candidato con train y lo mide en validación.
+
+    Recibe solo train y validación: el test no puede influir en la búsqueda.
+    Cada configuración se entrena una vez y se mide con todos los umbrales.
+    El Dummy se incluye como piso de referencia en validación.
     """
-    rows = []
+    y_train = train[TARGET_CLF].to_numpy()
+    y_val = val[TARGET_CLF].to_numpy()
+
+    dummy = DummyClassifier(strategy="most_frequent").fit(train[["prev5"]], y_train)
+    rows = [
+        _search_row(
+            "dummy",
+            "-",
+            {},
+            np.nan,
+            _clf_metrics(y_train, dummy.predict(train[["prev5"]])),
+            _clf_metrics(y_val, dummy.predict(val[["prev5"]])),
+        )
+    ]
+
     for familia, feature_set, params in candidates():
         cols = feature_columns(feature_set)
-        model = build_model(familia, feature_set, params)
-        model.fit(train[cols], train[TARGET_CLF])
-        for split_name, eval_df in [("train", train), ("val", val)]:
-            y_pred = model.predict(eval_df[cols])
-            m = _clf_metrics(eval_df[TARGET_CLF].to_numpy(), y_pred)
+        model = build_model(familia, feature_set, params).fit(train[cols], y_train)
+        proba_train = model.predict_proba(train[cols])[:, 1]
+        proba_val = model.predict_proba(val[cols])[:, 1]
+        for umbral in UMBRALES:
             rows.append(
-                {
-                    "familia": familia,
-                    "modelo": MODEL_LABELS[familia],
-                    "variables": feature_set,
-                    **params,
-                    "params": params_label(params),
-                    "split": split_name,
-                    "recall": m["recall"],
-                    "precision": m["precision"],
-                    "f1": m["f1"],
-                    "accuracy": m["accuracy"],
-                    "costo": m["costo"],
-                    "costo_por_pos": m["costo_por_pos"],
-                    "tp": m["tp"],
-                    "fp": m["fp"],
-                    "fn": m["fn"],
-                    "tn": m["tn"],
-                }
+                _search_row(
+                    familia,
+                    feature_set,
+                    params,
+                    umbral,
+                    _clf_metrics(y_train, apply_threshold(proba_train, umbral)),
+                    _clf_metrics(y_val, apply_threshold(proba_val, umbral)),
+                )
             )
     return pd.DataFrame(rows)
 
 
 def select_best(busqueda: pd.DataFrame) -> pd.DataFrame:
-    """Mejor configuracion por familia y conjunto de variables, segun costo en validacion."""
-    val = busqueda[busqueda["split"] == "val"].copy()
-    idx = val.groupby(["familia", "variables"])["costo"].idxmin()
-    return val.loc[idx].sort_values("costo").reset_index(drop=True)
+    """Mejor configuración por familia y conjunto de variables, según costo en validación.
+
+    Ante empates de costo se prefiere el mayor F1 de validación.
+    """
+    val = busqueda[busqueda["familia"] != "dummy"]
+    val = val.sort_values(["costo_val", "f1_val"], ascending=[True, False], kind="stable")
+    return val.groupby(["familia", "variables"], sort=False).head(1).reset_index(drop=True)
 
 
-def _load_regresor_predictions(test: pd.DataFrame) -> np.ndarray | None:
+def _load_regresor_predictions(test: pd.DataFrame) -> np.ndarray:
     """Carga el regresor de la Entrega 3 y genera predicciones de alerta en test."""
     if not REGRESOR_FILE.exists():
-        return None
-    try:
-        regresor = joblib.load(REGRESOR_FILE)
-        cols_reg = list(regresor.feature_names_in_)
-        ratio_pred = regresor.predict(test[cols_reg])
-        return (ratio_pred < THRESHOLD).astype(int)
-    except Exception:
-        return None
+        raise FileNotFoundError(
+            f"No existe {REGRESOR_FILE}. Ejecuta primero: python -m src.regresion"
+        )
+    regresor = joblib.load(REGRESOR_FILE)
+    ratio_pred = regresor.predict(test[list(regresor.feature_names_in_)])
+    return (ratio_pred < THRESHOLD).astype(int)
+
+
+def _comparison_row(nombre, familia, variables, params, umbral, m, m_val=None) -> dict:
+    return {
+        "modelo": nombre,
+        "familia": familia,
+        "variables": variables,
+        "params": params,
+        "umbral": umbral,
+        "costo_val": np.nan if m_val is None else m_val,
+        **{k: m[k] for k in METRICAS + CONFUSION},
+        "tasa_alertas": m["tasa_alertas"],
+    }
+
+
+def model_name(row: pd.Series) -> str:
+    return f"{row['modelo']} ({row['variables']})"
 
 
 def evaluate_final(
@@ -271,66 +369,60 @@ def evaluate_final(
     val: pd.DataFrame,
     test: pd.DataFrame,
     elegidos: pd.DataFrame,
-) -> tuple[pd.DataFrame, dict[str, np.ndarray], dict[str, Pipeline]]:
-    """Reentrena con train + validacion y mide en test."""
+    costo_dummy_val: float,
+) -> tuple[pd.DataFrame, dict[str, np.ndarray], dict[str, FixedThresholdClassifier]]:
+    """Reentrena con train + validación y mide en test."""
     train_val = pd.concat([train, val])
+    y_test = test[TARGET_CLF].to_numpy()
     rows = []
     preds_test: dict[str, np.ndarray] = {}
-    modelos: dict[str, Pipeline] = {}
+    modelos: dict[str, FixedThresholdClassifier] = {}
 
     # Baseline: Dummy clase mayoritaria.
-    dummy = DummyClassifier(strategy="most_frequent", random_state=RANDOM_STATE)
+    dummy = DummyClassifier(strategy="most_frequent")
     dummy.fit(train_val[["prev5"]], train_val[TARGET_CLF])
     pred_dummy = dummy.predict(test[["prev5"]])
-    m_dummy = _clf_metrics(test[TARGET_CLF].to_numpy(), pred_dummy)
     preds_test[MODEL_LABELS["dummy"]] = pred_dummy
-    rows.append(_comparison_row(MODEL_LABELS["dummy"], "dummy", "-", "-", m_dummy))
-
-    # Alerta del regresor de la Entrega 3.
-    pred_reg = _load_regresor_predictions(test)
-    if pred_reg is not None:
-        m_reg = _clf_metrics(test[TARGET_CLF].to_numpy(), pred_reg)
-        preds_test[MODEL_LABELS["regresion"]] = pred_reg
-        rows.append(
-            _comparison_row(MODEL_LABELS["regresion"], "regresion", "con_clima", "-", m_reg)
+    rows.append(
+        _comparison_row(
+            MODEL_LABELS["dummy"], "dummy", "-", "-", np.nan,
+            _clf_metrics(y_test, pred_dummy), costo_dummy_val,
         )
+    )
 
-    # Clasificadores directos.
+    # Alerta del regresor de la Entrega 3 (ratio predicho < THRESHOLD).
+    pred_reg = _load_regresor_predictions(test)
+    preds_test[MODEL_LABELS["regresion"]] = pred_reg
+    rows.append(
+        _comparison_row(
+            MODEL_LABELS["regresion"], "regresion", "con_clima", "KNN k=300, distance",
+            THRESHOLD, _clf_metrics(y_test, pred_reg),
+        )
+    )
+
+    # Clasificadores directos, con el umbral elegido en validación.
     for _, row in elegidos.iterrows():
         params = _params_from_row(row)
         cols = feature_columns(row["variables"])
-        nombre = f"{row['modelo']} ({row['variables']})"
-        model = build_model(row["familia"], row["variables"], params)
+        nombre = model_name(row)
+        model = with_threshold(build_model(row["familia"], row["variables"], params), row["umbral"])
         model.fit(train_val[cols], train_val[TARGET_CLF])
         pred = model.predict(test[cols])
-        m = _clf_metrics(test[TARGET_CLF].to_numpy(), pred)
         preds_test[nombre] = pred
         modelos[nombre] = model
         rows.append(
-            _comparison_row(nombre, row["familia"], row["variables"], params_label(params), m)
+            _comparison_row(
+                nombre, row["familia"], row["variables"], params_label(params), row["umbral"],
+                _clf_metrics(y_test, pred), row["costo_val"],
+            )
         )
 
     return pd.DataFrame(rows), preds_test, modelos
 
 
-def _comparison_row(nombre, familia, variables, params, m) -> dict:
-    return {
-        "modelo": nombre,
-        "familia": familia,
-        "variables": variables,
-        "params": params,
-        "recall": m["recall"],
-        "precision": m["precision"],
-        "f1": m["f1"],
-        "accuracy": m["accuracy"],
-        "costo": m["costo"],
-        "costo_por_pos": m["costo_por_pos"],
-        "tp": m["tp"],
-        "fp": m["fp"],
-        "fn": m["fn"],
-        "tn": m["tn"],
-        "tasa_alertas": m["tasa_alertas"],
-    }
+def combined_alert(pred_clf: np.ndarray, pred_reg: np.ndarray) -> np.ndarray:
+    """Alerta combinada de la app: alerta si alguno de los dos sistemas alerta."""
+    return np.maximum(pred_clf, pred_reg).astype(int)
 
 
 def metrics_by_group(
@@ -351,19 +443,100 @@ def metrics_by_group(
                     "precision": m["precision"],
                     "f1": m["f1"],
                     "costo": m["costo"],
-                    "tp": m["tp"],
-                    "fp": m["fp"],
-                    "fn": m["fn"],
-                    "tn": m["tn"],
+                    **{k: m[k] for k in CONFUSION},
                 }
             )
     return pd.DataFrame(rows)
 
 
+def error_type(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
+    return np.select(
+        [(y_true == 1) & (y_pred == 1), (y_true == 0) & (y_pred == 1), (y_true == 1) & (y_pred == 0)],
+        ["VP", "FP", "FN"],
+        default="VN",
+    )
+
+
+PERFIL_COLS = [
+    "ratio",
+    "prev5_ceros",
+    "clima_precip_total_mm",
+    "clima_sequia_max_dias",
+    "clima_dias_tmax_30",
+]
+
+
+def error_profile(test: pd.DataFrame, preds: dict[str, np.ndarray]) -> pd.DataFrame:
+    """Perfil medio de los casos según el tipo de resultado (VP, FP, FN, VN)."""
+    rows = []
+    for nombre, pred in preds.items():
+        tmp = test.assign(tipo=error_type(test[TARGET_CLF].to_numpy(), pred))
+        for tipo, g in tmp.groupby("tipo"):
+            rows.append(
+                {
+                    "modelo": nombre,
+                    "tipo": tipo,
+                    "n": len(g),
+                    "ratio_mediana": g["ratio"].median(),
+                    **{f"{c}_media": g[c].mean() for c in PERFIL_COLS if c != "ratio"},
+                    "share_2022": (g["campania_inicio"] == 2022).mean(),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+# Bandas de ratio real para leer qué tan lejos del umbral caen los errores.
+RATIO_BANDAS = [-np.inf, 0.5, 0.75, 0.85, 0.95, 1.05, np.inf]
+RATIO_BANDAS_LABELS = ["< 0,50", "0,50-0,75", "0,75-0,85", "0,85-0,95", "0,95-1,05", ">= 1,05"]
+
+
+def errors_by_ratio(test: pd.DataFrame, preds: dict[str, np.ndarray]) -> pd.DataFrame:
+    """Cantidad de FN y FP según la banda de ratio real."""
+    banda = pd.cut(test["ratio"], RATIO_BANDAS, labels=RATIO_BANDAS_LABELS, right=False)
+    rows = []
+    for nombre, pred in preds.items():
+        tipo = error_type(test[TARGET_CLF].to_numpy(), pred)
+        for b in RATIO_BANDAS_LABELS:
+            mask = (banda == b).to_numpy()
+            if not mask.any():
+                continue
+            rows.append(
+                {
+                    "modelo": nombre,
+                    "banda_ratio": b,
+                    "n": int(mask.sum()),
+                    "alertas": int(pred[mask].sum()),
+                    "fn": int((tipo[mask] == "FN").sum()),
+                    "fp": int((tipo[mask] == "FP").sum()),
+                    "tasa_alerta": float(pred[mask].mean()),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def agreement_table(test: pd.DataFrame, pred_clf: np.ndarray, pred_reg: np.ndarray) -> pd.DataFrame:
+    """Cruce de las alertas de ambos sistemas contra la clase real."""
+    tmp = pd.DataFrame(
+        {
+            "clasificador": np.where(pred_clf == 1, "alerta", "normal"),
+            "regresion": np.where(pred_reg == 1, "alerta", "normal"),
+            "real": test[TARGET_CLF].to_numpy(),
+        }
+    )
+    out = (
+        tmp.groupby(["clasificador", "regresion"])["real"]
+        .agg(n="size", malas_reales="sum")
+        .reset_index()
+    )
+    out["precision"] = out["malas_reales"] / out["n"]
+    return out
+
+
 def prediction_table(
     test: pd.DataFrame,
     pred_clf: np.ndarray,
-    pred_reg: np.ndarray | None,
+    proba_clf: np.ndarray,
+    pred_reg: np.ndarray,
 ) -> pd.DataFrame:
     out = test[
         [
@@ -379,32 +552,41 @@ def prediction_table(
             TARGET_CLF,
         ]
     ].copy()
+    out["proba_clasificador"] = proba_clf
     out["alerta_clasificador"] = pred_clf
-    if pred_reg is not None:
-        out["alerta_regresion"] = pred_reg
-    out["correcto"] = (out["alerta_clasificador"] == out[TARGET_CLF]).astype(int)
+    out["alerta_regresion"] = pred_reg
+    out["tipo_clasificador"] = error_type(out[TARGET_CLF].to_numpy(), pred_clf)
+    out["tipo_regresion"] = error_type(out[TARGET_CLF].to_numpy(), pred_reg)
     return out.reset_index(drop=True)
 
 
-def save_model(model: Pipeline, row: pd.Series, comparacion: pd.DataFrame) -> None:
+def save_model(
+    model: FixedThresholdClassifier, row: pd.Series, comparacion: pd.DataFrame
+) -> None:
     MODELOS_DIR.mkdir(parents=True, exist_ok=True)
     joblib.dump(model, CLASIFICADOR_FILE)
-    nombre = f"{row['modelo']} ({row['variables']})"
-    fila = comparacion[comparacion["modelo"] == nombre].iloc[0]
+    fila = comparacion[comparacion["modelo"] == model_name(row)].iloc[0]
     metadata = {
         "generado_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "modelo": row["modelo"],
         "variables": row["variables"],
         "params": _params_from_row(row),
+        "umbral_decision": float(row["umbral"]),
+        "umbral_teorico": UMBRAL_TEORICO,
         "entrada": feature_columns(row["variables"]),
-        "salida": "mala85 = 1 si la campana se espera mala (ratio predicho < 0,85)",
-        "umbral_alerta": THRESHOLD,
+        "salida": (
+            "mala85 = 1 (alerta) si P(campaña mala) >= umbral_decision; "
+            "campaña mala significa ratio real < 0,85"
+        ),
+        "umbral_ratio": THRESHOLD,
         "costo_fn": COST_FN,
         "costo_fp": COST_FP,
-        "entrenado_con": "train + validacion (campanas 1981/82 a 2018/19)",
+        "entrenado_con": "train + validación (campañas 1981/82 a 2018/19)",
+        "metricas_val": {
+            k: float(row[f"{k}_val"]) for k in ["recall", "precision", "f1", "accuracy", "costo"]
+        },
         "metricas_test": {
-            k: float(fila[k])
-            for k in ["recall", "precision", "f1", "accuracy", "costo"]
+            k: float(fila[k]) for k in ["recall", "precision", "f1", "accuracy", "costo"]
         },
         "semilla": RANDOM_STATE,
         "versiones": {
@@ -426,34 +608,67 @@ def run(verbose: bool = True) -> dict:
 
     busqueda = search(train, val)
     elegidos = select_best(busqueda)
-    comparacion, preds_test, modelos = evaluate_final(train, val, test, elegidos)
+    costo_dummy_val = float(busqueda.loc[busqueda["familia"] == "dummy", "costo_val"].iloc[0])
+    comparacion, preds_test, modelos = evaluate_final(
+        train, val, test, elegidos, costo_dummy_val
+    )
 
     ganador = elegidos.iloc[0]
-    nombre_ganador = f"{ganador['modelo']} ({ganador['variables']})"
+    nombre_ganador = model_name(ganador)
+    modelo_ganador = modelos[nombre_ganador]
+    cols_ganador = feature_columns(ganador["variables"])
+    proba_ganador = modelo_ganador.estimator_.predict_proba(test[cols_ganador])[:, 1]
 
+    pred_clf = preds_test[nombre_ganador]
+    pred_reg = preds_test[MODEL_LABELS["regresion"]]
+    pred_comb = combined_alert(pred_clf, pred_reg)
+    m_comb = _clf_metrics(test[TARGET_CLF].to_numpy(), pred_comb)
+    comparacion = pd.concat(
+        [
+            comparacion,
+            pd.DataFrame(
+                [
+                    _comparison_row(
+                        MODEL_LABELS["combinada"], "combinada", ganador["variables"],
+                        "OR", np.nan, m_comb,
+                    )
+                ]
+            ),
+        ],
+        ignore_index=True,
+    )
+
+    # Análisis de errores: clasificador seleccionado contra la alerta por regresión.
+    sistemas = {nombre_ganador: pred_clf, MODEL_LABELS["regresion"]: pred_reg}
     por_cultivo = metrics_by_group(test, preds_test, "cultivo")
     por_campania = metrics_by_group(test, preds_test, "campania_inicio")
-
-    pred_reg = preds_test.get(MODEL_LABELS["regresion"])
-    predicciones = prediction_table(test, preds_test[nombre_ganador], pred_reg)
+    perfil = error_profile(test, sistemas)
+    por_ratio = errors_by_ratio(test, sistemas)
+    acuerdo = agreement_table(test, pred_clf, pred_reg)
+    predicciones = prediction_table(test, pred_clf, proba_ganador, pred_reg)
 
     CLASIFICACION_BUSQUEDA.parent.mkdir(parents=True, exist_ok=True)
     busqueda.to_csv(CLASIFICACION_BUSQUEDA, index=False, encoding="utf-8")
     comparacion.to_csv(CLASIFICACION_COMPARACION, index=False, encoding="utf-8")
     por_cultivo.to_csv(CLASIFICACION_POR_CULTIVO, index=False, encoding="utf-8")
     por_campania.to_csv(CLASIFICACION_POR_CAMPANIA, index=False, encoding="utf-8")
+    perfil.to_csv(CLASIFICACION_ERRORES_PERFIL, index=False, encoding="utf-8")
+    por_ratio.to_csv(CLASIFICACION_ERRORES_RATIO, index=False, encoding="utf-8")
+    acuerdo.to_csv(CLASIFICACION_ACUERDO, index=False, encoding="utf-8")
     predicciones.to_csv(CLASIFICACION_PREDICCIONES, index=False, encoding="utf-8")
-    save_model(modelos[nombre_ganador], ganador, comparacion)
+    save_model(modelo_ganador, ganador, comparacion)
 
     if verbose:
-        print("Mejor configuracion por familia (validacion, menor costo)")
+        print(f"Costo del Dummy en validación: {costo_dummy_val:.0f}")
+        print("Mejor configuración por familia (validación, menor costo)")
         print(
-            elegidos[["modelo", "variables", "params", "recall", "precision", "costo"]]
-            .to_string(index=False)
+            elegidos[
+                ["modelo", "variables", "params", "umbral", "recall_val", "precision_val", "costo_val"]
+            ].to_string(index=False)
         )
-        print("\nComparacion final (test)")
+        print("\nComparación final (test)")
         print(comparacion.round(4).to_string(index=False))
-        print(f"\nClasificador seleccionado: {nombre_ganador}")
+        print(f"\nClasificador seleccionado: {nombre_ganador}, umbral {ganador['umbral']}")
 
     return {
         "train": train,
@@ -461,19 +676,24 @@ def run(verbose: bool = True) -> dict:
         "test": test,
         "busqueda": busqueda,
         "elegidos": elegidos,
+        "costo_dummy_val": costo_dummy_val,
         "comparacion": comparacion,
         "preds_test": preds_test,
         "modelos": modelos,
         "seleccionado": nombre_ganador,
+        "proba_seleccionado": proba_ganador,
         "por_cultivo": por_cultivo,
         "por_campania": por_campania,
+        "perfil_errores": perfil,
+        "errores_por_ratio": por_ratio,
+        "acuerdo": acuerdo,
         "predicciones": predicciones,
     }
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Entrena y evalua los clasificadores de la Entrega 4."
+        description="Entrena y evalúa los clasificadores de la Entrega 4."
     )
     parser.add_argument("--quiet", action="store_true", help="No imprime tablas.")
     args = parser.parse_args()
