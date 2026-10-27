@@ -1,0 +1,44 @@
+{
+  "generado_utc": "2026-10-27T14:29:03+00:00",
+  "modelo": "KNeighborsClassifier",
+  "variables": "con_clima",
+  "params": {
+    "n_neighbors": 500,
+    "weights": "distance"
+  },
+  "entrada": [
+    "cultivo",
+    "superficie_sembrada",
+    "prev5",
+    "prev5_ceros",
+    "clima_precip_total_mm",
+    "clima_dias_tmax_30",
+    "clima_tmax_media_c",
+    "clima_tmin_media_c",
+    "clima_humedad_media_pct",
+    "clima_sequia_max_dias",
+    "clima_precip_pre_siembra_mm",
+    "clima_dias_helada",
+    "clima_dias_lluvia"
+  ],
+  "salida": "mala85 = 1 si la campana se espera mala (ratio predicho < 0,85)",
+  "umbral_alerta": 0.85,
+  "costo_fn": 2.0,
+  "costo_fp": 1.0,
+  "entrenado_con": "train + validacion (campanas 1981/82 a 2018/19)",
+  "metricas_test": {
+    "recall": 0.07659574468085106,
+    "precision": 0.9473684210526315,
+    "f1": 0.14173228346456693,
+    "accuracy": 0.8021778584392014,
+    "costo": 870.0
+  },
+  "semilla": 42,
+  "versiones": {
+    "python": "3.13.13",
+    "scikit-learn": "1.9.0",
+    "pandas": "3.0.2",
+    "numpy": "2.4.4",
+    "joblib": "1.5.3"
+  }
+}

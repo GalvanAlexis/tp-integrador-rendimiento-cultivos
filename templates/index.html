@@ -1,107 +1,214 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Rendimiento de cultivos | TP Integrador</title>
+  <meta name="description" content="Prediccion del rendimiento de cultivos en partidos bonaerenses con alerta de campana mala.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --verde: #1f5c3a;
-      --verde-claro: #e8f1ea;
-      --tinta: #1c2521;
-      --gris: #5b6660;
-      --borde: #d5ded8;
-      --fondo: #f7faf7;
+      --verde: #166534;
+      --verde-mid: #15803d;
+      --verde-claro: #dcfce7;
+      --tinta: #0f172a;
+      --gris: #475569;
+      --borde: #d1fae5;
+      --fondo: #f0fdf4;
+      --blanco: #ffffff;
+      --rojo: #dc2626;
+      --amarillo: #d97706;
     }
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      margin: 0;
-      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      font-family: "Inter", system-ui, sans-serif;
       background: var(--fondo);
       color: var(--tinta);
-      line-height: 1.55;
+      line-height: 1.6;
     }
-    main {
-      max-width: 880px;
+    header {
+      background: var(--verde);
+      color: var(--blanco);
+      padding: 0 24px;
+    }
+    .header-inner {
+      max-width: 960px;
       margin: 0 auto;
-      padding: 48px 24px 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
     }
-    .etiqueta {
-      display: inline-block;
+    .logo { font-weight: 700; font-size: 15px; letter-spacing: -.02em; }
+    nav a {
+      color: var(--verde-claro);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      margin-left: 20px;
+      transition: color .15s;
+    }
+    nav a:hover { color: var(--blanco); }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+    .hero {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       background: var(--verde-claro);
       color: var(--verde);
       border: 1px solid var(--borde);
       border-radius: 999px;
-      padding: 4px 12px;
+      padding: 4px 14px;
       font-size: 13px;
       font-weight: 600;
-      letter-spacing: .02em;
+    }
+    .badge-dot {
+      width: 7px; height: 7px;
+      background: var(--verde-mid);
+      border-radius: 50%;
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .3; }
     }
     h1 {
-      font-size: clamp(32px, 5vw, 48px);
+      font-size: clamp(30px, 4vw, 48px);
       line-height: 1.1;
-      margin: 18px 0 12px;
       color: var(--verde);
+      font-weight: 700;
     }
-    p { color: var(--gris); font-size: 18px; max-width: 68ch; }
+    .subtitle { color: var(--gris); font-size: 17px; max-width: 60ch; }
+    .cta {
+      display: inline-block;
+      background: var(--verde-mid);
+      color: var(--blanco);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 15px;
+      text-decoration: none;
+      margin-top: 8px;
+      transition: background .15s, transform .1s;
+    }
+    .cta:hover { background: var(--verde); transform: translateY(-1px); }
     .tarjetas {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
       gap: 16px;
-      margin: 32px 0;
+      margin-bottom: 40px;
     }
     .tarjeta {
-      background: #fff;
+      background: var(--blanco);
       border: 1px solid var(--borde);
       border-radius: 14px;
-      padding: 18px 20px;
+      padding: 22px 24px;
+      transition: box-shadow .2s;
     }
-    .tarjeta h2 {
-      font-size: 15px;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      color: var(--verde);
-      margin: 0 0 8px;
+    .tarjeta:hover { box-shadow: 0 4px 20px rgba(22,101,52,.08); }
+    .tarjeta-icon { font-size: 24px; margin-bottom: 10px; }
+    .tarjeta h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--verde); margin-bottom: 8px; }
+    .tarjeta p { font-size: 14px; color: var(--gris); }
+    .estado {
+      background: var(--blanco);
+      border: 1px solid var(--borde);
+      border-radius: 14px;
+      padding: 20px 24px;
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
     }
-    .tarjeta p { font-size: 15px; margin: 0; }
-    .nota {
-      border-left: 4px solid var(--verde);
-      background: #fff;
-      padding: 14px 18px;
-      border-radius: 0 10px 10px 0;
-      font-size: 15px;
+    .estado-item { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .dot-ok { background: #16a34a; }
+    .dot-err { background: #dc2626; }
+    footer {
+      text-align: center;
       color: var(--gris);
+      font-size: 13px;
+      padding: 32px 24px;
+      border-top: 1px solid var(--borde);
     }
   </style>
 </head>
 <body>
+  <header>
+    <div class="header-inner">
+      <span class="logo">Rendimiento de cultivos</span>
+      <nav>
+        <a href="/">Inicio</a>
+        <a href="/predecir">Predecir</a>
+        <a href="/health">Health</a>
+      </nav>
+    </div>
+  </header>
+
   <main>
-    <span class="etiqueta">Entrega 2 · Datos y baselines</span>
-    <h1>Rendimiento de cultivos por partido</h1>
-    <p>
-      Predicción del rendimiento de maíz, trigo, girasol y soja en partidos de la
-      Provincia de Buenos Aires, con una alerta de campaña mala antes de la cosecha.
-    </p>
+    <div class="hero">
+      <div>
+        <span class="badge">
+          <span class="badge-dot"></span>
+          Entrega 4 &middot; Clasificacion y app
+        </span>
+      </div>
+      <h1>Rendimiento de cultivos<br>por partido</h1>
+      <p class="subtitle">
+        Prediccion del rendimiento de maiz, trigo, girasol y soja en partidos de la
+        Provincia de Buenos Aires, con alerta de campana mala antes de la cosecha.
+      </p>
+      <a href="/predecir" class="cta">Hacer una prediccion &rarr;</a>
+    </div>
 
     <div class="tarjetas">
       <div class="tarjeta">
-        <h2>Variable numérica</h2>
-        <p>Rendimiento en kg/ha, expresado como ratio sobre el promedio de las cinco campañas anteriores.</p>
+        <div class="tarjeta-icon">📊</div>
+        <h2>Variable numerica</h2>
+        <p>Rendimiento en kg/ha, expresado como ratio sobre el promedio de las cinco campanas anteriores.</p>
       </div>
       <div class="tarjeta">
+        <div class="tarjeta-icon">🚨</div>
         <h2>Alerta</h2>
-        <p>Campaña mala si el ratio es menor a 0,85. Se comparan clasificador directo y regresión más umbral.</p>
+        <p>Campana mala si el ratio es menor a 0,85. Se comparan clasificador directo y regresion mas umbral.</p>
       </div>
       <div class="tarjeta">
+        <div class="tarjeta-icon">☁️</div>
+        <h2>Variables climaticas</h2>
+        <p>Precipitacion, temperatura, humedad y variables derivadas de NASA POWER, ventana por cultivo.</p>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-icon">🗓️</div>
         <h2>Datos</h2>
-        <p>Estimaciones Agrícolas de la Provincia de Buenos Aires, CC BY 4.0, y clima diario de NASA POWER.</p>
+        <p>Estimaciones Agricolas PBA (CC BY 4.0) y clima diario NASA POWER. Campanas 1981/82 a 2024/25.</p>
       </div>
     </div>
 
-    <div class="nota">
-      La aplicación de predicción se completa en la Clase 4. Esta versión deja
-      disponible el esqueleto Flask y el endpoint <code>/health</code>.
+    <div class="estado">
+      <div class="estado-item">
+        <span class="dot {{ 'dot-ok' if reg_ok else 'dot-err' }}"></span>
+        Regresor: {{ 'cargado' if reg_ok else 'no encontrado' }}
+      </div>
+      <div class="estado-item">
+        <span class="dot {{ 'dot-ok' if clf_ok else 'dot-err' }}"></span>
+        Clasificador: {{ 'cargado' if clf_ok else 'no encontrado' }}
+      </div>
     </div>
   </main>
+
+  <footer>
+    Francisco Calahorra &middot; Federico Valdes &middot; Alexis Galvan &mdash;
+    Aprendizaje Automatico 2026 &middot;
+    Datos: Estimaciones Agricolas PBA (CC BY 4.0)
+  </footer>
 </body>
 </html>
