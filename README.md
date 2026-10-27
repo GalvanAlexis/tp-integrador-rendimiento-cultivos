@@ -80,6 +80,7 @@ proyecto/
 │   ├── clasificador.joblib
 │   └── clasificador_metadata.json
 ├── templates/
+│   ├── base.html
 │   ├── index.html
 │   └── predecir.html
 ├── public/

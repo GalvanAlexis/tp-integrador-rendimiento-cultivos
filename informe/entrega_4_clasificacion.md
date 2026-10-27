@@ -246,25 +246,34 @@ La consigna pide comparar el clasificador directo con la alerta obtenida aplican
 
 ## 7. Aplicación Flask
 
-La app carga los dos pipelines guardados al arrancar y solo ejecuta `predict`; no entrena.
+La app carga los dos pipelines guardados al arrancar y solo ejecuta `predict`; no entrena. Está pensada para que un usuario sin formación técnica entienda que hay **dos modelos que responden preguntas distintas**:
+
+| Modelo | Pregunta | Respuesta en la app |
+|---|---|---|
+| Regresión (KNN) | ¿Cuánto va a rendir? | Rendimiento en kg/ha y porcentaje de lo habitual, sobre una escala con el umbral de 0,85 |
+| Clasificación (árbol) | ¿Será una campaña mala? | Riesgo en porcentaje, sobre una barra con el umbral de alerta (65%) |
 
 | Endpoint | Método | Descripción |
 |---|---|---|
-| `/` | GET | Página principal con el estado de los modelos |
-| `/predecir` | GET | Formulario; con `partido`, `cultivo` y `anio` autocompleta desde el histórico |
-| `/predecir` | POST | Ejecuta la predicción y muestra el resultado |
+| `/` | GET | Inicio: qué es una campaña mala, los dos modelos y cómo leer el resultado |
+| `/predecir` | GET | Formulario. Con `partido`, `cultivo` y `anio` lo completa desde el histórico; con `predecir=1` además predice (lo usa el ejemplo del inicio) |
+| `/predecir` | POST | Valida el formulario, ejecuta los dos modelos y muestra el resultado |
 | `/health` | GET | JSON con el estado de la app y de los modelos |
 | `/api/datos` | GET | JSON con partidos, cultivos y campañas disponibles |
+| `/api/historico` | GET | JSON con los valores históricos de una campaña (lo usa el autocompletado) |
 
 **Funcionamiento:**
 
-1. El usuario elige partido, cultivo y campaña. Con "Autocompletar desde histórico", la app completa `prev5`, `prev5_ceros`, la superficie sembrada y las nueve variables climáticas.
-2. El usuario puede editar los valores para simular escenarios (por ejemplo, menos lluvia).
-3. Al enviar, la app ejecuta los dos modelos y muestra:
-   - **La alerta principal, que es la del clasificador**, con la probabilidad estimada de campaña mala y el umbral a partir del cual alerta (65%).
-   - El nivel de la alerta según el acuerdo con la regresión: **alta confianza** si ambos alertan, **alerta** si solo alerta el clasificador y **señal débil** si solo alerta la regresión (sección 6.5).
-   - El ratio predicho por la regresión y el rendimiento estimado en kg/ha.
-   - El valor real, si la campaña está en el histórico.
+1. El usuario elige partido, cultivo y campaña, y la app completa sola la superficie, el promedio de las 5 campañas anteriores y las nueve variables climáticas. Las campañas se agrupan en **prueba** (2019/20 en adelante, que los modelos no vieron) y **usadas para entrenar**, cuyo resultado es optimista.
+2. El clima va en un bloque plegable. Si el usuario cambia un valor para simular un escenario, el campo se marca y se puede restaurar el dato real.
+3. Al enviar, la app muestra:
+   - **Un veredicto** que combina los dos modelos según la tabla de acuerdo de la sección 6.5: alerta de alta confianza, alerta, sin alerta con señal débil o sin alerta. Incluye qué porcentaje de los casos con ese resultado fueron campañas malas en test.
+   - **Un panel por modelo**, cada uno con su color, su pregunta y su escala.
+   - Una explicación de por qué los modelos pueden no coincidir, cuando no coinciden.
+   - **Lo que pasó realmente**, si la campaña está en el histórico, con el ratio real sobre la misma escala y si cada modelo acertó. Si el escenario fue modificado, se muestran los cambios y no se compara.
+4. Si falta un dato o un valor está fuera de rango, la app lo informa en lenguaje claro en lugar de fallar.
+
+Las métricas que muestra la app (detecciones, falsas alarmas, tabla de acuerdo) se leen de los CSV de resultados, así que se actualizan si se vuelve a entrenar.
 
 **Arranque local:**
 
@@ -272,7 +281,7 @@ La app carga los dos pipelines guardados al arrancar y solo ejecuta `predict`; n
 python -m flask --app app run --debug
 ```
 
-Se verificó con el cliente de prueba de Flask. Por ejemplo, para soja en Pergamino 2022/23 (ratio real 0,52), la app da P(campaña mala) = 100% y alerta. Para trigo en Tandil 2023/24 (ratio real 1,23), da 12% y no alerta.
+`tests/test_app.py` verifica las rutas, la validación, el escenario modificado y el enlace de ejemplo. Por ejemplo, para soja en Pergamino 2022/23 (ratio real 0,52), la app da riesgo 100% y alerta de alta confianza. Para trigo en Tandil 2023/24 (ratio real 1,22), da riesgo 12% y no alerta.
 
 ## 8. Modelos guardados
 
