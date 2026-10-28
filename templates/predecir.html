@@ -126,6 +126,9 @@
     .bloque { background: var(--blanco); border: 1px solid var(--linea); border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; font-size: 14px; }
     .bloque h3 { font-size: 14px; margin-bottom: 8px; }
     .bloque ul { margin-left: 18px; }
+    .bloque-limitaciones { border-color: var(--amber-borde); background: var(--amber-bg); }
+    .bloque-limitaciones ul { margin-top: 4px; }
+    .bloque-limitaciones li { margin-bottom: 6px; }
     .aciertos { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
     .acierto { border-radius: 999px; padding: 3px 12px; font-size: 13px; font-weight: 600; }
     .acierto.ok { background: var(--verde-claro); color: var(--verde); }
@@ -301,6 +304,18 @@
         encontró el árbol de decisión. Sirve para comparar casos, no como una probabilidad exacta.
       </p>
     {% endif %}
+
+      <div class="bloque bloque-limitaciones">
+        <h3>Limitaciones de esta herramienta</h3>
+        <ul>
+          <li><strong>No es una garantía.</strong> Fuera de sequías fuertes como la de 2022/23, el clasificador detecta solo una parte chica de las campañas malas.</li>
+          <li><strong>Girasol:</strong> con estas variables la alerta no es confiable; conviene leerla con mucha cautela.</li>
+          <li><strong>La probabilidad no está calibrada:</strong> sirve para ordenar casos, no como una probabilidad exacta.</li>
+          <li><strong>No cubre todas las causas de pérdida:</strong> granizo, plagas, anegamientos puntuales o decisiones de precio quedan fuera del modelo.</li>
+          <li><strong>Campañas futuras:</strong> el autocompletado llega hasta 2024/25; para años posteriores hay que cargar el clima a mano.</li>
+        </ul>
+        <p class="hint">Usala como una señal más junto con el criterio agronómico y la información de campo, no como la única fuente para decidir.</p>
+      </div>
     </div>
 
     <form method="POST" action="/predecir#resultado" id="form-pred" novalidate>

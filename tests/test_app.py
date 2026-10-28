@@ -78,3 +78,15 @@ def test_enlace_de_ejemplo_predice(client):
     html = client.get("/predecir", query_string={**EJEMPLO, "predecir": "1"}).get_data(as_text=True)
     assert "Alerta de alta confianza" in html
     assert "Campaña de prueba" in html
+
+
+def test_advertencia_de_limitaciones(client):
+    """La app debe advertir sus límites, como pide la consigna."""
+    inicio = client.get("/").get_data(as_text=True)
+    assert "Cuándo no conviene usarla" in inicio
+    assert "nunca como la única fuente" in inicio
+
+    formulario = client.get("/predecir").get_data(as_text=True)
+    assert "Limitaciones de esta herramienta" in formulario
+    assert "No es una garantía" in formulario
+    assert "no como la única fuente" in formulario

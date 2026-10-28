@@ -61,6 +61,8 @@
     .no { color: var(--verde); font-weight: 600; }
     .nota { font-size: 13px; color: var(--gris); margin-top: 12px; }
     .tabla-scroll { overflow-x: auto; }
+    .limites { margin-left: 18px; color: var(--gris); font-size: 14px; }
+    .limites li { margin-bottom: 8px; }
     @media (max-width: 700px) {
       .modelos { grid-template-columns: 1fr; }
     }
@@ -202,5 +204,22 @@
         clima diario de NASA POWER: lluvia, temperatura, humedad, sequía y heladas, medidos en la
         ventana de cada cultivo, desde la siembra hasta antes de la cosecha.
       </p>
+    </section>
+
+    <section>
+      <h2>Cuándo no conviene usarla</h2>
+      <p class="intro">
+        La herramienta es una señal, no un pronóstico garantizado. Estos son los límites que hay
+        que tener presentes antes de tomar una decisión.
+      </p>
+      <div class="card">
+        <ul class="limites">
+          <li><strong>Fuera de sequías fuertes detecta poco.</strong> La campaña 2022/23 concentra la mayoría de los aciertos; en años normales el recall es bajo.</li>
+          <li><strong>Girasol no tiene una alerta confiable</strong> con estas variables. En maíz, trigo y soja el resultado es más razonable.</li>
+          <li><strong>La probabilidad no está calibrada.</strong> Sirve para ordenar casos, no para leerla como un porcentaje exacto de riesgo.</li>
+          <li><strong>No cubre todas las causas de pérdida.</strong> Granizo, plagas, anegamientos puntuales o decisiones de precio quedan fuera del modelo.</li>
+          <li><strong>No reemplaza al asesor.</strong> Usala como una señal más junto con el criterio agronómico y la información de campo, nunca como la única fuente.</li>
+        </ul>
+      </div>
     </section>
 {% endblock %}
