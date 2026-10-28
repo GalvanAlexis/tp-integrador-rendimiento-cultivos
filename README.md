@@ -4,7 +4,7 @@ Trabajo Práctico Integrador de **Aprendizaje Automático**.
 
 **Repositorio:** https://github.com/GalvanAlexis/tp-integrador-rendimiento-cultivos
 
-**Estado:** Entrega 5. La app Flask está publicada en Vercel y el informe final está en [informe/informe_final.pdf](informe/informe_final.pdf).
+**Estado:** Entrega 5. La app Flask está publicada en Vercel, el informe final está en [informe/informe_final.pdf](informe/informe_final.pdf) y la presentación en [presentacion/presentacion.html](presentacion/presentacion.html).
 
 ---
 
@@ -116,6 +116,13 @@ proyecto/
 │   ├── construir_pdf.py
 │   ├── bitacora.md
 │   └── figuras/
+├── presentacion/
+│   ├── plantilla.html
+│   ├── presentacion.html
+│   ├── presentacion.pdf
+│   ├── figuras_presentacion.py
+│   ├── construir_presentacion.py
+│   └── figuras/
 └── tests/
 ```
 
@@ -160,6 +167,17 @@ python informe/construir_pdf.py
 ```
 
 El informe se escribe en `informe/informe_final.md` y el script lo convierte a `informe/informe_final.pdf` con Chrome en modo headless. Requiere `markdown-it-py`, que está en `requirements-dev.txt`.
+
+Presentación:
+
+```bash
+python presentacion/figuras_presentacion.py
+python presentacion/construir_presentacion.py --pdf
+```
+
+`presentacion/plantilla.html` es el diseño de las 14 diapositivas y `construir_presentacion.py` arma `presentacion/presentacion.html` con las figuras incrustadas, así el archivo se abre con doble clic y funciona sin servidor. `--pdf` genera además `presentacion/presentacion.pdf`. Las figuras de la presentación se regeneran desde `datos/procesado/` con tipografía grande, porque las del informe están pensadas para leerse de cerca.
+
+Controles: flechas para navegar, `F` pantalla completa, `S` muestra las notas del orador y `#7` en la URL abre la diapositiva 7.
 
 Tests:
 
