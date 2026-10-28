@@ -4,7 +4,7 @@ Trabajo Práctico Integrador de **Aprendizaje Automático**.
 
 **Repositorio:** https://github.com/GalvanAlexis/tp-integrador-rendimiento-cultivos
 
-**Estado:** Entrega 5 en curso. App Flask publicada en Vercel; clasificadores comparados con validación y guardados en `modelos/`.
+**Estado:** Entrega 5. La app Flask está publicada en Vercel y el informe final está en [informe/informe_final.pdf](informe/informe_final.pdf).
 
 ---
 
@@ -111,6 +111,9 @@ proyecto/
 │   ├── entrega_2_preparacion_y_baselines.md
 │   ├── entrega_3_regresion.md
 │   ├── entrega_4_clasificacion.md
+│   ├── informe_final.md
+│   ├── informe_final.pdf
+│   ├── construir_pdf.py
 │   ├── bitacora.md
 │   └── figuras/
 └── tests/
@@ -149,6 +152,14 @@ python -m nbconvert --to notebook --execute --inplace notebooks/entrenamiento.ip
 ```
 
 `notebooks/entrenamiento.ipynb` recorre las cinco etapas en un solo archivo, desde la descarga hasta la predicción con los modelos guardados. Es el que se entrega ejecutado desde cero.
+
+Informe final:
+
+```bash
+python informe/construir_pdf.py
+```
+
+El informe se escribe en `informe/informe_final.md` y el script lo convierte a `informe/informe_final.pdf` con Chrome en modo headless. Requiere `markdown-it-py`, que está en `requirements-dev.txt`.
 
 Tests:
 

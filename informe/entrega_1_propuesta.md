@@ -1,7 +1,5 @@
 # Propuesta de proyecto - TP Integrador de Aprendizaje Automático (Entrega 1)
 
-Oct 13, 2026 · @Francisco Calahorra
-
 ## Datos del trabajo
 
 | Dato | A completar |
@@ -9,7 +7,7 @@ Oct 13, 2026 · @Francisco Calahorra
 | Integrantes | Francisco Calahorra, Federico Valdés, Alexis Galván |
 | Curso | Aprendizaje Automático 2026 |
 | Fecha de inicio | 13/10/2026 |
-| Fecha de entrega final | dd/mm/aaaa |
+| Fecha de entrega | 13/10/2026 |
 
 ## Resumen de las alternativas
 
