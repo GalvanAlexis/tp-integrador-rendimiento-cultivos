@@ -81,7 +81,7 @@ Cada configuración se probó con y sin clima: 136 en total. La semilla del árb
 
 ![Error del árbol según la profundidad](figuras/arbol_profundidad.png)
 
-El error de train baja siempre al aumentar la profundidad. El de validación baja hasta profundidad 4 (MAE 0,163) y después sube: desde profundidad 8, el árbol memoriza campañas de entrenamiento que no se repiten. Sin límite de profundidad y con hojas de una fila, el MAE de validación llega a 0,262, peor que cualquier baseline. El tamaño mínimo de hoja regulariza: con 50 filas por hoja, los árboles profundos se degradan mucho menos.
+El error de train baja siempre al aumentar la profundidad. El de validación baja hasta profundidad 4 (MAE 0,163) y después sube: desde profundidad 8, el árbol memoriza campañas de entrenamiento que no se repiten. Sin límite de profundidad y con hojas de una fila, el MAE de validación llega a 0,264, peor que cualquier baseline. El tamaño mínimo de hoja regulariza: con 50 filas por hoja, los árboles profundos se degradan mucho menos.
 
 ### 3.2 Cantidad de vecinos
 
@@ -101,12 +101,12 @@ Con pesos por distancia, el MAE de train es casi 0: cada fila de train es su pro
 |---|---|---|---:|---:|
 | **KNN** | **con clima** | **k = 300, distance** | 0,000 | **0,1599** |
 | Árbol | sin clima | depth = 4, leaf = 1 | 0,2015 | 0,1617 |
-| Árbol | con clima | depth = 4, leaf = 50 | 0,1963 | 0,1634 |
+| Árbol | con clima | depth = 4, leaf = 1 | 0,1937 | 0,1625 |
 | KNN | sin clima | k = 800, uniform | 0,2055 | 0,1637 |
 | Dummy por cultivo | — | — | — | 0,1645 |
 | Promedio 5 campañas | — | — | — | 0,1758 |
 
-Las cuatro configuraciones superan a los dos baselines en validación. El clima mejora a KNN (0,1637 → 0,1599) y empeora levemente al árbol (0,1617 → 0,1634).
+Las cuatro configuraciones superan a los dos baselines en validación. El clima mejora a KNN (0,1637 → 0,1599) y empeora levemente al árbol (0,1617 → 0,1625).
 
 ### 3.4 Alternativas evaluadas y descartadas
 
@@ -120,8 +120,8 @@ Se evaluaron dos mejoras con motivación previa, **solo con validación**:
 | **KNN** | **1981** | **absoluto** | **0,1599** |
 | KNN | 1990 | absoluto | 0,1601 |
 | KNN | 1981 | anomalías | 0,1623 |
+| Árbol | 1981 | absoluto | 0,1625 |
 | Árbol | 1990 | anomalías | 0,1628 |
-| Árbol | 1981 | absoluto | 0,1634 |
 | KNN | 2000 | absoluto | 0,1637 |
 
 Ninguna alternativa supera a la configuración original. Se descartan.
@@ -138,7 +138,7 @@ Modelos reentrenados con train + validación y evaluados en test.
 | Promedio 5 campañas | 0,1758 | **0,1538** | **0,2172** | **−0,035** | **626** | 981 | 0,793 |
 | **KNN con clima (seleccionado)** | **0,1599** | 0,1588 | 0,2233 | −0,094 | 637 | **938** | **0,811** |
 | Árbol sin clima | 0,1617 | 0,1722 | 0,2606 | −0,490 | 713 | 1.123 | 0,729 |
-| Árbol con clima | 0,1634 | 0,1593 | 0,2339 | −0,200 | 640 | 951 | 0,806 |
+| Árbol con clima | 0,1625 | 0,1632 | 0,2462 | −0,331 | 658 | 955 | 0,804 |
 | KNN sin clima | 0,1637 | 0,1639 | 0,2325 | −0,186 | 675 | 1.059 | 0,759 |
 
 Las columnas sin unidad están en ratio.
@@ -148,7 +148,7 @@ Las columnas sin unidad están en ratio.
 **Lectura:**
 
 - El orden entre modelos cambia de validación a test. El promedio de 5 campañas pasa de ser el peor en validación al mejor en MAE de test.
-- Los dos modelos con clima mantienen o mejoran su MAE de validación a test. El árbol sin clima y el Dummy son los que más empeoran (+0,011 y +0,012).
+- El KNN con clima mejora al pasar a test (0,1599 → 0,1588); el árbol con clima queda casi igual (0,1625 → 0,1632). El árbol sin clima y el Dummy son los que más empeoran (+0,011 y +0,012).
 - El KNN tiene el menor RMSE y el mayor R² en kg/ha: comete menos errores grandes en kg/ha, pero un poco más de errores chicos.
 - El **R² del ratio es negativo** en test para todos los modelos. El R² compara contra la media del test (0,96), que ningún modelo conocía. No significa que el modelo no aprenda nada: refleja el cambio de nivel entre períodos.
 

@@ -22,16 +22,19 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def download(force: bool = False) -> Path:
+def download(force: bool = False, verbose: bool = True) -> Path:
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     if RAW_FILE.exists() and not force:
-        print(f"Archivo existente: {RAW_FILE}")
+        if verbose:
+            print(f"Archivo existente: {RAW_FILE}")
     else:
-        print(f"Descargando: {SOURCE_URL}")
+        if verbose:
+            print(f"Descargando: {SOURCE_URL}")
         response = requests.get(SOURCE_URL, timeout=180)
         response.raise_for_status()
         RAW_FILE.write_bytes(response.content)
-        print(f"Guardado en: {RAW_FILE}")
+        if verbose:
+            print(f"Guardado en: {RAW_FILE}")
 
     df = pd.read_csv(RAW_FILE, encoding="utf-8")
     metadata = {
@@ -47,7 +50,8 @@ def download(force: bool = False) -> Path:
     }
     meta_path = RAW_DIR / "metadata.json"
     meta_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps(metadata, ensure_ascii=False, indent=2))
+    if verbose:
+        print(json.dumps(metadata, ensure_ascii=False, indent=2))
     return RAW_FILE
 
 

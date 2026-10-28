@@ -91,7 +91,8 @@ proyecto/
 ├── notebooks/
 │   ├── 02_preparacion_y_baselines.ipynb
 │   ├── 03_regresion.ipynb
-│   └── 04_clasificacion.ipynb
+│   ├── 04_clasificacion.ipynb
+│   └── entrenamiento.ipynb
 ├── src/
 │   ├── config.py
 │   ├── descargar_datos.py
@@ -144,7 +145,10 @@ Notebooks:
 python -m nbconvert --to notebook --execute --inplace notebooks/02_preparacion_y_baselines.ipynb
 python -m nbconvert --to notebook --execute --inplace notebooks/03_regresion.ipynb
 python -m nbconvert --to notebook --execute --inplace notebooks/04_clasificacion.ipynb
+python -m nbconvert --to notebook --execute --inplace notebooks/entrenamiento.ipynb
 ```
+
+`notebooks/entrenamiento.ipynb` recorre las cinco etapas en un solo archivo, desde la descarga hasta la predicción con los modelos guardados. Es el que se entrega ejecutado desde cero.
 
 Tests:
 
