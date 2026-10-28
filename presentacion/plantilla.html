@@ -1,0 +1,1095 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>¿Se viene una campaña mala? — TP Integrador de Aprendizaje Automático</title>
+<style>
+  :root {
+    --verde: #14342b;
+    --verde2: #2a4d3f;
+    --naranja: #eb6834;
+    --gris: #6b6a65;
+    --tinta: #1c1c1c;
+    --fondo: #fbfaf8;
+    --linea: #e4e3df;
+    --suave: #f2f1ee;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #101211;
+    font-family: "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color: var(--tinta);
+    overflow: hidden;
+  }
+
+  #stage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1280px;
+    height: 720px;
+    transform-origin: center center;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    padding: 52px 68px 58px;
+    background: var(--fondo);
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 180ms ease;
+    overflow: hidden;
+  }
+
+  .slide.active { opacity: 1; visibility: visible; }
+
+  /* --- Tipografía --- */
+  h1 {
+    font-size: 58px;
+    line-height: 1.08;
+    letter-spacing: -1.2px;
+    color: var(--verde);
+    margin: 0 0 18px;
+    font-weight: 700;
+  }
+
+  h2 {
+    font-size: 38px;
+    line-height: 1.15;
+    letter-spacing: -0.6px;
+    color: var(--verde);
+    margin: 0 0 26px;
+    font-weight: 700;
+  }
+
+  h3 {
+    font-size: 23px;
+    margin: 0 0 10px;
+    color: var(--verde2);
+    font-weight: 600;
+  }
+
+  p, li {
+    font-size: 24px;
+    line-height: 1.42;
+    margin: 0 0 12px;
+  }
+
+  ul { margin: 0; padding-left: 26px; }
+  li { margin-bottom: 10px; }
+  li::marker { color: var(--naranja); }
+  strong { color: var(--verde); }
+  em { color: var(--gris); font-style: normal; }
+
+  .kicker {
+    font-size: 17px;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    color: var(--naranja);
+    font-weight: 700;
+    margin: 0 0 14px;
+  }
+
+  .sub {
+    font-size: 26px;
+    line-height: 1.35;
+    color: var(--gris);
+    margin: 0;
+  }
+
+  .chico { font-size: 19px; line-height: 1.4; color: var(--gris); }
+  .nota { font-size: 18px; color: var(--gris); margin-top: 14px; line-height: 1.35; }
+  .nota strong { color: var(--verde2); }
+
+  /* --- Estructura --- */
+  .cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 44px;
+    align-items: start;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .cols.ancho-izq { grid-template-columns: 1.15fr 0.85fr; }
+  .cols.parejo { align-items: start; padding-top: 14px; }
+
+  .cuerpo { flex: 1; min-height: 0; }
+
+  .figura {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+  }
+
+  .figura img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  .pista {
+    font-size: 16px;
+    color: var(--gris);
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  /* --- Tarjetas --- */
+  .tarjetas {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 6px;
+  }
+
+  .tarjeta {
+    background: #fff;
+    border: 1px solid var(--linea);
+    border-radius: 10px;
+    padding: 22px 22px 18px;
+  }
+
+  .tarjeta .rotulo {
+    font-size: 15px;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--gris);
+    margin-bottom: 8px;
+  }
+
+  .tarjeta .valor {
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--verde);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .tarjeta .valor.naranja { color: var(--naranja); }
+  .tarjeta .detalle { font-size: 18px; color: var(--gris); line-height: 1.35; }
+
+  .destacado {
+    background: #fff;
+    border-left: 5px solid var(--naranja);
+    padding: 20px 26px;
+    font-size: 25px;
+    line-height: 1.4;
+    color: var(--verde);
+    margin: 22px 0 0;
+  }
+
+  /* --- Tablas --- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 21px;
+    line-height: 1.25;
+    margin: 8px 0 4px;
+  }
+
+  th, td {
+    border-bottom: 1px solid var(--linea);
+    padding: 11px 12px;
+    text-align: left;
+  }
+
+  th {
+    font-size: 16px;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    color: var(--gris);
+    font-weight: 600;
+    border-bottom: 2px solid var(--verde);
+    padding-bottom: 9px;
+  }
+
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.destaca td { background: #fff7f2; font-weight: 600; color: var(--verde); }
+  tr.suave td { color: var(--gris); }
+
+  /* --- Portada --- */
+  .portada { justify-content: center; padding: 0 90px; }
+  .portada h1 { font-size: 76px; letter-spacing: -1.8px; max-width: 1000px; }
+  .portada .sub { font-size: 30px; max-width: 900px; margin-bottom: 46px; }
+  .portada .autores { font-size: 24px; color: var(--verde2); font-weight: 600; }
+  .portada .url {
+    display: inline-block;
+    margin-top: 30px;
+    font-size: 21px;
+    color: var(--gris);
+    border-top: 1px solid var(--linea);
+    padding-top: 16px;
+  }
+
+  /* --- Cierre --- */
+  .cierre {
+    margin-top: auto;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    border-top: 1px solid var(--linea);
+    padding-top: 20px;
+  }
+
+  .cierre p {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--verde);
+  }
+
+  .cierre span { font-size: 19px; color: var(--gris); }
+
+  .tres {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+    margin-top: 10px;
+  }
+
+  .tres .punto {
+    background: #fff;
+    border-top: 4px solid var(--naranja);
+    border-radius: 4px;
+    padding: 24px 22px;
+    font-size: 21px;
+    line-height: 1.4;
+  }
+
+  .tres .punto span {
+    display: block;
+    font-size: 15px;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--gris);
+    margin-bottom: 10px;
+  }
+
+  /* --- Maqueta de la app --- */
+  .app {
+    background: #fff;
+    border: 1px solid var(--linea);
+    border-radius: 12px;
+    padding: 24px 26px;
+    box-shadow: 0 2px 10px rgba(20, 52, 43, 0.06);
+  }
+
+  .app .veredicto {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .app .badge {
+    background: var(--naranja);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding: 7px 13px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .app .badge.calma { background: var(--verde2); }
+  .app .veredicto p { margin: 0; font-size: 22px; font-weight: 600; color: var(--verde); }
+
+  .app .fila { margin-bottom: 18px; }
+  .app .fila .etiqueta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 17px;
+    color: var(--gris);
+    margin-bottom: 7px;
+  }
+  .app .fila .etiqueta b { color: var(--verde); font-size: 19px; }
+
+  .barra {
+    position: relative;
+    height: 14px;
+    background: var(--suave);
+    border-radius: 999px;
+  }
+
+  .barra .relleno {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: 999px;
+    background: var(--naranja);
+  }
+
+  .barra .relleno.verde { background: var(--verde2); }
+
+  .barra .marca {
+    position: absolute;
+    top: -5px;
+    bottom: -5px;
+    width: 2px;
+    background: var(--tinta);
+    opacity: 0.45;
+  }
+
+  /* --- Escala del ratio --- */  .escala { margin-top: 14px; }
+
+  .escala-barra {
+    display: flex;
+    height: 52px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--linea);
+  }
+
+  .escala-zona {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .escala-zona.mala { background: #fbe3d7; color: #a63f13; }
+  .escala-zona.normal { background: #e6efe9; color: var(--verde2); }
+
+  .escala-marcas {
+    position: relative;
+    height: 24px;
+    font-size: 17px;
+    color: var(--gris);
+    margin-top: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .escala-marcas span { position: absolute; top: 0; }
+  .escala-marcas span:first-child { left: 0; }
+  .escala-marcas span:last-child { right: 0; }
+
+  .escala-marcas .marca-corte {
+    left: 30%;
+    transform: translateX(-50%);
+    color: var(--naranja);
+    font-weight: 700;
+  }
+
+  /* --- Costos --- */
+  .costos {
+    margin-top: 18px;
+    display: grid;
+    gap: 12px;
+  }
+
+  .costo {
+    display: grid;
+    grid-template-columns: 230px 1fr 70px;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .costo-nombre { font-size: 19px; color: var(--gris); }
+  .costo-valor {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--verde);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .barra .relleno.gris { background: #c3c2bc; }
+
+  /* --- HUD --- */
+  #hud {
+    position: fixed;
+    right: 18px;
+    bottom: 14px;
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.55);
+    font-variant-numeric: tabular-nums;
+    user-select: none;
+  }
+
+  #progreso {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    background: var(--naranja);
+    width: 0;
+    transition: width 180ms ease;
+  }
+
+  #ayuda {
+    position: fixed;
+    left: 18px;
+    bottom: 12px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.4);
+    user-select: none;
+  }
+
+  .notes {
+    display: none;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: 34vh;
+    overflow: auto;
+    background: rgba(12, 14, 13, 0.96);
+    color: #e8e6e1;
+    padding: 18px 24px;
+    font-size: 15px;
+    line-height: 1.5;
+    border-top: 2px solid var(--naranja);
+    z-index: 20;
+  }
+
+  .notes b { color: #ffb08c; }
+  .notes ul { padding-left: 20px; }
+  .notes li { font-size: 15px; margin-bottom: 6px; }
+
+  body.notas .slide.active .notes { display: block; }
+
+  /* --- Impresión: una diapositiva por página A4 horizontal --- */
+  @media print {
+    @page { size: 1280px 720px; margin: 0; }
+
+    html, body { background: #fff; overflow: visible; height: auto; }
+
+    #stage {
+      position: static;
+      width: auto;
+      height: auto;
+      transform: none !important;
+    }
+
+    .slide {
+      position: relative;
+      opacity: 1 !important;
+      visibility: visible !important;
+      width: 1280px;
+      height: 720px;
+      break-after: page;
+      page-break-after: always;
+      transition: none;
+    }
+
+    .slide:last-of-type { break-after: auto; page-break-after: auto; }
+
+    #hud, #ayuda, #progreso, .notes { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+
+  <!-- 1. Portada -->
+  <section class="slide portada active">
+    <p class="kicker">TP Integrador de Aprendizaje Automático</p>
+    <h1>¿Se viene una campaña mala?</h1>
+    <p class="sub">Predicción de rendimiento y alerta temprana en cuatro cultivos de la Provincia de Buenos Aires</p>
+    <p class="autores">Francisco Calahorra · Federico Valdés · Alexis Galván</p>
+    <span class="url">tp-integrador-rendimiento-cultivos.vercel.app</span>
+    <aside class="notes">
+      <b>Guion (40 s).</b>
+      <ul>
+        <li>Somos tres. El trabajo predice rendimiento y avisa si la campaña va a ser mala.</li>
+        <li>Diez minutos: problema, datos, protocolo, los dos modelos, la comparación y la demo.</li>
+        <li>La app está publicada y la vamos a usar en vivo.</li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- 2. Problema -->
+  <section class="slide">
+    <p class="kicker">El problema</p>
+    <h2>Se decide antes de cosechar</h2>
+    <div class="cols parejo">
+      <div>
+        <p>El productor define insumos, cobertura de seguro, venta anticipada y financiamiento <strong>sin saber cuánto va a rendir la campaña</strong>.</p>
+        <p>Resolvemos dos tareas sobre los mismos datos:</p>
+        <ul>
+          <li><strong>Regresión:</strong> ¿qué rendimiento se espera, en kg/ha?</li>
+          <li><strong>Clasificación:</strong> ¿la campaña va a ser mala?</li>
+        </ul>
+      </div>
+      <div>
+        <div class="tarjeta" style="margin-bottom:16px">
+          <div class="rotulo">Unidad de análisis</div>
+          <div class="valor" style="font-size:30px">Partido × cultivo × campaña</div>
+          <div class="detalle">15.179 casos, 4 cultivos, 1981/82 a 2024/25</div>
+        </div>
+        <div class="tarjeta">
+          <div class="rotulo">Momento de la predicción</div>
+          <div class="detalle" style="font-size:20px; color: var(--tinta)">
+            Trigo 15/11 · Maíz y girasol 31/01 · Soja 28/02<br>
+            Al final del período crítico, antes de la cosecha. Solo variables disponibles en esa fecha.
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="notes">
+      <b>Guion (50 s).</b>
+      <ul>
+        <li>Insistir en la fecha de corte: no es un pronóstico climático, es una alerta con lo que se sabe al corte.</li>
+        <li>El costo del error es asimétrico: no avisar duele más que una falsa alarma.</li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- 3. Datos -->
+  <section class="slide">
+    <p class="kicker">Los datos</p>
+    <h2>Dos fuentes públicas, una sola tabla</h2>
+    <div class="cols ancho-izq">
+      <div>
+        <p><strong>Estimaciones Agrícolas</strong> de la Provincia de Buenos Aires (CC BY 4.0): 53.905 filas de rendimiento por partido y campaña.</p>
+        <p><strong>NASA POWER</strong>: nueve variables climáticas por campaña y partido, calculadas sobre la ventana de cada cultivo.</p>
+        <table>
+          <tr><th>Conjunto</th><th class="num">Campañas</th><th class="num">Filas</th></tr>
+          <tr><td>Train</td><td class="num">1981/82 – 2013/14</td><td class="num">11.147</td></tr>
+          <tr><td>Validación</td><td class="num">2014/15 – 2018/19</td><td class="num">1.828</td></tr>
+          <tr class="destaca"><td>Test</td><td class="num">2019/20 – 2024/25</td><td class="num">2.204</td></tr>
+        </table>
+        <p class="nota">Split <strong>temporal</strong>, no aleatorio: todos los partidos de una campaña comparten el clima.</p>
+      </div>
+      <div class="figura">
+        <img src="{{fig:p_rendimiento.png}}" alt="Rendimiento mediano por campaña">
+        <p class="pista">El rendimiento mediano se duplicó desde 1981</p>
+      </div>
+    </div>
+    <aside class="notes">
+      <b>Guion (60 s).</b>
+      <ul>
+        <li>La figura justifica la decisión siguiente: no modelamos kilos, modelamos ratio.</li>
+        <li>El split temporal es la garantía de que no hay fuga de información.</li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- 4. Ratio y umbral -->
+  <section class="slide">
+    <p class="kicker">La variable objetivo</p>
+    <h2>Ratio contra las cinco campañas anteriores</h2>
+    <div class="cols ancho-izq">
+      <div>
+        <p style="font-size:30px; color: var(--verde); font-weight:600; margin-bottom:20px">
+          ratio = rendimiento ÷ promedio de las 5 campañas previas
+        </p>
+        <p>Descuenta la tendencia tecnológica y las diferencias de suelo entre partidos. Es comparable entre cultivos.</p>
+        <p><strong>Campaña mala:</strong> ratio real menor a <strong>0,85</strong>, es decir una caída de más del 15 %.</p>
+        <div class="destacado">
+          Un falso negativo cuesta el doble que un falso positivo → el umbral teórico de probabilidad es 1/3, no 0,5.
+        </div>
+      </div>
+      <div>
+        <div class="tarjeta">
+          <div class="rotulo">Cómo se lee el ratio</div>
+          <div class="escala">
+            <div class="escala-barra">
+              <div class="escala-zona mala" style="width: 30%">mala</div>
+              <div class="escala-zona normal" style="width: 70%">normal</div>
+            </div>
+            <div class="escala-marcas">
+              <span>0,70</span>
+              <span class="marca-corte">0,85</span>
+              <span>1,30</span>
+            </div>
+          </div>
+          <ul class="chico" style="font-size: 19px; margin-top: 14px; padding-left: 20px">
+            <li>1,00 = igual que el promedio de las cinco campañas previas.</li>
+            <li>0,85 = caída del 15 %: ahí se dispara la alerta.</li>
+            <li>La mediana del test fue 0,982, apenas debajo de 1.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <aside class="notes">
+      <b>Guion (60 s).</b>
+      <ul>
+        <li>Si modeláramos kilos, el modelo entrenado hasta 2013 no podría extrapolar la mejora tecnológica.</li>
+        <li>El umbral 0,85 no es arbitrario: es la caída que cambia la decisión de cobertura.</li>
+        <li>El costo asimétrico explica por qué el umbral de probabilidad se busca en validación.</li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- 5. Protocolo -->
+  <section class="slide">
+    <p class="kicker">El protocolo</p>
+    <h2>Buscar en train, elegir en validación, medir una vez en test</h2>
+    <div class="tarjetas">
+      <div class="tarjeta">
+        <div class="rotulo">Paso 1</div>
+        <div class="valor" style="font-size:26px">Búsqueda</div>
+        <div class="detalle">Train → validación. 136 configuraciones de regresión y 268 de clasificación × 19 umbrales.</div>
+      </div>
+      <div class="tarjeta">
+        <div class="rotulo">Paso 2</div>
+        <div class="valor" style="font-size:26px">Selección</div>
+        <div class="detalle">Mejor MAE del ratio en regresión; menor costo total en clasificación.</div>
+      </div>
+      <div class="tarjeta">
+        <div class="rotulo">Paso 3</div>
+        <div class="valor" style="font-size:26px">Evaluación</div>
+        <div class="detalle">Train + validación → test. Una sola medición, sin volver atrás.</div>
+      </div>
+    </div>
+    <table style="margin-top:26px">
+      <tr><th>Baseline</th><th>Qué representa</th><th class="num">MAE test</th></tr>
+      <tr><td>Dummy por cultivo</td><td>Media del ratio, nunca alerta</td><td class="num">0,1765</td></tr>
+      <tr><td>Promedio de 5 campañas</td><td>Lo que hace un productor sin modelo</td><td class="num">0,1538</td></tr>
+    </table>
+    <aside class="notes">
+      <b>Guion (50 s).</b>
+      <ul>
+        <li>El promedio de 5 campañas es el baseline exigente: si el modelo no le gana, no aporta.</li>
+        <li>Un test automático verifica que la búsqueda solo recibe train y validación.</li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- 6. Regresión -->
+  <section class="slide">
+    <p class="kicker">Regresión</p>
+    <h2>Gana al Dummy, empata con el baseline real</h2>
+    <div class="cols ancho-izq">
+      <div>
+        <table>
+          <tr><th>Modelo</th><th class="num">MAE ratio</th><th class="num">RMSE kg</th><th class="num">R² kg</th></tr>
+          <tr><td>Dummy</td><td class="num">0,1765</td><td class="num">1.174</td><td class="num">0,704</td></tr>
+          <tr><td>Promedio 5 campañas</td><td class="num">0,1538</td><td class="num">981</td><td class="num">0,793</td></tr>
+          <tr class="destaca"><td>KNN, k = 300, distance</td><td class="num">0,1588</td><td class="num">938</td><td class="num">0,811</td></tr>
+        </table>
+        <p class="nota">Test, 2.204 casos. El KNN gana en RMSE y R², en la sequía 2022/23 (0,270 contra 0,313) y en soja (0,143 contra 0,162).</p>
+        <p><strong>Sin clima</strong> el KNN cae a 0,1639 y el árbol a 0,1722: la señal es climática.</p>
+      </div>
+      <div>
+        <div class="tarjeta" style="margin-bottom: 18px">
+          <div class="rotulo">Contra el Dummy</div>
+          <div class="valor" style="font-size: 30px">Gana en todo</div>
+          <div class="detalle">MAE del ratio 0,159 contra 0,177; RMSE 938 contra 1.174 kg/ha.</div>
+        </div>
+        <div class="tarjeta">
+          <div class="rotulo">Contra el promedio de 5 campañas</div>
+          <div class="valor naranja" style="font-size: 30px">+0,005</div>
+          <div class="detalle">Pierde el MAE global por 11 kg/ha, pero gana RMSE, R², la sequía 2022/23 y soja.</div>
+        </div>
+        <div class="tarjeta" style="margin-top: 18px">
+          <div class="rotulo">En la sequía 2022/23</div>
+          <div class="valor" style="font-size: 30px">0,270</div>
+          <div class="detalle">Contra 0,313 del promedio de 5 campañas: es el único modelo que baja su predicción.</div>
+        </div>
+      </div>
+    </div>
+    <aside class="notes">
+      <b>Guion (70 s).</b>
+      <ul>
+        <li>Ser honestos: en MAE global pierde por 0,005 contra el promedio de 5 campañas.</li>
+        <li>Pero gana en las métricas que importan: errores grandes, sequía, soja y detección de campañas malas.</li>
+        <li>El R² del ratio es negativo para todos: compara contra una media del test que nadie conocía.</li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- 7. Compresión -->
+  <section class="slide">
+    <p class="kicker">Regresión · el problema</p>
+    <h2>Ordena bien, pero comprime hacia la media</h2>
+    <div class="cols ancho-izq">
+      <div>
+        <div class="tarjetas" style="grid-template-columns: 1fr 1fr; gap:16px">
+          <div class="tarjeta">
+            <div class="rotulo">Ratio medio</div>
+            <div class="valor naranja" style="font-size:34px">+0,088</div>
+            <div class="detalle">Predice 1,048 y el real es 0,960</div>
+          </div>
+          <div class="tarjeta">
+            <div class="rotulo">Desvío estándar</div>
+            <div class="valor" style="font-size:34px">0,10 vs 0,21</div>
+            <div class="detalle">La predicción es la mitad de dispersa que la realidad</div>
+          </div>
+        </div>
+        <p style="margin-top:22px">Las campañas con ratio real menor a 0,60 se predicen en 0,96 en promedio. Por eso el umbral de 0,85 casi nunca se dispara.</p>
+        <div class="destacado">
+          Sin el sesgo de nivel, el MAE sería 0,143: mejor que el baseline. El problema no es el orden, es el nivel.
+        </div>
+      </div>
+      <div class="figura">
+        <img src="{{fig:p_predicho_vs_real.png}}" alt="Predicción contra realidad en test">
+      </div>
+    </div>
+    <aside class="notes">
+      <b>Guion (60 s).</b>
+      <ul>
+        <li>El ratio medio bajó de 1,08 en train a 0,96 en test: el modelo arrastra el nivel de entrenamiento.</li>
+        <li>Esto anticipa el resultado de clasificación: buen MAE, mala alerta.</li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- 8. Clasificación -->
+  <section class="slide">
+    <p class="kicker">Clasificación</p>
+    <h2>Un árbol que aprende la frontera que importa</h2>
+    <div class="cols ancho-izq">
+      <div>
+        <p><strong>268 configuraciones</strong> × 19 umbrales, medidas con costo total: 2 × falsos negativos + falsos positivos.</p>
+        <table>
+          <tr><th>Modelo</th><th class="num">Costo val</th><th class="num">Costo test</th><th class="num">Recall</th></tr>
+          <tr><td>Dummy</td><td class="num">540</td><td class="num">940</td><td class="num">0,00</td></tr>
+          <tr><td>KNN con clima</td><td class="num">531</td><td class="num">822</td><td class="num">0,19</td></tr>
+          <tr class="destaca"><td>Árbol, depth 5, leaf 50, umbral 0,65</td><td class="num">443</td><td class="num">687</td><td class="num">0,37</td></tr>
+        </table>
+        <p class="nota">Sin clima, ningún clasificador baja de 535: empatan con el Dummy.</p>
+      </div>
+      <div class="figura">
+        <img src="{{fig:p_costo_umbral.png}}" alt="Costo en validación según el umbral">
+        <p class="pista">El umbral 0,65 no es el teórico: las probabilidades no están calibradas</p>
+      </div>
+    </div>
+    <aside class="notes">
+      <b>Guion (60 s).</b>
+      <ul>
+        <li>El accuracy no sirve para elegir: el Dummy tiene 0,787 sin detectar nada.</li>
+        <li>El umbral se elige en validación; 0,65 está en el borde de una meseta.</li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- 9. Tabla integradora -->
+  <section class="slide">
+    <p class="kicker">La comparación</p>
+    <h2>Mismo test, mismos 2.204 casos, 470 campañas malas</h2>
+    <table style="font-size:24px">
+      <tr>
+        <th>Sistema</th>
+        <th class="num">Accuracy</th>
+        <th class="num">Precisión</th>
+        <th class="num">Recall</th>
+        <th class="num">F1</th>
+        <th class="num">FP</th>
+        <th class="num">FN</th>
+      </tr>
+      <tr class="destaca">
+        <td>Clasificador directo</td>
+        <td class="num">0,823</td>
+        <td class="num">0,650</td>
+        <td class="num">0,368</td>
+        <td class="num">0,470</td>
+        <td class="num">93</td>
+        <td class="num">297</td>
+      </tr>
+      <tr>
+        <td>Regresión más umbral</td>
+        <td class="num">0,821</td>
+        <td class="num">0,770</td>
+        <td class="num">0,228</td>
+        <td class="num">0,351</td>
+        <td class="num">32</td>
+        <td class="num">363</td>
+      </tr>
+    </table>
+    <div class="destacado">
+      El accuracy es casi el mismo. El clasificador detecta <strong>66 campañas malas más</strong> a cambio de <strong>61 falsas alarmas más</strong>, y baja el costo un 9 % (687 contra 758).
+    </div>
+    <p class="nota">Con un falso negativo al doble del falso positivo, esa diferencia de recall es la que decide.</p>
+
+    <div class="costos">
+      <div class="costo">
+        <span class="costo-nombre">No alertar nunca</span>
+        <div class="barra"><div class="relleno gris" style="width: 100%"></div></div>
+        <span class="costo-valor">940</span>
+      </div>
+      <div class="costo">
+        <span class="costo-nombre">Regresión + umbral</span>
+        <div class="barra"><div class="relleno verde" style="width: 80.6%"></div></div>
+        <span class="costo-valor">758</span>
+      </div>
+      <div class="costo">
+        <span class="costo-nombre">Clasificador directo</span>
+        <div class="barra"><div class="relleno" style="width: 73.1%"></div></div>
+        <span class="costo-valor">687</span>
+      </div>
+    </div>
+    <p class="pista" style="text-align: left; margin-top: 10px">Costo total en test: 2 × falsos negativos + falsos positivos</p>
+    <aside class="notes">
+      <b>Guion (70 s). Son las dos filas de la tabla de la consigna.</b>
+      <ul>
+        <li>Comparar siempre los mismos casos: el test es idéntico para los dos sistemas.</li>
+        <li>La regresión es más precisa pero se pierde tres de cada cuatro campañas malas.</li>
+        <li>Mencionar que GaussianNB tuvo el menor costo en test (662) pero en validación empataba con el Dummy: elegirlo ahora sería usar el test.</li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- 10. Errores -->
+  <section class="slide">
+    <p class="kicker">Los errores</p>
+    <h2>Los positivos son la sequía; los falsos negativos, la zona gris</h2>
+    <div class="cols ancho-izq">
+      <div class="figura">
+        <img src="{{fig:p_alertas_por_banda.png}}" alt="Tasa de alerta según el ratio real">
+      </div>
+      <div>
+        <p><strong>297 falsos negativos.</strong> La mitad son caídas moderadas, con ratio entre 0,75 y 0,85. El resto no tiene firma climática: granizo, plagas o anegamientos.</p>
+        <p><strong>93 falsos positivos.</strong> No están cerca del umbral: son campañas secas que terminaron bien.</p>
+        <p><strong>86 % de los aciertos</strong> ocurre en la sequía 2022/23. En las campañas con ratio menor a 0,50 el árbol detecta el 68 %; la regresión, el 32 %.</p>
+      </div>
+    </div>
+    <aside class="notes">
+      <b>Guion (60 s).</b>
+      <ul>
+        <li>La tabla de error por banda de ratio es el argumento más fuerte para elegir el clasificador.</li>
+        <li>Admitir el techo: un solo evento domina el test.</li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- 11. Acuerdo -->
+  <section class="slide">
+    <p class="kicker">La lectura integrada</p>
+    <h2>Cuando los dos coinciden, nueve de cada diez alertas son reales</h2>
+    <div class="cols parejo">
+      <div>
+        <table>
+          <tr><th>Clasificador</th><th>Regresión</th><th class="num">Casos</th><th class="num">Precisión</th></tr>
+          <tr class="destaca"><td>Alerta</td><td>Alerta</td><td class="num">114</td><td class="num">0,895</td></tr>
+          <tr><td>Alerta</td><td>Normal</td><td class="num">152</td><td class="num">0,467</td></tr>
+          <tr><td>Normal</td><td>Alerta</td><td class="num">25</td><td class="num">0,200</td></tr>
+          <tr class="suave"><td>Normal</td><td>Normal</td><td class="num">1.913</td><td class="num">0,153</td></tr>
+        </table>
+        <p class="nota">En la última fila quedan 292 campañas malas sin detectar: el silencio de los dos modelos no es una garantía.</p>
+      </div>
+      <div>
+        <p>La regresión casi no agrega alertas propias: 114 de sus 139 coinciden con el clasificador.</p>
+        <p>Cuando solo alerta la regresión, la precisión es 20 %: apenas por encima de la tasa base. Por eso la app no usa la alerta combinada.</p>
+        <div class="destacado">La coincidencia es la etiqueta de <strong>alta confianza</strong> que muestra la aplicación.</div>
+      </div>
+    </div>
+    <aside class="notes">
+      <b>Guion (50 s).</b>
+      <ul>
+        <li>Esta tabla es la que justifica el diseño de la app: alerta principal más segunda opinión.</li>
+        <li>Ojo con la última fila: 292 campañas malas quedaron en "normal y normal".</li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- 12. Demo -->
+  <section class="slide">
+    <p class="kicker">Demostración</p>
+    <h2>La app usa los mismos dos pipelines</h2>
+    <div class="cols ancho-izq">
+      <div>
+        <p>Flask en Vercel. No entrena: carga los dos pipelines guardados y ejecuta <em>predict</em>.</p>
+        <ul class="chico" style="font-size:20px">
+          <li>Autocompleta superficie, <em>prev5</em> y las nueve variables de clima desde el histórico.</li>
+          <li>Muestra el rendimiento esperado en kg/ha y el riesgo de campaña mala.</li>
+          <li>Indica si los dos modelos coinciden y qué pasó realmente, si la campaña está en el histórico.</li>
+        </ul>
+        <p style="margin-top:18px; font-size:26px; color: var(--verde); font-weight:600">
+          tp-integrador-rendimiento-cultivos.vercel.app
+        </p>
+        <p class="nota">Caso de la demo: Pergamino, soja 2022/23 → ratio real 0,524, predicho 0,787, probabilidad 1,000, alerta de alta confianza.</p>
+      </div>
+      <div>
+        <div class="app">
+          <div class="veredicto">
+            <span class="badge">Alta confianza</span>
+            <p>Los dos modelos alertan</p>
+          </div>
+          <div class="fila">
+            <div class="etiqueta"><span>Regresión: 0,79 del promedio histórico</span><b>1.983 kg/ha</b></div>
+            <div class="barra">
+              <div class="relleno verde" style="width: 39%"></div>
+              <div class="marca" style="left: 45%"></div>
+            </div>
+            <div class="etiqueta" style="margin-top:6px; font-size:15px"><span>0,4</span><span>umbral 0,85</span><span>1,4</span></div>
+          </div>
+          <div class="fila" style="margin-bottom:0">
+            <div class="etiqueta"><span>Clasificador: riesgo de campaña mala</span><b>100 %</b></div>
+            <div class="barra">
+              <div class="relleno" style="width: 100%"></div>
+              <div class="marca" style="left: 65%"></div>
+            </div>
+            <div class="etiqueta" style="margin-top:6px; font-size:15px"><span>0 %</span><span>umbral 65 %</span><span>100 %</span></div>
+          </div>
+        </div>
+        <p class="pista">Maqueta del resultado que devuelve la app</p>
+      </div>
+    </div>
+    <aside class="notes">
+      <b>Guion (80 s, con la app abierta).</b>
+      <ul>
+        <li>Cambiar a la pestaña del navegador y cargar Pergamino, soja, 2022. Mostrar el veredicto y el "lo que pasó realmente".</li>
+        <li>Si no hay internet: usar esta maqueta y volver.</li>
+        <li>Mencionar el bloque de limitaciones que la página siempre muestra.</li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- 13. Limitaciones -->
+  <section class="slide">
+    <p class="kicker">Limitaciones</p>
+    <h2>Qué no podemos prometer</h2>
+    <div class="cols">
+      <div>
+        <ul>
+          <li><strong>Un solo evento domina el test.</strong> 2022/23 aporta el 47 % de las campañas malas y el 86 % de los aciertos.</li>
+          <li><strong>Fuera de sequías fuertes el recall cae al 5-15 %.</strong></li>
+          <li><strong>Girasol y trigo</strong> no tienen alerta útil con estas variables.</li>
+        </ul>
+      </div>
+      <div>
+        <ul>
+          <li><strong>Las pérdidas totales no se anticipan.</strong> Los 10 casos de rendimiento cero del test pasaron sin alerta.</li>
+          <li><strong>Probabilidades sin calibrar:</strong> el umbral 0,65 no es el teórico de 0,33.</li>
+          <li><strong>El clima de reanálisis</strong> suaviza extremos locales.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="destacado">
+      No reemplaza al criterio agronómico. Sirve para priorizar la revisión, no para decidir solo.
+    </div>
+    <aside class="notes">
+      <b>Guion (50 s).</b>
+      <ul>
+        <li>Decir esto con seguridad: reconocer los límites suma, no resta.</li>
+        <li>La mejora más directa es calibrar las probabilidades.</li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- 14. Cierre -->
+  <section class="slide">
+    <p class="kicker">Para llevarse</p>
+    <h2>Tres ideas y una mejora pendiente</h2>
+    <div class="tres">
+      <div class="punto">
+        <span>Uno</span>
+        La señal es el clima. Sin las nueve variables de la ventana, ningún modelo supera al Dummy.
+      </div>
+      <div class="punto">
+        <span>Dos</span>
+        Buen MAE no es buena clasificación. La regresión comprime y se pierde el 77 % de las campañas malas.
+      </div>
+      <div class="punto">
+        <span>Tres</span>
+        El clasificador directo es la alerta; la regresión aporta la magnitud; la coincidencia es la alta confianza.
+      </div>
+    </div>
+    <p class="nota" style="margin-top: 34px; font-size: 21px">
+      Mejora pendiente: calibrar las probabilidades del árbol con validación y volver a evaluar GaussianNB, que tuvo el menor costo en test sin poder ser elegido en validación.
+    </p>
+    <div class="cierre">
+      <p>Gracias. Preguntas.</p>
+      <span>tp-integrador-rendimiento-cultivos.vercel.app</span>
+    </div>
+    <aside class="notes">
+      <b>Guion (40 s).</b>
+      <ul>
+        <li>Cerrar con las tres ideas, sin releer todo.</li>
+        <li>Dejar la app abierta por si piden ver otro partido o cultivo.</li>
+        <li>Preparados para preguntas de: por qué ratio, por qué 0,85, por qué costo 2:1, por qué no eligieron GaussianNB, qué pasa con el test.</li>
+      </ul>
+    </aside>
+  </section>
+
+</div>
+
+<div id="progreso"></div>
+<div id="hud">1 / 14</div>
+<div id="ayuda">← → navegar · F pantalla completa · S notas</div>
+
+<script>
+  (function () {
+    var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+    var hud = document.getElementById('hud');
+    var progreso = document.getElementById('progreso');
+    var stage = document.getElementById('stage');
+    var actual = 0;
+
+    function ajustar() {
+      var escala = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+      stage.style.transform =
+        'translate(-50%, -50%) scale(' + escala + ')';
+    }
+
+    function mostrar(indice, sinHistorial) {
+      if (indice < 0) indice = 0;
+      if (indice > slides.length - 1) indice = slides.length - 1;
+      slides[actual].classList.remove('active');
+      actual = indice;
+      slides[actual].classList.add('active');
+      hud.textContent = (actual + 1) + ' / ' + slides.length;
+      progreso.style.width = ((actual + 1) / slides.length * 100) + '%';
+      if (!sinHistorial && history.replaceState) {
+        history.replaceState(null, '', '#' + (actual + 1));
+      }
+    }
+
+    function desdeHash() {
+      var numero = parseInt((location.hash || '').replace('#', ''), 10);
+      return isNaN(numero) ? 0 : numero - 1;
+    }
+
+    document.addEventListener('keydown', function (evento) {
+      var tecla = evento.key;
+      if (tecla === 'ArrowRight' || tecla === 'PageDown' || tecla === ' ' || tecla === 'Enter') {
+        evento.preventDefault();
+        mostrar(actual + 1);
+      } else if (tecla === 'ArrowLeft' || tecla === 'PageUp' || tecla === 'Backspace') {
+        evento.preventDefault();
+        mostrar(actual - 1);
+      } else if (tecla === 'Home') {
+        mostrar(0);
+      } else if (tecla === 'End') {
+        mostrar(slides.length - 1);
+      } else if (tecla === 'f' || tecla === 'F') {
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        } else {
+          document.documentElement.requestFullscreen();
+        }
+      } else if (tecla === 's' || tecla === 'S') {
+        document.body.classList.toggle('notas');
+      }
+    });
+
+    // Navegación por clic: mitad derecha avanza, mitad izquierda retrocede.
+    document.addEventListener('click', function (evento) {
+      if (evento.clientX > window.innerWidth / 2) mostrar(actual + 1);
+      else mostrar(actual - 1);
+    });
+
+    window.addEventListener('resize', ajustar);
+    window.addEventListener('hashchange', function () {
+      var indice = desdeHash();
+      if (indice !== actual) mostrar(indice);
+    });
+
+    ajustar();
+    mostrar(desdeHash(), true);
+  })();
+</script>
+
+</body>
+</html>
