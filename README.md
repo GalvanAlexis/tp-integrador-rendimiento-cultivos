@@ -4,7 +4,7 @@ Trabajo Práctico Integrador de **Aprendizaje Automático**.
 
 **Repositorio:** https://github.com/GalvanAlexis/tp-integrador-rendimiento-cultivos
 
-**Estado:** Entrega 4 terminada. Clasificadores comparados con validación, contrastados con la alerta por regresión y guardados en `modelos/`; app Flask funcionando localmente.
+**Estado:** Entrega 5 en curso. App Flask publicada en Vercel; clasificadores comparados con validación y guardados en `modelos/`.
 
 ---
 
@@ -73,6 +73,10 @@ El clima se obtiene de **NASA POWER** (datos diarios desde 1981, reanálisis en 
 proyecto/
 ├── README.md
 ├── requirements.txt
+├── requirements-dev.txt
+├── vercel.json
+├── .python-version
+├── .vercelignore
 ├── app.py
 ├── modelos/
 │   ├── regresor.joblib
@@ -116,7 +120,7 @@ proyecto/
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 
 python -m src.descargar_datos
 python -m src.preparar_datos
@@ -125,6 +129,8 @@ python -m src.clima --merge
 python -m src.regresion
 python -m src.clasificacion
 ```
+
+`requirements.txt` contiene solo lo necesario para la app en producción (Flask, joblib, numpy, pandas y scikit-learn). `requirements-dev.txt` agrega matplotlib, requests, pytest y Jupyter para reproducir notebooks, figuras y tests.
 
 App Flask:
 
@@ -213,9 +219,28 @@ Lectura:
 
 Detalle en [informe/entrega_4_clasificacion.md](informe/entrega_4_clasificacion.md).
 
+## Despliegue en Vercel
+
+La app se publica como una única función de Python a partir de `app.py`; no entrena al arrancar, solo carga los pipelines y los CSV versionados.
+
+- `vercel.json` fija `maxDuration` y el bundle de la función: incluye `templates/`, `modelos/`, `src/` y los tres CSV que usa la app.
+- `.vercelignore` deja afuera notebooks, informes, tests, datos crudos y la caché de clima.
+- `.python-version` fija Python 3.14, la misma versión de `requirements.txt`.
+- No hay variables de entorno ni credenciales.
+
+```bash
+npm i -g vercel
+vercel          # preview
+vercel --prod   # produccion
+```
+
+**URL:** https://tp-integrador-rendimiento-cultivos.vercel.app
+
+La app no entrena al arrancar: el primer request carga los dos pipelines y el CSV de histórico. El build incluye `templates/`, `modelos/`, `src/` y los tres CSV que usa la app.
+
 ## Próximos pasos
 
-1. Desplegar la app Flask en Vercel.
+1. ~~Desplegar la app Flask en Vercel.~~
 2. Calibrar las probabilidades del clasificador con validación.
 3. Evaluar modelos por grupo de cultivos (verano e invierno), donde el clima tiene un efecto distinto.
 

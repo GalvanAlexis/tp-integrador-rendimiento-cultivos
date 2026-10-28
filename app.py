@@ -21,8 +21,7 @@ import joblib
 import pandas as pd
 from flask import Flask, jsonify, render_template, request
 
-from src.clasificacion import CLIMA_COLS, MODEL_LABELS
-from src.config import TEST_START, THRESHOLD
+from src.config import CLIMA_COLS, MODEL_LABELS, TEST_START, THRESHOLD
 
 ROOT = Path(__file__).resolve().parent
 MODELOS_DIR = ROOT / "modelos"

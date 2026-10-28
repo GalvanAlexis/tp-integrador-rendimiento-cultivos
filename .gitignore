@@ -13,6 +13,9 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
+# Vercel CLI
+.vercel/
+
 # La caché diaria de NASA POWER es grande y se puede regenerar.
 datos/cache/
 
