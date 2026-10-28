@@ -1,5 +1,5 @@
 {
-  "generado_utc": "2026-10-27T21:11:16+00:00",
+  "generado_utc": "2026-10-28T16:27:10+00:00",
   "modelo": "KNeighborsRegressor",
   "variables": "con_clima",
   "params": {
@@ -34,10 +34,10 @@
   },
   "semilla": 42,
   "versiones": {
-    "python": "3.13.3",
+    "python": "3.14.2",
     "scikit-learn": "1.9.0",
     "pandas": "3.0.2",
-    "numpy": "2.4.4",
+    "numpy": "2.4.2",
     "joblib": "1.5.3"
   }
 }
