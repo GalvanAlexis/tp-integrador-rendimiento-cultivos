@@ -238,6 +238,8 @@ vercel --prod   # produccion
 
 La app no entrena al arrancar: el primer request carga los dos pipelines y el CSV de histórico. El build incluye `templates/`, `modelos/`, `src/` y los tres CSV que usa la app.
 
+El proyecto está vinculado al repositorio de GitHub: cada push a `main` redeploya producción y cada rama genera un preview deployment. El primer request después de un deploy tarda unos segundos porque carga los pipelines.
+
 ## Próximos pasos
 
 1. ~~Desplegar la app Flask en Vercel.~~
