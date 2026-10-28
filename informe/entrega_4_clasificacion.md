@@ -10,8 +10,8 @@
 |---|---|
 | Integrantes | Francisco Calahorra, Federico Valdés, Alexis Galván |
 | Curso | Aprendizaje Automático 2026 |
-| Fecha de inicio | dd/mm/aaaa |
-| Fecha de entrega | dd/mm/aaaa |
+| Fecha de inicio | 13/10/2026 |
+| Fecha de entrega | 27/10/2026 |
 
 ---
 
@@ -244,6 +244,25 @@ La consigna pide comparar el clasificador directo con la alerta obtenida aplican
 - **Cuando los dos alertan, 9 de cada 10 alertas son correctas.** Es la señal más confiable del sistema.
 - Cuando solo alerta la regresión, la precisión (20%) apenas supera la tasa base (15%). Sumar esas alertas al clasificador empeora el costo.
 
+### 6.6 Casos concretos
+
+Estos seis casos de test muestran qué hay detrás de cada tipo de error.
+
+| Tipo | Campaña | Partido | Cultivo | Ratio real | Prob. del árbol | Ratio regresión | Consecuencia |
+|---|---|---|---|---|---:|---:|---|
+| FN | 2020/21 | Dolores | Maíz | 0,000 | 12,3% | 1,116 | Pérdida total sin alerta: no se contrató cobertura. |
+| FN | 2022/23 | Laprida | Trigo total | 0,754 | 42,3% | 1,123 | Caída del 25% sin alerta; se vendió a futuro sin cobertura. |
+| FN | 2024/25 | Suipacha | Soja total | 0,693 | 6,6% | 1,056 | Caída del 31% fuera de la gran sequía; el sistema no la vio. |
+| FP | 2022/23 | Tres Lomas | Soja total | 1,013 | 100% | 0,795 | Prima de seguro y venta frenada en una campaña normal. |
+| FP | 2024/25 | Campana | Maíz | 1,088 | 91,7% | 0,830 | Alerta máxima en una campaña 9% mejor que lo habitual. |
+| FP | 2024/25 | Brandsen | Maíz | 0,986 | 91,7% | 0,882 | Solo alertó el clasificador; cobertura innecesaria. |
+
+- **El FN más caro no es una campaña “apenas mala”**: es un maíz sin cosecha (ratio 0) donde los dos sistemas dijeron normal. Los rendimientos cero son raros y el clima de la ventana no alcanza para distinguirlos.
+- Los otros dos FN repiten el patrón de la sección 6.4: trigo y soja en años sin sequía general, con caídas del 25% al 31% que el árbol no detectó.
+- **Los FP son campañas secas que terminaron bien.** En Tres Lomas 2022/23 la dirección climática era correcta (la regresión también predijo 0,795), pero el cultivo rindió 1,013. La señal existía; la magnitud de la pérdida, no.
+- En los seis casos el ratio predicho por la regresión queda más cerca de 1 que el real: es la compresión hacia la media que explica la sección 5.
+- **Consecuencia para el uso:** la app muestra la probabilidad y la segunda opinión de la regresión, pero ninguna de las dos alcanza para decidir sola. El criterio agronómico y la información de campo siguen siendo necesarios.
+
 ## 7. Aplicación Flask
 
 La app carga los dos pipelines guardados al arrancar y solo ejecuta `predict`; no entrena. Está pensada para que un usuario sin formación técnica entienda que hay **dos modelos que responden preguntas distintas**:
@@ -272,6 +291,7 @@ La app carga los dos pipelines guardados al arrancar y solo ejecuta `predict`; n
    - Una explicación de por qué los modelos pueden no coincidir, cuando no coinciden.
    - **Lo que pasó realmente**, si la campaña está en el histórico, con el ratio real sobre la misma escala y si cada modelo acertó. Si el escenario fue modificado, se muestran los cambios y no se compara.
 4. Si falta un dato o un valor está fuera de rango, la app lo informa en lenguaje claro en lugar de fallar.
+5. La página de predicción incluye un bloque fijo de **limitaciones** (fuera de sequías fuertes, girasol, calibración de la probabilidad, causas de pérdida no cubiertas y campañas futuras) y el inicio repite los límites principales.
 
 Las métricas que muestra la app (detecciones, falsas alarmas, tabla de acuerdo) se leen de los CSV de resultados, así que se actualizan si se vuelve a entrenar.
 
