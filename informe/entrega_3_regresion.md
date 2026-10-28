@@ -11,7 +11,7 @@
 | Integrantes | Francisco Calahorra, Federico Valdés, Alexis Galván |
 | Curso | Aprendizaje Automático 2026 |
 | Fecha de inicio | 13/10/2026 |
-| Fecha de entrega | dd/mm/aaaa |
+| Fecha de entrega | 20/10/2026 |
 
 ---
 
