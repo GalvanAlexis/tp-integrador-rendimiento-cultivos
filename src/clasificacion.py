@@ -50,9 +50,11 @@ from .config import (
     CLASIFICACION_PREDICCIONES,
     CLASIFICADOR_FILE,
     CLASIFICADOR_METADATA,
+    CLIMA_COLS,
     COST_FN,
     COST_FP,
     DATASET_MODELADO_CLIMA,
+    MODEL_LABELS,
     MODELOS_DIR,
     RANDOM_STATE,
     REGRESOR_FILE,
@@ -64,17 +66,6 @@ TARGET_CLF = "mala85"
 NUM_AGRO = ["prev5", "prev5_ceros"]
 LOG_COLS = ["superficie_sembrada"]
 CAT_COLS = ["cultivo"]
-CLIMA_COLS = [
-    "clima_precip_total_mm",
-    "clima_dias_tmax_30",
-    "clima_tmax_media_c",
-    "clima_tmin_media_c",
-    "clima_humedad_media_pct",
-    "clima_sequia_max_dias",
-    "clima_precip_pre_siembra_mm",
-    "clima_dias_helada",
-    "clima_dias_lluvia",
-]
 
 FEATURE_SETS = {
     "sin_clima": NUM_AGRO,
@@ -93,15 +84,6 @@ NB_VAR_SMOOTHING = [1e-9, 1e-6, 1e-3, 1e-2, 1e-1, 0.3]
 # COST_FP / (COST_FP + COST_FN) = 1/3; en la práctica se elige en validación.
 UMBRALES = [round(u, 2) for u in np.arange(0.05, 0.951, 0.05)]
 UMBRAL_TEORICO = COST_FP / (COST_FP + COST_FN)
-
-MODEL_LABELS = {
-    "dummy": "Dummy (clase mayoritaria)",
-    "regresion": "Regresión + umbral (Entrega 3)",
-    "combinada": "Clasificador o regresión (alerta combinada)",
-    "arbol": "DecisionTreeClassifier",
-    "knn": "KNeighborsClassifier",
-    "nb": "GaussianNB",
-}
 
 FORBIDDEN = {
     "rendimiento",

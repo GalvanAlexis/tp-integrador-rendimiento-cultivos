@@ -80,6 +80,29 @@ GRID_END_YEAR = 2024
 THRESHOLDS = (0.80, 0.85, 0.90)
 THRESHOLD = 0.85
 
+# Estas dos definiciones viven en config para que la app web no tenga que
+# importar src.clasificacion (y, a traves de el, matplotlib) en produccion.
+CLIMA_COLS = [
+    "clima_precip_total_mm",
+    "clima_dias_tmax_30",
+    "clima_tmax_media_c",
+    "clima_tmin_media_c",
+    "clima_humedad_media_pct",
+    "clima_sequia_max_dias",
+    "clima_precip_pre_siembra_mm",
+    "clima_dias_helada",
+    "clima_dias_lluvia",
+]
+
+MODEL_LABELS = {
+    "dummy": "Dummy (clase mayoritaria)",
+    "regresion": "Regresión + umbral (Entrega 3)",
+    "combinada": "Clasificador o regresión (alerta combinada)",
+    "arbol": "DecisionTreeClassifier",
+    "knn": "KNeighborsClassifier",
+    "nb": "GaussianNB",
+}
+
 # Un ratio mayor a 3 (rendimiento más de tres veces el promedio de las cinco
 # campañas anteriores) se marca para revisión. No se elimina: el dato actual es
 # consistente, el promedio queda bajo por campañas previas sin cosecha.

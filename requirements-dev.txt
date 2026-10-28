@@ -1,0 +1,13 @@
+# Entorno completo de desarrollo: app, notebooks, tests y preparacion de datos.
+# Instalar con: pip install -r requirements-dev.txt
+-r requirements.txt
+
+matplotlib==3.10.8
+requests==2.32.5
+pytest==9.0.3
+
+# Notebook
+jupyterlab>=4.0,<5
+nbconvert>=7.0,<8
+nbformat>=5.0,<6
+ipykernel>=7.0,<8
