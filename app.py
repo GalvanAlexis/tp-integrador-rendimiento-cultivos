@@ -1,4 +1,4 @@
-"""Aplicacion Flask del TP Integrador - Entrega 4.
+"""Aplicacion Flask del TP Integrador - Entrega 5.
 
 Endpoints:
   GET  /               -> pagina principal
@@ -366,7 +366,7 @@ def health():
     return jsonify(
         {
             "status": "ok",
-            "entrega": 4,
+            "entrega": 5,
             "regresor": _regresor is not None,
             "clasificador": _clasificador is not None,
         }
