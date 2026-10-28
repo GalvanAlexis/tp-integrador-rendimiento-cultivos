@@ -111,6 +111,8 @@ proyecto/
 │   ├── entrega_2_preparacion_y_baselines.md
 │   ├── entrega_3_regresion.md
 │   ├── entrega_4_clasificacion.md
+│   ├── distribucion_tareas.md
+│   ├── checklist_final.md
 │   ├── informe_final.md
 │   ├── informe_final.pdf
 │   ├── construir_pdf.py
@@ -285,7 +287,9 @@ El proyecto está vinculado al repositorio de GitHub: cada push a `main` redeplo
 - Federico Valdés
 - Alexis Galván
 
-Curso: Aprendizaje Automático 2026.
+Grupo de tres integrantes. Curso: Aprendizaje Automático 2026.
+
+La organización del trabajo y el reparto de la exposición están en [informe/distribucion_tareas.md](informe/distribucion_tareas.md). El repaso de la consigna, punto por punto, en [informe/checklist_final.md](informe/checklist_final.md).
 
 ## Licencia
 
