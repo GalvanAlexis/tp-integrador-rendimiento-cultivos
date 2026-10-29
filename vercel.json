@@ -4,8 +4,7 @@
   "functions": {
     "app.py": {
       "maxDuration": 60,
-      "includeFiles": "{app.py,src/**,templates/**,modelos/**,datos/procesado/dataset_modelado_con_clima.csv,datos/procesado/clasificacion_comparacion.csv,datos/procesado/clasificacion_acuerdo_sistemas_test.csv,presentacion/presentacion.html,presentacion/presentacion.pdf,informe/informe_final.pdf}",
-      "excludeFiles": "{tests/**,notebooks/**,informe/figuras/**,informe/*.md,informe/*.py,presentacion/figuras/**,presentacion/plantilla.html,presentacion/*.py,datos/cache/**,datos/raw/**,__pycache__/**,.pytest_cache/**}"
+      "includeFiles": "{app.py,src/**,templates/**,modelos/**,datos/procesado/*.csv,presentacion/presentacion.*,informe/informe_final.pdf}"
     }
   }
 }
