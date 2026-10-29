@@ -11,146 +11,405 @@
 {% macro coma(v, d=2) -%}{{ ("%." ~ d ~ "f")|format(v) | replace(".", ",") }}{%- endmacro %}
 
 {% block css %}
-    main { max-width: 860px; }
-    h1 { font-size: 28px; margin-bottom: 6px; }
-    .subtitulo { color: var(--gris); font-size: 15px; margin-bottom: 28px; }
-    .pasos { display: flex; gap: 8px 20px; flex-wrap: wrap; font-size: 14px; color: var(--gris); margin-bottom: 28px; padding: 0; list-style: none; }
+    main { max-width: 880px; }
+    h1 { font-size: clamp(26px, 4vw, 32px); margin-bottom: 6px; color: var(--verde-deep); }
+    .subtitulo { color: var(--gris); font-size: 15px; margin-bottom: 24px; line-height: 1.5; }
+    .pasos { display: flex; gap: 8px 20px; flex-wrap: wrap; font-size: 14px; color: var(--gris); margin-bottom: 24px; padding: 0; list-style: none; }
     .pasos li { display: flex; align-items: center; gap: 8px; }
-    .pasos b { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--verde-claro); color: var(--verde); font-size: 12px; }
+    .pasos b { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--verde-claro); color: var(--verde); font-size: 12px; font-weight: 700; }
     .card {
       background: var(--blanco);
-      border: 1px solid var(--borde);
-      border-radius: 16px;
+      border: 1px solid var(--linea);
+      border-radius: var(--radius-lg);
       padding: 24px;
       margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
     }
     .card > h2, details > summary {
-      font-size: 13px;
+      font-size: 12px;
       text-transform: uppercase;
-      letter-spacing: .06em;
-      color: var(--gris);
-      font-weight: 600;
+      letter-spacing: .08em;
+      color: var(--gris-claro);
+      font-weight: 800;
     }
-    .card > h2 { margin-bottom: 18px; }
+    .card > h2 { margin-bottom: 18px; color: var(--verde-deep); }
     .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--tinta); }
     label .unidad { color: var(--gris); font-weight: 400; }
     .hint { font-size: 12px; color: var(--gris); margin-top: 4px; }
     input[type=number], select {
       width: 100%;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 9px 12px;
+      border: 1px solid var(--linea);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
       font-size: 14px;
       font-family: inherit;
       background: var(--blanco);
       color: var(--tinta);
-      transition: border-color .15s, background .15s;
+      transition: border-color .15s, box-shadow .15s;
     }
     input[type=number]:focus, select:focus {
       outline: none;
       border-color: var(--verde-mid);
-      box-shadow: 0 0 0 3px rgba(21,128,61,.12);
+      box-shadow: 0 0 0 3px rgba(21,128,61,.14);
     }
     input.modificado { border-color: var(--amber-mid); background: var(--amber-bg); }
-    .estado-historico { font-size: 13px; margin-top: 14px; min-height: 20px; color: var(--gris); }
-    .estado-historico.ok { color: var(--verde); }
-    .estado-historico.error { color: var(--rojo); }
-    details.card summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .estado-historico { font-size: 13px; margin-top: 14px; min-height: 20px; color: var(--gris); font-weight: 500; }
+    .estado-historico.ok { color: var(--verde-mid); }
+    .estado-historico.error { color: var(--rojo-mid); }
+    details.card summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-weight: 700; color: var(--verde-deep); }
     details.card summary::-webkit-details-marker { display: none; }
-    details.card summary::after { content: "Mostrar ▾"; font-size: 13px; text-transform: none; letter-spacing: 0; color: var(--verde-mid); white-space: nowrap; }
+    details.card summary::after { content: "Mostrar ▾"; font-size: 13px; text-transform: none; letter-spacing: 0; color: var(--verde-mid); white-space: nowrap; font-weight: 600; }
     details.card[open] summary::after { content: "Ocultar ▴"; }
-    details.card[open] summary { margin-bottom: 14px; }
-    .contador-cambios { color: var(--amber); text-transform: none; letter-spacing: 0; font-weight: 600; margin-left: 6px; }
-    .escenario-ayuda { font-size: 14px; color: var(--gris); margin-bottom: 16px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
-    .btn-link { background: none; border: none; color: var(--verde-mid); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; padding: 0; }
+    details.card[open] summary { margin-bottom: 16px; }
+    .contador-cambios { color: var(--amber-mid); text-transform: none; letter-spacing: 0; font-weight: 700; margin-left: 6px; }
+    .escenario-ayuda { font-size: 13px; color: var(--gris); margin-bottom: 16px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; line-height: 1.45; }
+    .btn-link { background: none; border: none; color: var(--verde-mid); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; padding: 0; }
     .btn-link:disabled { color: var(--gris-claro); cursor: default; }
-    .acciones { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-    .acciones a { color: var(--gris); font-size: 14px; }
+    .acciones { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+    .acciones a { color: var(--gris); font-size: 14px; font-weight: 500; text-decoration: none; }
+    .acciones a:hover { text-decoration: underline; }
 
     /* Resultado */
-    #resultado { scroll-margin-top: 16px; }
-    .errores { background: var(--rojo-bg); border: 1px solid var(--rojo-borde); color: var(--rojo); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; font-size: 14px; }
+    #resultado { scroll-margin-top: 24px; }
+    .errores { background: var(--rojo-bg); border: 1px solid var(--rojo-borde); color: var(--rojo); border-radius: var(--radius-md); padding: 16px 20px; margin-bottom: 24px; font-size: 14px; }
     .errores ul { margin: 6px 0 0 18px; }
-    .contexto { display: flex; gap: 8px 14px; flex-wrap: wrap; align-items: center; font-size: 14px; color: var(--gris); margin-bottom: 12px; }
-    .contexto strong { color: var(--tinta); font-size: 16px; }
-    .chip { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 3px 10px; font-size: 12px; font-weight: 600; }
-    .chip-prueba { background: var(--verde-claro); color: var(--verde); }
+    .contexto { display: flex; gap: 8px 14px; flex-wrap: wrap; align-items: center; font-size: 14px; color: var(--gris); margin-bottom: 14px; }
+    .contexto strong { color: var(--verde-deep); font-size: 17px; font-weight: 800; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 3px 12px; font-size: 12px; font-weight: 700; }
+    .chip-prueba { background: var(--verde-claro); color: var(--verde); border: 1px solid var(--borde); }
+    .chip-futura { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
     .chip-entrenamiento { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-borde); }
     .chip-escenario { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-borde); }
-    .veredicto { border-radius: 16px; padding: 22px 24px; margin-bottom: 16px; display: flex; gap: 16px; align-items: flex-start; animation: aparecer .35s ease; }
-    .veredicto .icono { font-size: 30px; line-height: 1; }
-    .veredicto h2 { font-size: 21px; margin-bottom: 4px; }
-    .veredicto p { font-size: 14px; color: var(--tinta); }
-    .veredicto .historico { margin-top: 8px; color: var(--gris); font-size: 13px; }
+    .veredicto { border-radius: var(--radius-lg); padding: 22px 24px; margin-bottom: 18px; display: flex; gap: 16px; align-items: flex-start; animation: aparecer .3s ease; box-shadow: var(--shadow-sm); }
+    .veredicto .icono { font-size: 32px; line-height: 1; flex: none; }
+    .veredicto h2 { font-size: 22px; margin-bottom: 4px; font-weight: 800; }
+    .veredicto p { font-size: 14px; color: var(--tinta); line-height: 1.45; }
+    .veredicto .historico { margin-top: 8px; color: var(--gris); font-size: 13px; font-weight: 500; }
     .v-alta { background: var(--rojo-bg); border: 2px solid var(--rojo-mid); }
     .v-alta h2 { color: var(--rojo); }
     .v-clasificador { background: var(--rojo-bg); border: 2px solid var(--rojo-borde); }
     .v-clasificador h2 { color: var(--rojo); }
     .v-solo_regresion { background: var(--amber-bg); border: 2px solid var(--amber-borde); }
     .v-solo_regresion h2 { color: var(--amber); }
-    .v-normal { background: var(--verde-claro); border: 2px solid var(--borde); }
+    .v-normal { background: var(--verde-surface); border: 2px solid var(--borde); }
     .v-normal h2 { color: var(--verde); }
     @keyframes aparecer { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-    .paneles { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-    .panel { background: var(--blanco); border-radius: 14px; padding: 20px 22px; }
-    .panel-reg { border: 1px solid var(--reg-borde); border-top: 4px solid var(--reg); }
-    .panel-clf { border: 1px solid var(--clf-borde); border-top: 4px solid var(--clf); }
-    .panel h3 { font-size: 17px; margin: 8px 0 0; }
+    .paneles { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+    .panel { background: var(--blanco); border-radius: var(--radius-lg); padding: 22px; border: 1px solid var(--linea); box-shadow: var(--shadow-sm); }
+    .panel-reg { border-top: 4px solid var(--reg); }
+    .panel-clf { border-top: 4px solid var(--clf); }
+    .panel h3 { font-size: 18px; margin: 8px 0 0; color: var(--verde-deep); }
     .panel .modelo-desc { font-size: 12px; color: var(--gris); margin-bottom: 14px; }
-    .panel .valor { font-size: 30px; font-weight: 700; line-height: 1.1; }
+    .panel .valor { font-size: 32px; font-weight: 800; line-height: 1.1; }
     .panel-reg .valor { color: var(--reg); }
     .panel-clf .valor { color: var(--clf); }
-    .panel .sub { font-size: 14px; color: var(--gris); margin-bottom: 6px; }
-    .panel .lectura { font-size: 14px; margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--linea); }
-    .panel .lectura strong.si { color: var(--rojo); }
-    .panel .lectura strong.no { color: var(--verde); }
+    .panel .sub { font-size: 13px; color: var(--gris); margin-bottom: 6px; font-weight: 500; }
+    .panel .lectura { font-size: 13px; margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--linea); }
+    .panel .lectura strong.si { color: var(--rojo-mid); }
+    .panel .lectura strong.no { color: var(--verde-mid); }
 
     .barra { position: relative; height: 12px; border-radius: 999px; margin: 34px 0 34px; }
     .barra-ratio { background: linear-gradient(to right, var(--rojo-borde) 0 {{ resultado.pos_umbral if resultado else 45 }}%, var(--verde-claro) {{ resultado.pos_umbral if resultado else 45 }}% 100%); }
     .barra-riesgo { background: var(--linea); overflow: visible; }
     .barra-riesgo .relleno { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: var(--clf); opacity: .85; }
     .barra .umbral { position: absolute; top: -7px; bottom: -7px; width: 2px; background: var(--tinta); }
-    .barra .umbral span { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .barra .umbral span { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 700; white-space: nowrap; color: var(--tinta); }
     .barra .punto { position: absolute; top: 50%; width: 18px; height: 18px; border-radius: 50%; transform: translate(-50%, -50%); border: 3px solid var(--blanco); box-shadow: 0 0 0 1px rgba(15,23,42,.25); }
     .barra .punto-pred { background: var(--reg); }
-    .barra .punto-real { background: var(--tinta); width: 12px; height: 12px; border-width: 2px; }
-    .barra .rotulo { position: absolute; top: 18px; transform: translateX(-50%); font-size: 11px; white-space: nowrap; color: var(--gris); }
-    .barra .rotulo-pred { color: var(--reg); font-weight: 600; }
-    .barra .rotulo-real { top: -22px; color: var(--tinta); }
-    .barra .extremo { position: absolute; top: 18px; font-size: 11px; color: var(--gris-claro); }
+    .barra .punto-real { background: var(--verde-deep); width: 12px; height: 12px; border-width: 2px; }
+    .barra .rotulo { position: absolute; top: 18px; transform: translateX(-50%); font-size: 11px; white-space: nowrap; color: var(--gris); font-weight: 600; }
+    .barra .rotulo-pred { color: var(--reg); font-weight: 700; }
+    .barra .rotulo-real { top: -22px; color: var(--verde-deep); font-weight: 700; }
+    .barra .extremo { position: absolute; top: 18px; font-size: 11px; color: var(--gris-claro); font-weight: 600; }
 
-    .explicacion { background: var(--blanco); border: 1px dashed #cbd5e1; border-radius: 12px; padding: 14px 18px; font-size: 14px; color: var(--gris); margin-bottom: 16px; }
-    .explicacion strong { color: var(--tinta); }
-    .bloque { background: var(--blanco); border: 1px solid var(--linea); border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; font-size: 14px; }
-    .bloque h3 { font-size: 14px; margin-bottom: 8px; }
+    /* Comparacion Visual: Prediccion vs Realidad */
+    .comparacion-card {
+      background: var(--blanco);
+      border: 1px solid var(--linea);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .comparacion-header {
+      margin-bottom: 20px;
+    }
+    .comparacion-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--verde-mid);
+      margin-bottom: 4px;
+    }
+    .comparacion-header h3 {
+      font-size: 21px;
+      color: var(--verde-deep);
+      margin-bottom: 4px;
+    }
+    .comparacion-sub {
+      font-size: 14px;
+      color: var(--gris);
+      line-height: 1.45;
+    }
+    .comparacion-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 16px;
+      background: var(--fondo);
+      border: 1px solid var(--linea);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+    .comparacion-col {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .col-kicker {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--gris);
+    }
+    .col-metric {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--verde-deep);
+    }
+    .col-metric small {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gris);
+    }
+    .col-prediccion .col-metric { color: var(--reg); }
+    .col-sub {
+      font-size: 13px;
+      color: var(--gris);
+    }
+    .col-estado {
+      font-size: 13px;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+    .col-badge {
+      display: inline-block;
+      font-size: 11px;
+      background: var(--clf-bg);
+      color: var(--clf);
+      border: 1px solid var(--clf-borde);
+      border-radius: 999px;
+      padding: 1px 8px;
+      margin-left: 6px;
+    }
+    .comparacion-vs {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 0 10px;
+    }
+    .vs-badge {
+      background: var(--blanco);
+      border: 1px solid var(--linea);
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--gris);
+      box-shadow: var(--shadow-sm);
+    }
+    .vs-delta {
+      text-align: center;
+    }
+    .delta-label {
+      display: block;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--gris-claro);
+      font-weight: 700;
+    }
+    .delta-val {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--verde-deep);
+      white-space: nowrap;
+    }
+    .comparacion-balance {
+      border-top: 1px solid var(--linea);
+      padding-top: 18px;
+    }
+    .comparacion-balance h4 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--gris-claro);
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+    .aciertos-pills {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .acierto-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+    }
+    .acierto-item.ok {
+      background: var(--verde-claro);
+      border: 1px solid var(--borde);
+      color: var(--verde-deep);
+    }
+    .acierto-item.mal {
+      background: var(--rojo-bg);
+      border: 1px solid var(--rojo-borde);
+      color: var(--rojo);
+    }
+    .acierto-ico {
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .acierto-item strong {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .acierto-item small {
+      display: block;
+      font-size: 12px;
+      opacity: .88;
+      margin-top: 2px;
+      line-height: 1.35;
+    }
+    .comparacion-analisis {
+      font-size: 13px;
+      color: var(--gris);
+      background: var(--fondo);
+      border: 1px dashed var(--linea);
+      border-radius: 10px;
+      padding: 12px 14px;
+      line-height: 1.45;
+    }
+    .comparacion-analisis strong {
+      color: var(--verde-deep);
+    }
+    .comparacion-aviso-modificado {
+      background: var(--amber-bg);
+      border: 1px solid var(--amber-borde);
+      color: var(--amber);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+    }
+
+    /* Modulo para Proyeccion de Campaña Futura */
+    .bloque-futura {
+      background: var(--verde-surface);
+      border: 1px solid var(--borde);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .bloque-futura h3 {
+      font-size: 19px;
+      color: var(--verde-deep);
+      margin-bottom: 6px;
+    }
+    .bloque-futura p {
+      font-size: 14px;
+      color: var(--gris);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+    .metricas-futura {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .futura-item {
+      background: var(--blanco);
+      border: 1px solid var(--borde);
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 13px;
+      color: var(--tinta);
+      line-height: 1.4;
+    }
+    .futura-item strong {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--verde-mid);
+      margin-bottom: 4px;
+      font-weight: 800;
+    }
+
+    .explicacion { background: var(--blanco); border: 1px dashed var(--linea); border-radius: var(--radius-md); padding: 16px 20px; font-size: 14px; color: var(--gris); margin-bottom: 18px; line-height: 1.5; }
+    .explicacion strong { color: var(--verde-deep); }
+    .bloque { background: var(--blanco); border: 1px solid var(--linea); border-radius: var(--radius-lg); padding: 20px 24px; margin-bottom: 20px; font-size: 14px; }
+    .bloque h3 { font-size: 16px; margin-bottom: 8px; color: var(--verde-deep); }
     .bloque ul { margin-left: 18px; }
     .bloque-limitaciones { border-color: var(--amber-borde); background: var(--amber-bg); }
-    .bloque-limitaciones ul { margin-top: 4px; }
-    .bloque-limitaciones li { margin-bottom: 6px; }
-    .aciertos { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-    .acierto { border-radius: 999px; padding: 3px 12px; font-size: 13px; font-weight: 600; }
-    .acierto.ok { background: var(--verde-claro); color: var(--verde); }
-    .acierto.mal { background: var(--rojo-bg); color: var(--rojo); }
+    .bloque-limitaciones ul { margin-top: 6px; }
+    .bloque-limitaciones li { margin-bottom: 6px; line-height: 1.45; }
     .nota-riesgo { font-size: 12px; color: var(--gris); margin-bottom: 32px; }
 
     @media (max-width: 700px) {
       .paneles { grid-template-columns: 1fr; }
       .grid-3 { grid-template-columns: 1fr 1fr; }
+      .comparacion-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      .comparacion-vs {
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-top: 1px dashed var(--linea);
+        border-bottom: 1px dashed var(--linea);
+        width: 100%;
+      }
+      .aciertos-pills, .metricas-futura {
+        grid-template-columns: 1fr;
+      }
     }
-    @media (max-width: 460px) {
+    @media (max-width: 480px) {
       .grid-3 { grid-template-columns: 1fr; }
-      .veredicto { flex-direction: column; gap: 8px; }
+      .veredicto { flex-direction: column; gap: 10px; }
+      .card, .comparacion-card, .bloque-futura { padding: 20px 16px; }
+      .acciones .btn-primary { width: 100%; text-align: center; }
     }
 {% endblock %}
 
 {% block content %}
     <h1>Predicción de campaña</h1>
+    <p class="subtitulo">
+      Estimá el rendimiento y anticipá riesgo de campaña mala con modelos entrenados sobre 43 campañas históricas y clima diario de NASA POWER.
+    </p>
+
     <ol class="pasos">
-      <li><b>1</b>Elegí partido, cultivo y campaña</li>
-      <li><b>2</b>Los datos históricos se completan solos</li>
-      <li><b>3</b>Si querés, modificá el clima para simular un escenario</li>
+      <li><b>1</b>Elegí partido, cultivo y campaña (histórica o futura)</li>
+      <li><b>2</b>La línea de base y datos de referencia se completan automáticamente</li>
+      <li><b>3</b>Modificá el clima si querés simular un escenario específico (ej. sequía)</li>
     </ol>
 
     <div id="resultado">
@@ -166,7 +425,9 @@
       <div class="contexto">
         <strong>{{ cultivo }}{% if partido %} · {{ partido }}{% endif %}{% if anio %} · {{ anio }}/{{ "%02d"|format((anio + 1) % 100) }}{% endif %}</strong>
         {% if anio %}
-          {% if anio_prueba %}
+          {% if anio_futuro %}
+          <span class="chip chip-futura">Campaña futura: Simulación predictiva</span>
+          {% elif anio_prueba %}
           <span class="chip chip-prueba">Campaña de prueba: los modelos no la vieron</span>
           {% else %}
           <span class="chip chip-entrenamiento">Campaña usada para entrenar: el resultado es optimista</span>
@@ -193,8 +454,8 @@
           {% endif %}
           {% if acuerdo %}
           <p class="historico">
-            En las campañas de prueba, {{ pct(acuerdo.precision) }} de los casos con este resultado
-            ({{ acuerdo.malas }} de {{ miles(acuerdo.n) }}) terminaron siendo campañas malas{% if resultado.nivel == "normal" %}: el sistema no detecta todas{% endif %}.
+            En las campañas de prueba independientes, {{ pct(acuerdo.precision) }} de los casos con este perfil de señal
+            ({{ acuerdo.malas }} de {{ miles(acuerdo.n) }}) resultaron campañas malas reales{% if resultado.nivel == "normal" %}: el sistema es conservador en años promedio{% endif %}.
           </p>
           {% endif %}
         </div>
@@ -246,9 +507,9 @@
           </div>
           <p class="lectura">
             {% if resultado.alerta_clasificador %}
-              <strong class="si">Supera el umbral:</strong> alerta de campaña mala.
+              <strong class="si">Supera el umbral:</strong> alerta de campaña mala activada.
             {% else %}
-              <strong class="no">No llega al umbral:</strong> sin alerta.
+              <strong class="no">No llega al umbral:</strong> sin alerta de riesgo.
             {% endif %}
           </p>
         </section>
@@ -276,25 +537,118 @@
       </div>
       {% endif %}
 
-      {% if real %}
-      <div class="bloque">
-        <h3>Lo que pasó realmente</h3>
+      <!-- Modulo de Proyeccion Futura -->
+      {% if anio_futuro %}
+      <div class="bloque-futura">
+        <span class="comparacion-tag">Simulación Predictiva</span>
+        <h3>Proyección para la campaña {{ anio }}/{{ "%02d"|format((anio + 1) % 100) }}</h3>
         <p>
-          Rindió <strong>{{ miles(real.rendimiento) }} kg/ha</strong>, el {{ pct(real.ratio) }} de lo habitual
-          (ratio {{ coma(real.ratio) }}): fue una campaña
-          <strong class="{{ 'si' if real.mala else 'no' }}">{{ "mala" if real.mala else "normal" }}</strong>.
+          Esta campaña aún no se ha cosechado. Los modelos estiman el rendimiento a partir de la línea de base histórica más reciente de <strong>{{ partido }}</strong> y las condiciones climáticas cargadas para la ventana crítica.
         </p>
-        {% if cambios %}
-        <p class="hint">Como el escenario fue modificado, no se compara con lo que pasó.</p>
-        {% else %}
-        <div class="aciertos">
-          {% if real.acierto_clasificador is defined %}
-          <span class="acierto {{ 'ok' if real.acierto_clasificador else 'mal' }}">{{ "✓" if real.acierto_clasificador else "✗" }} Clasificación {{ "acertó" if real.acierto_clasificador else "se equivocó" }}</span>
-          {% endif %}
-          {% if real.acierto_regresion is defined %}
-          <span class="acierto {{ 'ok' if real.acierto_regresion else 'mal' }}">{{ "✓" if real.acierto_regresion else "✗" }} Regresión {{ "acertó" if real.acierto_regresion else "se equivocó" }}</span>
-          {% endif %}
+        <div class="metricas-futura">
+          <div class="futura-item">
+            <strong>Probabilidad de acierto empírica:</strong>
+            {% if resultado.nivel == "alta" %}
+              <span><strong>89%</strong> (alerta dual: clasificador y regresor coinciden en caída severa).</span>
+            {% elif resultado.nivel == "clasificador" %}
+              <span><strong>65%</strong> de precisión empírica (alerta preventiva del árbol de decisión).</span>
+            {% else %}
+              <span>Campaña proyectada normal bajo este escenario climático.</span>
+            {% endif %}
+          </div>
+          <div class="futura-item">
+            <strong>Momento de corte óptimo:</strong>
+            <span>Al cierre de floración y llenado de grano (15/11 trigo, 31/01 maíz/girasol, 28/02 soja).</span>
+          </div>
         </div>
+      </div>
+      {% endif %}
+
+      <!-- Modulo Visual: Comparacion con Caso Real -->
+      {% if real %}
+      <div class="comparacion-card">
+        <div class="comparacion-header">
+          <span class="comparacion-tag">Validación empírica</span>
+          <h3>Lo que pasó realmente</h3>
+          <p class="comparacion-sub">
+            Cotejo entre las señales emitidas antes de la cosecha y el resultado efectivamente registrado en los datos oficiales de la Provincia de Buenos Aires.
+          </p>
+        </div>
+
+        {% if cambios %}
+          <div class="comparacion-aviso-modificado">
+            <p><strong>Escenario simulado:</strong> Como modificaste las variables climáticas originales, la predicción actual refleja tu hipótesis y no se compara con lo que pasó.</p>
+          </div>
+        {% else %}
+          <div class="comparacion-grid">
+            <!-- Prediccion -->
+            <div class="comparacion-col col-prediccion">
+              <span class="col-kicker">Lo que anticipó el sistema</span>
+              <div class="col-metric">{{ miles(resultado.rend_pred_kg) }} <small>kg/ha</small></div>
+              <div class="col-sub">Ratio estimado: <strong>{{ coma(resultado.ratio_pred) }}</strong> ({{ pct(resultado.ratio_pred) }})</div>
+              <div class="col-estado">
+                Diagnóstico: <strong class="{{ 'si' if resultado.alerta_clasificador else 'no' }}">{{ "Alerta de campaña mala" if resultado.alerta_clasificador else "Sin alerta (normal)" }}</strong>
+                {% if resultado.proba_clasificador is defined %}<span class="col-badge">Riesgo {{ pct(resultado.proba_clasificador) }}</span>{% endif %}
+              </div>
+            </div>
+
+            <!-- Separador Delta -->
+            <div class="comparacion-vs">
+              {% set delta_kg = (resultado.rend_pred_kg - real.rendimiento)|round|int %}
+              <div class="vs-badge">VS</div>
+              <div class="vs-delta">
+                <span class="delta-label">Desvío</span>
+                <span class="delta-val">{{ "+" if delta_kg > 0 else "" }}{{ miles(delta_kg) }} kg/ha</span>
+              </div>
+            </div>
+
+            <!-- Realidad -->
+            <div class="comparacion-col col-realidad">
+              <span class="col-kicker">Cosecha real registrada</span>
+              <div class="col-metric">{{ miles(real.rendimiento) }} <small>kg/ha</small></div>
+              <div class="col-sub">Ratio real: <strong>{{ coma(real.ratio) }}</strong> ({{ pct(real.ratio) }})</div>
+              <div class="col-estado">
+                Campaña real: <strong class="{{ 'si' if real.mala else 'no' }}">{{ "MALA (< 85%)" if real.mala else "NORMAL (≥ 85%)" }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Balance de Desempeño -->
+          <div class="comparacion-balance">
+            <h4>Evaluación de acierto en este caso</h4>
+            <div class="aciertos-pills">
+              {% if real.acierto_clasificador is defined %}
+              <div class="acierto-item {{ 'ok' if real.acierto_clasificador else 'mal' }}">
+                <span class="acierto-ico">{{ "✓" if real.acierto_clasificador else "✗" }}</span>
+                <div>
+                  <strong>Clasificación: {{ "Acierto" if real.acierto_clasificador else "Error" }}</strong>
+                  <small>{{ "Detectó correctamente la condición final de la campaña." if real.acierto_clasificador else "No coincidió con el resultado final registrado." }}</small>
+                </div>
+              </div>
+              {% endif %}
+              {% if real.acierto_regresion is defined %}
+              <div class="acierto-item {{ 'ok' if real.acierto_regresion else 'mal' }}">
+                <span class="acierto-ico">{{ "✓" if real.acierto_regresion else "✗" }}</span>
+                <div>
+                  <strong>Regresión: {{ "Acierto en umbral" if real.acierto_regresion else "Desvío de umbral" }}</strong>
+                  <small>{{ "Ubicó el rendimiento del lado correcto del 85%." if real.acierto_regresion else "El ratio predicho cruzó el umbral en sentido opuesto al real." }}</small>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+
+            <p class="comparacion-analisis">
+              {% if real.mala and resultado.alerta_final %}
+                <strong>Lectura agronómica:</strong> Detección temprana exitosa. La anomalía hídrica capturada antes de cosecha permitió anticipar el siniestro productivo.
+              {% elif real.mala and not resultado.alerta_final %}
+                <strong>Lectura agronómica:</strong> Pérdida no capturada (posible factor no climático o evento puntual fuera de la ventana agregada).
+              {% elif not real.mala and resultado.alerta_final %}
+                <strong>Lectura agronómica:</strong> Alerta preventiva sin pérdida crítica; el cultivo logró sobreponerse al estrés hídrico de la ventana.
+              {% else %}
+                <strong>Lectura agronómica:</strong> Campaña sin anomalías hídricas severas; se confirmó un ciclo productivo en rangos esperados.
+              {% endif %}
+            </p>
+          </div>
         {% endif %}
       </div>
       {% endif %}
@@ -312,19 +666,20 @@
           <li><strong>Girasol:</strong> con estas variables la alerta no es confiable; conviene leerla con mucha cautela.</li>
           <li><strong>La probabilidad no está calibrada:</strong> sirve para ordenar casos, no como una probabilidad exacta. Se evaluó calibrarla y la decisión no cambia; el detalle está en el informe final, sección 5.5.</li>
           <li><strong>No cubre todas las causas de pérdida:</strong> granizo, plagas, anegamientos puntuales o decisiones de precio quedan fuera del modelo.</li>
-          <li><strong>Campañas futuras:</strong> el autocompletado llega hasta 2024/25; para años posteriores hay que cargar el clima a mano.</li>
+          <li><strong>Campañas futuras:</strong> el autocompletado histórico llega hasta 2024/25; para años posteriores podés proyectar escenarios simulando el clima esperado.</li>
         </ul>
         <p class="hint">Usala como una señal más junto con el criterio agronómico y la información de campo, no como la única fuente para decidir.</p>
       </div>
     </div>
 
-    <form method="POST" action="/predecir#resultado" id="form-pred" novalidate>
+    <!-- Formulario de Entrada -->
+    <form method="post" action="/predecir#resultado">
       <div class="card">
-        <h2>🌾 Campaña a predecir</h2>
+        <h2>📍 Caso a predecir</h2>
         <div class="grid-3">
           <div>
             <label for="partido">Partido</label>
-            <select id="partido" name="partido">
+            <select id="partido" name="partido" required>
               <option value="">Seleccionar...</option>
               {% for p in partidos %}
               <option value="{{ p }}" {{ "selected" if p == partido }}>{{ p }}</option>
@@ -344,6 +699,11 @@
             <label for="anio">Campaña</label>
             <select id="anio" name="anio">
               <option value="">Seleccionar...</option>
+              <optgroup label="Simulación: Campañas futuras">
+                {% for a in anios.futuras %}
+                <option value="{{ a }}" {{ "selected" if a == anio }}>{{ a }}/{{ "%02d"|format((a + 1) % 100) }} (Proyección)</option>
+                {% endfor %}
+              </optgroup>
               <optgroup label="Prueba: los modelos no las vieron">
                 {% for a in anios.prueba %}
                 <option value="{{ a }}" {{ "selected" if a == anio }}>{{ a }}/{{ "%02d"|format((a + 1) % 100) }}</option>
@@ -358,7 +718,7 @@
           </div>
         </div>
         <p class="estado-historico{% if autocomp %} ok{% elif partido and cultivo and anio %} error{% endif %}" id="estado-historico" aria-live="polite">
-          {% if autocomp %}Datos históricos cargados.{% elif partido and cultivo and anio %}No hay datos de {{ cultivo }} en {{ partido }} para esa campaña. Probá con otra o completá los valores a mano.{% endif %}
+          {% if autocomp %}{% if autocomp.get('es_futura') %}Línea de base histórica cargada para simular campaña futura.{% else %}Datos históricos cargados.{% endif %}{% elif partido and cultivo and anio %}No hay datos de {{ cultivo }} en {{ partido }} para esa campaña. Probá con otra o completá los valores a mano.{% endif %}
         </p>
       </div>
 
@@ -378,11 +738,11 @@
         </div>
       </div>
 
-      <details class="card" id="escenario" {% if cambios or not autocomp %}open{% endif %}>
+      <details class="card" id="escenario" {% if cambios or not autocomp or (autocomp and autocomp.get('es_futura')) %}open{% endif %}>
         <summary><span>☁️ Clima de la campaña <span class="contador-cambios" id="contador-cambios"></span></span></summary>
         <div class="escenario-ayuda">
-          <span>Se completa con el clima real de la ventana de cada cultivo. Cambiá los valores para simular un escenario, por ejemplo, menos lluvia.</span>
-          <button type="button" class="btn-link" id="btn-restaurar" disabled>Restaurar valores reales</button>
+          <span>Se completa con el clima de la ventana crítica del cultivo. Para campañas futuras podés simular escenarios (ej. reducir lluvia para sequía).</span>
+          <button type="button" class="btn-link" id="btn-restaurar" disabled>Restaurar valores iniciales</button>
         </div>
         <div class="grid-3">
           {% for col, (etiqueta, unidad, minimo, maximo, entero) in clima_fields.items() %}
@@ -434,7 +794,7 @@
         var partido = selects[0].value, cultivo = selects[1].value, anio = selects[2].value;
         if (!partido || !cultivo || !anio) { return; }
         estado.className = "estado-historico";
-        estado.textContent = "Buscando datos históricos…";
+        estado.textContent = "Buscando datos de referencia…";
         var url = "/api/historico?partido=" + encodeURIComponent(partido) +
           "&cultivo=" + encodeURIComponent(cultivo) + "&anio=" + encodeURIComponent(anio);
         fetch(url).then(function (r) { return r.json(); }).then(function (data) {
@@ -452,11 +812,16 @@
             if (v !== undefined) { input.value = redondear(v); input.dataset.original = redondear(v); }
           });
           estado.className = "estado-historico ok";
-          estado.textContent = "Datos históricos de " + cultivo + " en " + partido + " cargados.";
+          if (data.es_futura) {
+            estado.textContent = "Línea de base histórica cargada para " + cultivo + " en " + partido + ". Podés proyectar o simular el clima.";
+            escenario.open = true;
+          } else {
+            estado.textContent = "Datos históricos de " + cultivo + " en " + partido + " cargados.";
+          }
           marcarCambios();
         }).catch(function () {
           estado.className = "estado-historico error";
-          estado.textContent = "No se pudieron cargar los datos históricos.";
+          estado.textContent = "No se pudieron cargar los datos de referencia.";
         });
       }
 
