@@ -54,16 +54,6 @@ MATERIALES = [
         "nombre_descarga": "presentacion-tp-integrador.html",
     },
     {
-        "slug": "presentacion.pdf",
-        "titulo": "Presentación en PDF",
-        "formato": "PDF",
-        "detalle": "La misma presentación, lista para proyectar o imprimir.",
-        "accion": "Abrir el PDF",
-        "archivo": PRESENTACION_PDF,
-        "mimetype": "application/pdf",
-        "nombre_descarga": "presentacion-tp-integrador.pdf",
-    },
-    {
         "slug": "informe.pdf",
         "titulo": "Informe final",
         "formato": "PDF",

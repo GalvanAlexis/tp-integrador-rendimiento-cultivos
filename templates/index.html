@@ -2,49 +2,344 @@
 {% block title %}Rendimiento de cultivos | TP Integrador{% endblock %}
 
 {% block css %}
-    .hero { display: flex; flex-direction: column; gap: 16px; margin-bottom: 48px; }
-    .badge {
+    /* Hero Principal */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-bottom: 40px;
+    }
+    .badge-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       align-self: flex-start;
       background: var(--verde-claro);
       color: var(--verde);
-      border: 1px solid var(--borde);
+      border: 1px solid var(--verde-border);
       border-radius: 999px;
-      padding: 4px 14px;
-      font-size: 13px;
-      font-weight: 600;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .02em;
     }
-    .hero h1 { font-size: clamp(30px, 4vw, 46px); }
-    .subtitle { color: var(--gris); font-size: 17px; max-width: 62ch; }
-    .hero-acciones { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
-    section { margin-bottom: 44px; }
-    section > h2 { font-size: 22px; color: var(--tinta); margin-bottom: 6px; }
-    .intro { color: var(--gris); font-size: 15px; margin-bottom: 20px; max-width: 70ch; }
+    .badge-pulse {
+      width: 7px;
+      height: 7px;
+      background: #16a34a;
+      border-radius: 50%;
+      box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
+      animation: pulseDot 2s infinite;
+    }
+    @keyframes pulseDot {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 7px rgba(22, 163, 74, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+    }
+    .hero h1 {
+      font-size: clamp(32px, 5.2vw, 48px);
+      line-height: 1.12;
+      color: var(--verde-deep);
+    }
+    .hero h1 span {
+      color: var(--verde-mid);
+    }
+    .subtitle {
+      color: var(--gris);
+      font-size: clamp(16px, 2.2vw, 18px);
+      max-width: 64ch;
+      line-height: 1.5;
+    }
+    .hero-acciones {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    /* Metricas Clave / KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 44px;
+    }
+    .kpi-card {
+      background: var(--blanco);
+      border: 1px solid var(--linea);
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+      box-shadow: var(--shadow-sm);
+      transition: transform .15s ease, border-color .15s ease;
+    }
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--borde);
+    }
+    .kpi-num {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--verde-deep);
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .kpi-label {
+      font-size: 12px;
+      color: var(--gris);
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
+    /* Secciones Globales */
+    section {
+      margin-bottom: 48px;
+    }
+    .section-header {
+      margin-bottom: 20px;
+    }
+    .section-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--verde-mid);
+      margin-bottom: 6px;
+    }
+    section > h2, .section-header > h2 {
+      font-size: clamp(22px, 3.2vw, 28px);
+      color: var(--verde-deep);
+      margin-bottom: 8px;
+      line-height: 1.25;
+    }
+    .intro {
+      color: var(--gris);
+      font-size: 15px;
+      line-height: 1.55;
+      max-width: 68ch;
+    }
+
+    /* Card Base */
     .card {
       background: var(--blanco);
-      border: 1px solid var(--borde);
-      border-radius: 14px;
-      padding: 24px;
+      border: 1px solid var(--linea);
+      border-radius: var(--radius-lg);
+      padding: 26px;
+      box-shadow: var(--shadow-sm);
     }
-    /* Materiales y presentacion */
+
+    /* Escala Visual del Umbral */
+    .umbral-meter {
+      position: relative;
+      margin: 36px 0 28px;
+    }
+    .escala-track {
+      position: relative;
+      height: 16px;
+      border-radius: 999px;
+      background: linear-gradient(to right, #fca5a5 0%, #fecaca 42%, #bbf7d0 48%, #86efac 100%);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+    }
+    .escala-pin {
+      position: absolute;
+      top: -8px;
+      bottom: -8px;
+      width: 3px;
+      background: var(--verde-deep);
+      border-radius: 2px;
+    }
+    .escala-pin-label {
+      position: absolute;
+      top: -26px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--verde-deep);
+      background: var(--blanco);
+      border: 1px solid var(--linea);
+      border-radius: 6px;
+      padding: 1px 7px;
+      box-shadow: var(--shadow-sm);
+      white-space: nowrap;
+    }
+    .escala-ticks {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--gris-claro);
+      font-weight: 600;
+    }
+    .zonas {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid var(--linea);
+    }
+    .zona-mala strong {
+      display: block;
+      color: var(--rojo-mid);
+      font-size: 15px;
+      margin-bottom: 2px;
+    }
+    .zona-normal strong {
+      display: block;
+      color: var(--verde-mid);
+      font-size: 15px;
+      margin-bottom: 2px;
+    }
+    .zona-desc {
+      font-size: 13px;
+      color: var(--gris);
+      line-height: 1.4;
+    }
+
+    /* Modelos Duales */
+    .modelos-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .modelo-card {
+      background: var(--blanco);
+      border-radius: var(--radius-lg);
+      padding: 26px;
+      border: 1px solid var(--linea);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transition: all .18s ease;
+    }
+    .modelo-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .modelo-reg { border-top: 4px solid var(--reg); }
+    .modelo-clf { border-top: 4px solid var(--clf); }
+    .modelo-card h3 {
+      font-size: 21px;
+      margin: 12px 0 4px;
+      color: var(--verde-deep);
+    }
+    .modelo-sub {
+      font-size: 13px;
+      color: var(--gris);
+      margin-bottom: 16px;
+      font-weight: 500;
+    }
+    .speech-box {
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .modelo-reg .speech-box { background: var(--reg-bg); border-left: 3px solid var(--reg); }
+    .modelo-clf .speech-box { background: var(--clf-bg); border-left: 3px solid var(--clf); }
+    .speech-caption {
+      display: block;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--gris);
+      margin-bottom: 4px;
+    }
+    .speech-quote {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--tinta);
+      line-height: 1.35;
+    }
+    .modelo-dl {
+      font-size: 13px;
+      margin-top: auto;
+    }
+    .modelo-dt {
+      font-weight: 700;
+      color: var(--verde-deep);
+      margin-top: 10px;
+    }
+    .modelo-dd {
+      color: var(--gris);
+      line-height: 1.45;
+      margin-top: 2px;
+    }
+
+    /* Tabla / Escenarios de Acuerdo */
+    .tabla-scroll {
+      overflow-x: auto;
+      margin-top: 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--linea);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background: var(--blanco);
+      min-width: 520px;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--linea);
+    }
+    th {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--gris);
+      font-weight: 800;
+      background: var(--verde-surface);
+    }
+    td.num, th.num {
+      text-align: right;
+    }
+    .pill-status {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .pill-mala { background: var(--rojo-bg); color: var(--rojo-mid); }
+    .pill-buena { background: var(--verde-claro); color: var(--verde); }
+    .confianza-alta {
+      font-weight: 800;
+      color: var(--rojo-mid);
+    }
+
+    /* Materiales Destacados */
     .materiales-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-columns: 1fr 1fr;
       gap: 16px;
     }
     .material-card {
       background: var(--blanco);
-      border: 1px solid var(--borde);
-      border-radius: 14px;
+      border: 1px solid var(--linea);
+      border-radius: var(--radius-lg);
       padding: 24px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       gap: 14px;
+      box-shadow: var(--shadow-sm);
+      transition: all .16s ease;
+    }
+    .material-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--borde);
     }
     .material-tag {
       align-self: flex-start;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 800;
       letter-spacing: .06em;
       text-transform: uppercase;
       color: var(--verde);
@@ -53,50 +348,79 @@
       border-radius: 999px;
       padding: 3px 10px;
     }
-    .material-card h3 { font-size: 18px; color: var(--tinta); }
-    .material-desc { font-size: 14px; color: var(--gris); line-height: 1.45; }
-    .material-card .btn-secondary { align-self: flex-start; margin-top: auto; }
+    .material-card h3 {
+      font-size: 19px;
+      color: var(--verde-deep);
+    }
+    .material-desc {
+      font-size: 14px;
+      color: var(--gris);
+      line-height: 1.45;
+    }
+    .material-card .btn-secondary {
+      align-self: flex-start;
+      margin-top: auto;
+    }
 
-    /* Que es una campana mala */
-    .escala { position: relative; height: 14px; border-radius: 999px; margin: 34px 0 30px;
-      background: linear-gradient(to right, var(--rojo-borde) 0 45%, var(--verde-claro) 45% 100%); }
-    .escala .marca { position: absolute; top: -6px; bottom: -6px; width: 2px; background: var(--tinta); }
-    .escala .marca span { position: absolute; top: -24px; left: 50%; transform: translateX(-50%);
-      font-size: 12px; font-weight: 600; white-space: nowrap; }
-    .escala .tick { position: absolute; top: 20px; transform: translateX(-50%); font-size: 12px; color: var(--gris); white-space: nowrap; }
-    .zonas { display: flex; justify-content: space-between; gap: 16px; font-size: 14px; }
-    .zonas strong { display: block; }
-    .zona-mala strong { color: var(--rojo); }
-    .zona-normal { text-align: right; }
-    .zona-normal strong { color: var(--verde); }
-    /* Dos modelos */
-    .modelos { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .modelo { border-radius: 14px; padding: 24px; background: var(--blanco); }
-    .modelo-reg { border: 1px solid var(--reg-borde); border-top: 4px solid var(--reg); }
-    .modelo-clf { border: 1px solid var(--clf-borde); border-top: 4px solid var(--clf); }
-    .modelo h3 { font-size: 20px; margin: 10px 0 4px; }
-    .modelo .que { font-size: 14px; color: var(--gris); margin-bottom: 14px; }
-    .respuesta { border-radius: 10px; padding: 12px 14px; font-size: 15px; margin-bottom: 14px; }
-    .modelo-reg .respuesta { background: var(--reg-bg); }
-    .modelo-clf .respuesta { background: var(--clf-bg); }
-    .respuesta small { display: block; font-size: 12px; color: var(--gris); text-transform: uppercase; letter-spacing: .05em; }
-    .modelo dl { font-size: 14px; }
-    .modelo dt { font-weight: 600; margin-top: 8px; }
-    .modelo dd { color: var(--gris); }
-    /* Como leer el resultado */
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--linea); }
-    th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--gris); font-weight: 600; }
-    td.num { text-align: right; font-weight: 600; white-space: nowrap; }
-    th.num { text-align: right; }
-    .si { color: var(--rojo); font-weight: 600; }
-    .no { color: var(--verde); font-weight: 600; }
-    .nota { font-size: 13px; color: var(--gris); margin-top: 12px; }
-    .tabla-scroll { overflow-x: auto; }
-    .limites { margin-left: 18px; color: var(--gris); font-size: 14px; }
-    .limites li { margin-bottom: 8px; }
-    @media (max-width: 700px) {
-      .modelos { grid-template-columns: 1fr; }
+    /* Lista de Limites */
+    .limites-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .limites-list li {
+      font-size: 14px;
+      color: var(--gris);
+      line-height: 1.5;
+      padding-left: 24px;
+      position: relative;
+    }
+    .limites-list li::before {
+      content: "•";
+      color: var(--verde-mid);
+      font-size: 22px;
+      position: absolute;
+      left: 6px;
+      top: -4px;
+    }
+    .limites-list strong {
+      color: var(--verde-deep);
+    }
+
+    /* Reglas para Pantallas Verticales 9:16 (Smartphones 360px - 430px) */
+    @media (max-width: 680px) {
+      .kpi-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .kpi-card {
+        padding: 12px 14px;
+      }
+      .kpi-num {
+        font-size: 22px;
+      }
+      .modelos-grid, .materiales-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      .zonas {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .card {
+        padding: 20px 16px;
+      }
+      .hero-acciones {
+        flex-direction: column;
+        width: 100%;
+      }
+      .hero-acciones .btn-primary,
+      .hero-acciones .btn-secondary,
+      .material-card .btn-secondary {
+        width: 100%;
+        text-align: center;
+      }
     }
 {% endblock %}
 
@@ -104,191 +428,230 @@
 {% set reg = resumen.get("reg") %}
 {% set clf = resumen.get("clf") %}
 {% set acuerdo = resumen.get("acuerdo", {}) %}
+
+    <!-- 1. Hero Principal -->
     <div class="hero">
-      <span class="badge">Entrega 5 &middot; App publicada</span>
-      <h1>¿Se viene una campaña mala?</h1>
+      <div class="badge-live">
+        <span class="badge-pulse" aria-hidden="true"></span>
+        <span>Entrega 5 &middot; Sistema en producción</span>
+      </div>
+      <h1>¿Se viene una <span>campaña mala?</span></h1>
       <p class="subtitle">
-        Estimamos el rendimiento de maíz, trigo, girasol y soja en los partidos de la
-        Provincia de Buenos Aires y avisamos, antes de la cosecha, si la campaña
-        puede quedar muy por debajo de lo habitual.
+        Anticipamos el rendimiento de <strong>maíz, trigo, girasol y soja</strong> en los 107 partidos
+        bonaerenses y emitimos alertas tempranas antes de la cosecha a partir de variables climáticas.
       </p>
       <div class="hero-acciones">
-        <a href="/predecir" class="btn-primary">Hacer una predicción &rarr;</a>
-        <a href="/academia/presentacion" class="btn-secondary">Ver presentación (14 slides) &rarr;</a>
+        <a href="/predecir" class="btn-primary">Hacer una predicción en vivo &rarr;</a>
+        <a href="/academia/presentacion" class="btn-secondary">Ver presentación interactiva &rarr;</a>
         <a href="/predecir?partido=Pergamino&amp;cultivo=Soja%20total&amp;anio=2022&amp;predecir=1#resultado" class="btn-secondary">
-          Ejemplo: soja Pergamino 2022/23
+          Caso testigo: Soja Pergamino 22/23
         </a>
       </div>
     </div>
 
-    <!-- Seccion de Presentacion y Materiales -->
-    <section id="presentacion-y-materiales">
-      <h2>Presentación y materiales del proyecto</h2>
-      <p class="intro">
-        Accedé directamente a las diapositivas de la defensa oral, a la versión lista para
-        imprimir o proyectar, y al informe final completo.
-      </p>
+    <!-- 2. Metricas Clave del Sistema -->
+    <div class="kpi-grid" aria-label="Estadísticas clave del modelo">
+      <div class="kpi-card">
+        <div class="kpi-num">4</div>
+        <div class="kpi-label">Cultivos estratégicos con fecha de corte fija</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num">107</div>
+        <div class="kpi-label">Partidos de la Provincia de Buenos Aires</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num">89%</div>
+        <div class="kpi-label">Precisión empírica cuando ambos modelos alertan</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num">43</div>
+        <div class="kpi-label">Años históricos evaluados (1981 a 2025)</div>
+      </div>
+    </div>
+
+    <!-- 3. Explicacion del Ratio y Umbral -->
+    <section>
+      <div class="section-header">
+        <span class="section-tag">Fundamento Agronómico</span>
+        <h2>¿Qué define a una campaña mala?</h2>
+        <p class="intro">
+          Para eliminar sesgos de suelo y tecnología entre partidos, modelamos el <strong>ratio</strong>:
+          rendimiento del ciclo dividido por el promedio de las 5 campañas anteriores.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="umbral-meter" aria-hidden="true">
+          <div class="escala-track">
+            <div class="escala-pin" style="left: 45%;">
+              <span class="escala-pin-label">Corte 0,85</span>
+            </div>
+          </div>
+          <div class="escala-ticks">
+            <span>0,50 (Pérdida severa)</span>
+            <span>0,85</span>
+            <span>1,00 (Promedio histórico)</span>
+            <span>1,30 (Excelente)</span>
+          </div>
+        </div>
+
+        <div class="zonas">
+          <div class="zona-mala">
+            <strong>Campaña mala (Ratio &lt; 0,85)</strong>
+            <p class="zona-desc">Rinde más de un 15% por debajo de su media histórica. Justificado frente a la Ley de Emergencia y seguros multirriesgo.</p>
+          </div>
+          <div class="zona-normal">
+            <strong>Campaña normal o superior (&ge; 0,85)</strong>
+            <p class="zona-desc">Rendimiento dentro de los márgenes productivos esperados para la zona.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Arquitectura Dual: Dos Preguntas, Dos Modelos -->
+    <section>
+      <div class="section-header">
+        <span class="section-tag">Estrategia de Modelado</span>
+        <h2>Dos preguntas, dos modelos complementarios</h2>
+        <p class="intro">
+          La aplicación consulta dos sistemas especializados entrenados sobre datos satelitales y climáticos de NASA POWER.
+        </p>
+      </div>
+
+      <div class="modelos-grid">
+        <article class="modelo-card modelo-reg">
+          <span class="etiqueta-modelo etiqueta-reg">Regresión</span>
+          <h3>¿Cuánto va a rendir?</h3>
+          <p class="modelo-sub">{{ resumen.get("regresor_desc", "Regresor KNN con clima") }}</p>
+          <div class="speech-box">
+            <span class="speech-caption">Estimación cuantitativa</span>
+            <div class="speech-quote">«Unos 2.300 kg/ha, el 72% de lo habitual.»</div>
+          </div>
+          <dl class="modelo-dl">
+            <dt class="modelo-dt">Fortaleza</dt>
+            <dd class="modelo-dd">Precisión en la magnitud de kilos por hectárea para planificación financiera y logística.</dd>
+            <dt class="modelo-dt">Límite</dt>
+            <dd class="modelo-dd">
+              Por regresión hacia la media, comprime predicciones en los extremos.
+              {% if reg %}Detectó {{ reg.tp }} de {{ reg.positivos }} campañas malas en test ({{ "%.0f"|format(reg.recall * 100) }}%).{% endif %}
+            </dd>
+          </dl>
+        </article>
+
+        <article class="modelo-card modelo-clf">
+          <span class="etiqueta-modelo etiqueta-clf">Clasificación</span>
+          <h3>¿Se viene una campaña mala?</h3>
+          <p class="modelo-sub">{{ resumen.get("clasificador_desc", "Árbol de Decisión optimizado por costo") }}</p>
+          <div class="speech-box">
+            <span class="speech-caption">Alerta temprana de riesgo</span>
+            <div class="speech-quote">«Alerta activada: riesgo del 78%.»</div>
+          </div>
+          <dl class="modelo-dl">
+            <dt class="modelo-dt">Fortaleza</dt>
+            <dd class="modelo-dd">
+              Optimizado con matriz de costo asimétrica (FN = 2 &times; FP).
+              {% if clf %}Detectó {{ clf.tp }} de {{ clf.positivos }} campañas malas ({{ "%.0f"|format(clf.recall * 100) }}%).{% endif %}
+            </dd>
+            <dt class="modelo-dt">Límite</dt>
+            <dd class="modelo-dd">
+              No predice volumen exacto y asume más falsas alarmas controladas{% if clf and reg %}: {{ clf.fp }} contra {{ reg.fp }} de la regresión{% endif %}.
+            </dd>
+          </dl>
+        </article>
+      </div>
+    </section>
+
+    <!-- 5. Lectura Integrada -->
+    {% if acuerdo %}
+    <section>
+      <div class="section-header">
+        <span class="section-tag">Interpretación Conjunta</span>
+        <h2>Cómo interpretar el resultado</h2>
+        <p class="intro">
+          El clasificador emite la señal primaria de alerta. La regresión aporta el contraste: cuando ambos coinciden, el nivel de certeza se maximiza.
+        </p>
+      </div>
+
+      <div class="card" style="padding: 16px;">
+        <div class="tabla-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Clasificación</th>
+                <th>Regresión</th>
+                <th>Señal emitida</th>
+                <th class="num">Acierto real en test</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for clave, texto in [((true, true), "Alerta de alta confianza"), ((true, false), "Alerta preventiva"), ((false, true), "Señal débil"), ((false, false), "Sin alerta")] %}
+              {% set fila = acuerdo.get(clave) %}
+              {% if fila %}
+              <tr>
+                <td><span class="pill-status {{ 'pill-mala' if clave[0] else 'pill-buena' }}">{{ "Mala" if clave[0] else "Normal" }}</span></td>
+                <td><span class="pill-status {{ 'pill-mala' if clave[1] else 'pill-buena' }}">{{ "< 0,85" if clave[1] else "≥ 0,85" }}</span></td>
+                <td class="{{ 'confianza-alta' if clave == (true, true) else '' }}">{{ texto }}</td>
+                <td class="num"><strong>{{ "%.0f"|format(fila.precision * 100) }}%</strong></td>
+              </tr>
+              {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- 6. Materiales y Documentacion -->
+    <section id="materiales-destacados">
+      <div class="section-header">
+        <span class="section-tag">Documentación de Entrega</span>
+        <h2>Materiales del proyecto</h2>
+        <p class="intro">
+          Accedé directamente a la defensa oral interactiva y al informe técnico completo que fundamenta el desarrollo.
+        </p>
+      </div>
+
       <div class="materiales-grid">
         <article class="material-card">
           <span class="material-tag">HTML Interactivo</span>
           <h3>Presentación oral</h3>
           <p class="material-desc">
             Catorce diapositivas navegables en pantalla completa con notas del orador,
-            gráficos de alta resolución y demostración en vivo.
+            gráficos de alta resolución y demostración en vivo integrada.
           </p>
           <a href="/academia/presentacion" class="btn-secondary">Abrir presentación &rarr;</a>
         </article>
+
         <article class="material-card">
-          <span class="material-tag">PDF</span>
-          <h3>Presentación en PDF</h3>
-          <p class="material-desc">
-            La misma presentación compilada en documento PDF, optimizada para proyectar o imprimir sin conexión.
-          </p>
-          <a href="/academia/presentacion.pdf" class="btn-secondary" target="_blank" rel="noopener">Abrir PDF &rarr;</a>
-        </article>
-        <article class="material-card">
-          <span class="material-tag">PDF</span>
+          <span class="material-tag">PDF Oficial</span>
           <h3>Informe final completo</h3>
           <p class="material-desc">
-            El informe académico exhaustivo: fundamentación agronómica, regresión, clasificación,
-            evaluación de mejoras y consigna.
+            Documento académico exhaustivo: fundamentación agronómica, regresión, clasificación,
+            evaluación de mejoras descartadas y respuestas a la consigna.
           </p>
-          <a href="/academia/informe.pdf" class="btn-secondary" target="_blank" rel="noopener">Abrir informe &rarr;</a>
+          <a href="/academia/informe.pdf" class="btn-secondary" target="_blank" rel="noopener">Abrir informe final (PDF) &rarr;</a>
         </article>
       </div>
     </section>
 
+    <!-- 7. Limites y Honestidad Tecnica -->
     <section>
-      <h2>¿Qué es una campaña mala?</h2>
-      <p class="intro">
-        Comparamos el rendimiento de cada campaña con el promedio de las cinco anteriores en
-        el mismo partido. Ese cociente es el <strong>ratio</strong>: 1 es una campaña normal.
-        Una campaña es <strong>mala</strong> cuando rinde más de un 15% menos de lo habitual
-        (ratio menor a 0,85).
-      </p>
-      <div class="card">
-        <div class="escala" aria-hidden="true">
-          <div class="marca" style="left:45%"><span>0,85</span></div>
-          <span class="tick" style="left:10%">0,50</span>
-          <span class="tick" style="left:60%">1,00</span>
-          <span class="tick" style="left:90%">1,30</span>
-        </div>
-        <div class="zonas">
-          <div class="zona-mala"><strong>Campaña mala</strong>rinde menos del 85% de lo habitual</div>
-          <div class="zona-normal"><strong>Campaña normal o buena</strong>rinde el 85% o más</div>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <h2>Dos preguntas, dos modelos</h2>
-      <p class="intro">
-        La app consulta dos modelos de aprendizaje automático. Cada uno responde una pregunta
-        distinta y sus respuestas se complementan.
-      </p>
-      <div class="modelos">
-        <article class="modelo modelo-reg">
-          <span class="etiqueta-modelo etiqueta-reg">Regresión</span>
-          <h3>¿Cuánto va a rendir?</h3>
-          <p class="que">{{ resumen.get("regresor_desc", "Regresor") }}</p>
-          <div class="respuesta">
-            <small>Responde con un número</small>
-            «Unos 2.300 kg/ha, el 72% de lo habitual.»
-          </div>
-          <dl>
-            <dt>Fortaleza</dt>
-            <dd>Estima la magnitud: cuántos kilos por hectárea esperar.</dd>
-            <dt>Límite</dt>
-            <dd>
-              Tiende a predecir valores cercanos a lo normal, así que pocas veces baja de 0,85.
-              {% if reg %}En las campañas de prueba detectó {{ reg.tp }} de {{ reg.positivos }} campañas malas ({{ "%.0f"|format(reg.recall * 100) }}%).{% endif %}
-            </dd>
-          </dl>
-        </article>
-        <article class="modelo modelo-clf">
-          <span class="etiqueta-modelo etiqueta-clf">Clasificación</span>
-          <h3>¿Será una campaña mala?</h3>
-          <p class="que">{{ resumen.get("clasificador_desc", "Clasificador") }}</p>
-          <div class="respuesta">
-            <small>Responde sí o no, con un nivel de riesgo</small>
-            «Sí: riesgo del 78%.»
-          </div>
-          <dl>
-            <dt>Fortaleza</dt>
-            <dd>
-              Se entrenó solo para detectar campañas malas y para no perdérselas.
-              {% if clf %}Detectó {{ clf.tp }} de {{ clf.positivos }} ({{ "%.0f"|format(clf.recall * 100) }}%).{% endif %}
-            </dd>
-            <dt>Límite</dt>
-            <dd>
-              No dice cuánto va a rendir y da más falsas alarmas{% if clf and reg %}: {{ clf.fp }}, contra {{ reg.fp }} de la regresión{% endif %}.
-            </dd>
-          </dl>
-        </article>
-      </div>
-    </section>
-
-    {% if acuerdo %}
-    <section>
-      <h2>Cómo leer el resultado</h2>
-      <p class="intro">
-        La alerta la da el clasificador. La regresión sirve para medir la confianza:
-        cuando los dos coinciden, la alerta es mucho más confiable.
-      </p>
-      <div class="card tabla-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Clasificación</th>
-              <th>Regresión</th>
-              <th>Qué muestra la app</th>
-              <th class="num">Campañas malas reales</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for clave, texto in [((true, true), "Alerta de alta confianza"), ((true, false), "Alerta"), ((false, true), "Sin alerta, señal débil"), ((false, false), "Sin alerta")] %}
-            {% set fila = acuerdo.get(clave) %}
-            {% if fila %}
-            <tr>
-              <td class="{{ 'si' if clave[0] else 'no' }}">{{ "Mala" if clave[0] else "Normal" }}</td>
-              <td class="{{ 'si' if clave[1] else 'no' }}">{{ "Menor a 0,85" if clave[1] else "0,85 o más" }}</td>
-              <td>{{ texto }}</td>
-              <td class="num">{{ "%.0f"|format(fila.precision * 100) }}%</td>
-            </tr>
-            {% endif %}
-            {% endfor %}
-          </tbody>
-        </table>
-        <p class="nota">
-          Porcentaje de campañas que resultaron malas en cada caso, en las campañas de prueba
-          (2019/20 a 2024/25), que los modelos no vieron al entrenar.
+      <div class="section-header">
+        <span class="section-tag">Alcance y Criterio</span>
+        <h2>Cuándo no conviene usarla</h2>
+        <p class="intro">
+          La aplicación ofrece señales de soporte a la decisión, no pronósticos infalibles.
         </p>
       </div>
-    </section>
-    {% endif %}
 
-    <section>
-      <h2>Con qué datos</h2>
-      <p class="intro">
-        Estimaciones Agrícolas de la Provincia de Buenos Aires (campañas 1981/82 a 2024/25) y
-        clima diario de NASA POWER: lluvia, temperatura, humedad, sequía y heladas, medidos en la
-        ventana de cada cultivo, desde la siembra hasta antes de la cosecha.
-      </p>
-    </section>
-
-    <section>
-      <h2>Cuándo no conviene usarla</h2>
-      <p class="intro">
-        La herramienta es una señal, no un pronóstico garantizado. Estos son los límites que hay
-        que tener presentes antes de tomar una decisión.
-      </p>
       <div class="card">
-        <ul class="limites">
-          <li><strong>Fuera de sequías fuertes detecta poco.</strong> La campaña 2022/23 concentra la mayoría de los aciertos; en años normales el recall es bajo.</li>
-          <li><strong>Girasol no tiene una alerta confiable</strong> con estas variables. En maíz, trigo y soja el resultado es más razonable.</li>
-          <li><strong>La probabilidad no está calibrada.</strong> Sirve para ordenar casos, no para leerla como un porcentaje exacto de riesgo. Se evaluó calibrarla: el umbral óptimo baja de 0,65 a 0,376 pero la decisión no cambia, y la variante que se puede reentrenar empeora el costo en validación.</li>
-          <li><strong>No cubre todas las causas de pérdida.</strong> Granizo, plagas, anegamientos puntuales o decisiones de precio quedan fuera del modelo.</li>
-          <li><strong>No reemplaza al asesor.</strong> Usala como una señal más junto con el criterio agronómico y la información de campo, nunca como la única fuente.</li>
+        <ul class="limites-list">
+          <li><strong>Especialización en sequías severas:</strong> La campaña 2022/23 concentra el mayor valor predictivo; en años normales la tasa de alerta es naturalmente conservadora.</li>
+          <li><strong>Disparidad por cultivo:</strong> En soja, maíz y trigo la respuesta climática es nítida; en girasol la señal es débil con las variables actuales.</li>
+          <li><strong>Probabilidad como ordenamiento de riesgo:</strong> La probabilidad predicha sirve para jerarquizar partidas, no como probabilidad frecuentista calibrada.</li>
+          <li><strong>Eventos puntuales no modelados:</strong> Granizo, heladas tardías aisladas o inundaciones repentinas escapan a la ventana climática agregada.</li>
+          <li><strong>No reemplaza al asesor:</strong> Usala como una señal de apoyo junto con el criterio agronómico e información de campo, nunca como la única fuente.</li>
         </ul>
       </div>
     </section>
