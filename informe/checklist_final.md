@@ -14,7 +14,7 @@ Repaso de los catorce puntos de la consigna, con la evidencia de cada uno.
 | 8 | Se analizaron errores y casos cercanos al umbral | Cumplido | Informe, secciones 4.5 y 6.4; seis casos concretos con su consecuencia |
 | 9 | El notebook se ejecuta desde cero | Cumplido | `notebooks/entrenamiento.ipynb`, 49 celdas, ejecutado sin errores; controla los conteos contra `metadata_preparacion.json` |
 | 10 | La aplicación valida las entradas | Cumplido | `app.py` y `tests/test_app.py`; rangos y mensajes en lenguaje claro |
-| 11 | La URL de Vercel funciona desde otro dispositivo | Pendiente | Único punto que requiere una prueba manual: abrir https://tp-integrador-rendimiento-cultivos.vercel.app desde un teléfono con datos móviles |
+| 11 | La URL de Vercel funciona desde otro dispositivo | Parcial | Verificado por HTTP desde una máquina fuera del entorno de build: `GET /health` devuelve `{"status":"ok","entrega":5,"regresor":true,"clasificador":true}`. Falta la confirmación visual desde un teléfono con datos móviles |
 | 12 | El repositorio contiene instrucciones | Cumplido | README: instalación, ejecución, estructura, notebooks, tests y despliegue |
 | 13 | El informe reconoce limitaciones | Cumplido | Informe, sección 9; además el bloque fijo de advertencias de la app |
 | 14 | Todos los integrantes pueden defender el trabajo | Cumplido | `informe/distribucion_tareas.md`, sección 3, con el repaso y las preguntas cruzadas |
@@ -50,6 +50,6 @@ Repaso de los catorce puntos de la consigna, con la evidencia de cada uno.
 | Faltan integrantes en la defensa | Los tres exponen un bloque y responden preguntas |
 | Se reproduce una solución externa | El problema, los objetivos y los análisis son propios; el clima y las decisiones están documentados |
 
-## Único pendiente
+## Pendiente
 
-Probar la URL pública desde otro dispositivo (punto 11). El resto de la lista está cerrado y verificado en el repositorio.
+Queda una sola cosa abierta: abrir https://tp-integrador-rendimiento-cultivos.vercel.app desde un teléfono con datos móviles y confirmar que carga el formulario y responde una predicción. La disponibilidad del servicio ya está verificada por HTTP desde fuera del entorno de build. El resto de la lista está cerrado y verificado en el repositorio.
