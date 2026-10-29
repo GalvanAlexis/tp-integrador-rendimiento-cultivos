@@ -5,6 +5,8 @@ Endpoints:
   GET  /predecir       -> formulario; con partido, cultivo y anio autocompleta
                           y con predecir=1 ademas ejecuta la prediccion
   POST /predecir       -> ejecuta predict y devuelve resultado
+  GET  /academia       -> materiales publicados (presentacion e informe)
+  GET  /academia/...   -> sirve uno de esos materiales, de una lista blanca
   GET  /health         -> estado de la app (JSON)
   GET  /api/datos      -> JSON con partidos, cultivos y anios disponibles
   GET  /api/historico  -> JSON con los valores historicos de una campana
@@ -19,7 +21,7 @@ from pathlib import Path
 
 import joblib
 import pandas as pd
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, abort, jsonify, render_template, request, send_file
 
 from src.config import CLIMA_COLS, MODEL_LABELS, TEST_START, THRESHOLD
 
@@ -31,6 +33,50 @@ REGRESOR_META = MODELOS_DIR / "regresor_metadata.json"
 CLASIFICADOR_META = MODELOS_DIR / "clasificador_metadata.json"
 COMPARACION = PROCESADO_DIR / "clasificacion_comparacion.csv"
 ACUERDO = PROCESADO_DIR / "clasificacion_acuerdo_sistemas_test.csv"
+PRESENTACION_HTML = ROOT / "presentacion" / "presentacion.html"
+PRESENTACION_PDF = ROOT / "presentacion" / "presentacion.pdf"
+INFORME_PDF = ROOT / "informe" / "informe_final.pdf"
+
+# Materiales de la seccion Academia. Es una lista blanca: la ruta solo puede
+# servir uno de estos archivos, nunca una ruta escrita en el pedido.
+MATERIALES = [
+    {
+        "slug": "presentacion",
+        "titulo": "Presentación",
+        "formato": "HTML",
+        "detalle": (
+            "Catorce diapositivas navegables, con las figuras incrustadas y las notas "
+            "del orador. Se abre en el navegador y funciona sin conexión."
+        ),
+        "accion": "Abrir la presentación",
+        "archivo": PRESENTACION_HTML,
+        "mimetype": "text/html",
+        "nombre_descarga": "presentacion-tp-integrador.html",
+    },
+    {
+        "slug": "presentacion.pdf",
+        "titulo": "Presentación en PDF",
+        "formato": "PDF",
+        "detalle": "La misma presentación, lista para proyectar o imprimir.",
+        "accion": "Abrir el PDF",
+        "archivo": PRESENTACION_PDF,
+        "mimetype": "application/pdf",
+        "nombre_descarga": "presentacion-tp-integrador.pdf",
+    },
+    {
+        "slug": "informe.pdf",
+        "titulo": "Informe final",
+        "formato": "PDF",
+        "detalle": (
+            "El informe completo: problema, datos, protocolo, regresión, clasificación, "
+            "integración y las ocho preguntas de la consigna."
+        ),
+        "accion": "Abrir el informe",
+        "archivo": INFORME_PDF,
+        "mimetype": "application/pdf",
+        "nombre_descarga": "informe-final-tp-integrador.pdf",
+    },
+]
 
 # Escala del ratio que se dibuja en el resultado.
 RATIO_MIN, RATIO_MAX = 0.4, 1.4
@@ -359,6 +405,29 @@ def predecir_form():
 @app.post("/predecir")
 def predecir_post():
     return _render_predecir(request.form.to_dict(), ejecutar=True)
+
+
+@app.get("/academia")
+def academia():
+    """Pagina con los materiales publicados: presentacion e informe."""
+    return render_template(
+        "academia.html",
+        materiales=[{**m, "disponible": m["archivo"].exists()} for m in MATERIALES],
+    )
+
+
+@app.get("/academia/<slug>")
+def academia_archivo(slug: str):
+    """Sirve uno de los materiales de la lista blanca, sin aceptar rutas."""
+    material = next((m for m in MATERIALES if m["slug"] == slug), None)
+    if material is None or not material["archivo"].exists():
+        abort(404)
+    return send_file(
+        material["archivo"],
+        mimetype=material["mimetype"],
+        download_name=material["nombre_descarga"],
+        conditional=True,
+    )
 
 
 @app.get("/health")

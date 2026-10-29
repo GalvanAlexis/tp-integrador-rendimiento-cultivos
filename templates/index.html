@@ -25,6 +25,38 @@
       border-radius: 14px;
       padding: 24px;
     }
+    /* Materiales y presentacion */
+    .materiales-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .material-card {
+      background: var(--blanco);
+      border: 1px solid var(--borde);
+      border-radius: 14px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .material-tag {
+      align-self: flex-start;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--verde);
+      background: var(--verde-claro);
+      border: 1px solid var(--borde);
+      border-radius: 999px;
+      padding: 3px 10px;
+    }
+    .material-card h3 { font-size: 18px; color: var(--tinta); }
+    .material-desc { font-size: 14px; color: var(--gris); line-height: 1.45; }
+    .material-card .btn-secondary { align-self: flex-start; margin-top: auto; }
+
     /* Que es una campana mala */
     .escala { position: relative; height: 14px; border-radius: 999px; margin: 34px 0 30px;
       background: linear-gradient(to right, var(--rojo-borde) 0 45%, var(--verde-claro) 45% 100%); }
@@ -82,11 +114,49 @@
       </p>
       <div class="hero-acciones">
         <a href="/predecir" class="btn-primary">Hacer una predicción &rarr;</a>
+        <a href="/academia/presentacion" class="btn-secondary">Ver presentación (14 slides) &rarr;</a>
         <a href="/predecir?partido=Pergamino&amp;cultivo=Soja%20total&amp;anio=2022&amp;predecir=1#resultado" class="btn-secondary">
-          Ver un ejemplo: soja en Pergamino, sequía 2022/23
+          Ejemplo: soja Pergamino 2022/23
         </a>
       </div>
     </div>
+
+    <!-- Seccion de Presentacion y Materiales -->
+    <section id="presentacion-y-materiales">
+      <h2>Presentación y materiales del proyecto</h2>
+      <p class="intro">
+        Accedé directamente a las diapositivas de la defensa oral, a la versión lista para
+        imprimir o proyectar, y al informe final completo.
+      </p>
+      <div class="materiales-grid">
+        <article class="material-card">
+          <span class="material-tag">HTML Interactivo</span>
+          <h3>Presentación oral</h3>
+          <p class="material-desc">
+            Catorce diapositivas navegables en pantalla completa con notas del orador,
+            gráficos de alta resolución y demostración en vivo.
+          </p>
+          <a href="/academia/presentacion" class="btn-secondary">Abrir presentación &rarr;</a>
+        </article>
+        <article class="material-card">
+          <span class="material-tag">PDF</span>
+          <h3>Presentación en PDF</h3>
+          <p class="material-desc">
+            La misma presentación compilada en documento PDF, optimizada para proyectar o imprimir sin conexión.
+          </p>
+          <a href="/academia/presentacion.pdf" class="btn-secondary" target="_blank" rel="noopener">Abrir PDF &rarr;</a>
+        </article>
+        <article class="material-card">
+          <span class="material-tag">PDF</span>
+          <h3>Informe final completo</h3>
+          <p class="material-desc">
+            El informe académico exhaustivo: fundamentación agronómica, regresión, clasificación,
+            evaluación de mejoras y consigna.
+          </p>
+          <a href="/academia/informe.pdf" class="btn-secondary" target="_blank" rel="noopener">Abrir informe &rarr;</a>
+        </article>
+      </div>
+    </section>
 
     <section>
       <h2>¿Qué es una campaña mala?</h2>

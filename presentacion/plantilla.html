@@ -467,6 +467,37 @@
   body.notas .slide.active .notes { display: block; }
 
   /* --- Impresión: una diapositiva por página A4 horizontal --- */
+  #volver {
+    position: fixed;
+    top: 14px;
+    left: 18px;
+    z-index: 1000;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(20, 52, 43, 0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #dcfce7;
+    padding: 7px 16px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid rgba(220, 252, 231, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    transition: background 0.15s, color 0.15s, transform 0.1s;
+    user-select: none;
+  }
+
+  #volver:hover {
+    background: rgba(20, 52, 43, 1);
+    color: #ffffff;
+    border-color: rgba(220, 252, 231, 0.6);
+    transform: translateY(-1px);
+  }
+
   @media print {
     @page { size: 1280px 720px; margin: 0; }
 
@@ -492,7 +523,7 @@
 
     .slide:last-of-type { break-after: auto; page-break-after: auto; }
 
-    #hud, #ayuda, #progreso, .notes { display: none !important; }
+    #hud, #ayuda, #progreso, .notes, #volver { display: none !important; }
   }
 </style>
 </head>
@@ -1015,6 +1046,9 @@
 
 </div>
 
+<a id="volver" href="/" onclick="if (document.referrer && document.referrer.indexOf(window.location.host) !== -1) { history.back(); return false; }" title="Volver a la aplicación web">
+  &larr; Volver a la web
+</a>
 <div id="progreso"></div>
 <div id="hud">1 / 14</div>
 <div id="ayuda">← → navegar · F pantalla completa · S notas</div>
@@ -1076,6 +1110,7 @@
 
     // Navegación por clic: mitad derecha avanza, mitad izquierda retrocede.
     document.addEventListener('click', function (evento) {
+      if (evento.target.closest('#volver, a, aside, .notes')) return;
       if (evento.clientX > window.innerWidth / 2) mostrar(actual + 1);
       else mostrar(actual - 1);
     });
