@@ -762,7 +762,7 @@
       </div>
       <div class="figura">
         <img src="{{fig:p_costo_umbral.png}}" alt="Costo en validación según el umbral">
-        <p class="pista">El umbral 0,65 no es el teórico: las probabilidades no están calibradas</p>
+        <p class="pista">El umbral 0,65 no es el teórico: las probabilidades no están calibradas. Al calibrarlas el óptimo baja a 0,376, con las mismas decisiones</p>
       </div>
     </div>
     <aside class="notes">
@@ -961,7 +961,7 @@
       <div>
         <ul>
           <li><strong>Las pérdidas totales no se anticipan.</strong> Los 10 casos de rendimiento cero del test pasaron sin alerta.</li>
-          <li><strong>Probabilidades sin calibrar:</strong> el umbral 0,65 no es el teórico de 0,33.</li>
+          <li><strong>Probabilidades sin calibrar:</strong> el umbral 0,65 no es el teórico de 0,33. Se evaluó calibrar y la decisión no cambia.</li>
           <li><strong>El clima de reanálisis</strong> suaviza extremos locales.</li>
         </ul>
       </div>
@@ -973,7 +973,7 @@
       <b>Guion (50 s).</b>
       <ul>
         <li>Decir esto con seguridad: reconocer los límites suma, no resta.</li>
-        <li>La mejora más directa es calibrar las probabilidades.</li>
+        <li>Si preguntan: la calibración y los modelos por grupo se midieron en validación y ninguna de las dos mejoró el costo, así que el modelo entregado quedó igual.</li>
       </ul>
     </aside>
   </section>
@@ -981,7 +981,7 @@
   <!-- 14. Cierre -->
   <section class="slide">
     <p class="kicker">Para llevarse</p>
-    <h2>Tres ideas y una mejora pendiente</h2>
+    <h2>Tres ideas y dos mejoras descartadas con datos</h2>
     <div class="tres">
       <div class="punto">
         <span>Uno</span>
@@ -997,7 +997,7 @@
       </div>
     </div>
     <p class="nota" style="margin-top: 34px; font-size: 21px">
-      Mejora pendiente: calibrar las probabilidades del árbol con validación y volver a evaluar GaussianNB, que tuvo el menor costo en test sin poder ser elegido en validación.
+      Calibrar las probabilidades y separar el modelo por grupo de cultivos se midieron en validación: ninguna de las dos mejoró el costo. Queda por delante excluir la superficie sembrada y sumar eventos puntuales que el clima de ventana no explica.
     </p>
     <div class="cierre">
       <p>Gracias. Preguntas.</p>
