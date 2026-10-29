@@ -11,6 +11,12 @@ Protocolo (idéntico al de regresion.py):
    evalúan una sola vez en test (2019/20 a 2024/25).
 5. Se compara el clasificador directo con la alerta derivada del regresor.
 
+La probabilidad de este clasificador no está calibrada. `src/calibracion.py`
+mide las variantes de calibración y deja el resultado en
+`datos/procesado/clasificacion_calibracion_comparacion.csv`; el clasificador
+entregado no las aplica: la variante interpretable no cambia ninguna decisión y
+la que sí se puede reentrenar empeora el costo en validación.
+
 Modelos:
 - DummyClassifier (clase mayoritaria): baseline obligatorio de la consigna.
 - DecisionTreeClassifier con distintas profundidades, hojas mínimas y peso de clases.
