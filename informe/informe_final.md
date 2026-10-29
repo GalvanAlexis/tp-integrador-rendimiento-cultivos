@@ -387,7 +387,7 @@ El objetivo es `mala85 = 1` si el ratio real es menor a 0,85. Se probaron los cu
 
 ![Costo en validación según el umbral](figuras/clasificacion_umbral_costo.png)
 
-- Con probabilidades bien calibradas el umbral óptimo sería 1/3. El árbol tiene su mínimo en **0,65 a 0,70**, porque sus probabilidades no están calibradas y la validación tuvo menos campañas malas que el entrenamiento.
+- Con probabilidades bien calibradas el umbral óptimo sería 1/3. El árbol tiene su mínimo en **0,65 a 0,70**, porque sus probabilidades no están calibradas y la validación tuvo menos campañas malas que el entrenamiento. La sección 5.5 mide esa calibración: el umbral óptimo baja a 0,376 y la decisión no cambia.
 - La selección no depende de un umbral afinado: con el umbral por defecto (0,5) el mismo árbol cuesta 473, todavía muy por debajo del Dummy.
 - Entre 0,70 y 0,75 el costo salta de 443 a 530, así que el umbral elegido está en el borde de una meseta. Un umbral algo menor sería más robusto.
 - Balancear las clases (`class_weight = balanced`) y bajar el umbral son dos formas de mover la misma frontera. Con el umbral elegido en validación, el balanceo no aporta: 474 contra 443.
@@ -460,6 +460,36 @@ Campañas malas reales en test: 470 de 2.204 (21,3 %).
 | 2024/25 | 13 | 0 | 45 | 0 | 20 |
 
 2022/23 concentra el 47 % de las campañas malas del test y el 86 % de los aciertos del árbol. **Fuera de la sequía la regresión no detecta ninguna campaña mala**; el árbol detecta pocas, con una precisión cercana al 40 %.
+
+### 5.5 Dos mejoras pendientes, evaluadas
+
+La Entrega 4 dejó dos mejoras abiertas. Las dos se midieron en validación, sin volver a medir el test, y ninguna se adoptó.
+
+**Calibración de las probabilidades.** Se compararon tres variantes del mismo árbol (profundidad 5, hoja mínima 50, con clima).
+
+| Variante | Calibrador | Umbral | Recall val | Precisión val | Costo val | Correlación de rango con el crudo |
+|---|---|---:|---:|---:|---:|---:|
+| Crudo (entregado) | ninguno | 0,650 | 0,248 | 0,644 | **443** | 1,00 |
+| Sigmoide, validación cruzada interna | 5 pliegues sobre train | 0,532 | 0,100 | 0,509 | 512 | 0,57 |
+| Sigmoide ajustada en validación | validación | **0,376** | 0,248 | 0,644 | **443** | 1,00 |
+
+- La sigmoide sobre un único árbol es monótona: la tercera variante ordena exactamente igual que el modelo crudo y **no puede mejorar la decisión**, pero ubica el umbral óptimo en 0,376, muy cerca del teórico 1/3. Eso confirma que la probabilidad calibrada se puede leer como probabilidad, con las mismas 443 unidades de costo.
+- La variante que sí puede reentrenarse con train + validación promedia cinco árboles distintos. Al cambiar el ordenamiento (correlación 0,57) **empeora el costo en validación: 512 contra 443**, y el recall cae de 0,248 a 0,100.
+- **Conclusión:** el clasificador entregado se mantiene. Adoptar la variante interpretable obligaría a reservar la validación como conjunto de calibración y a entrenar el árbol solo con train, lo que rompe la comparación con la regresión, que sí se reentrena con train + validación. La app conserva la advertencia sobre la probabilidad, ahora respaldada con estos números.
+
+**Modelos por grupo de cultivos.** Se comparó la configuración entregada entrenada con todos los cultivos contra la misma configuración entrenada por separado para verano (maíz, soja y girasol) e invierno (trigo), con el umbral re-elegido en la validación de cada grupo.
+
+| Grupo | Cultivos | Variante | Umbral | Recall val | Precisión val | Costo val |
+|---|---|---|---:|---:|---:|---:|
+| Verano | Maíz, Soja total, Girasol | Global (entregado) | 0,650 | 0,266 | 0,779 | **307** |
+| Verano | Maíz, Soja total, Girasol | Por grupo | 0,844 | 0,015 | 0,273 | 400 |
+| Invierno | Trigo total | Global (entregado) | 0,650 | 0,197 | 0,389 | **136** |
+| Invierno | Trigo total | Por grupo | 0,643 | 0,268 | 0,302 | 148 |
+
+- **Separar por grupo empeora el costo en los dos casos** (400 contra 307 en verano; 148 contra 136 en invierno; 548 contra 443 en total). El modelo ya recibe `cultivo` como variable categórica, así que el árbol puede separar por cultivo sin perder filas, y entrenar por grupo le quita datos para estimar el clima.
+- **Conclusión:** no se adopta. La distinción verano/invierno que el clima sugiere ya está disponible para el árbol, y el costo de restringir el conjunto de entrenamiento supera cualquier ganancia.
+
+Los dos experimentos quedan en `datos/procesado/clasificacion_calibracion_comparacion.csv` y `datos/procesado/clasificacion_por_grupo_cultivo.csv`, y se regeneran con `python -m src.calibracion` y `python -m src.grupos`.
 
 ---
 
@@ -669,7 +699,7 @@ La aplicación Flask está publicada en **https://tp-integrador-rendimiento-cult
 - **Un solo evento domina el test.** La sequía 2022/23 aporta el 47 % de las campañas malas y el 86 % de los aciertos del árbol. Las métricas globales dicen sobre todo qué tan bien se detecta una gran sequía.
 - **Cambio de nivel entre períodos.** El ratio medio bajó de 1,08 en train a 0,96 en test. Si el contexto productivo cambia, los modelos arrastran el nivel de entrenamiento. Es la principal fuente de error de la regresión.
 - **Falsos negativos.** El árbol deja pasar 297 de 470 campañas malas. La mitad son caídas moderadas y el resto no tienen firma climática.
-- **Probabilidades sin calibrar.** El umbral de 0,65 no es el teórico de 0,33. La probabilidad que muestra la app sirve para ordenar casos, no como probabilidad exacta.
+- **Probabilidades sin calibrar.** El umbral de 0,65 no es el teórico de 0,33. La probabilidad que muestra la app sirve para ordenar casos, no como probabilidad exacta. Se midió la calibración (sección 5.5): con un calibrador ajustado en validación el umbral óptimo baja a 0,376 y la decisión no cambia, pero exige renunciar a reentrenar con la validación; la variante que sí puede reentrenarse empeora el costo en validación (512 contra 443).
 - **Cobertura del clima.** Las variables resumen la ventana de cada cultivo. No capturan granizo, heladas tardías localizadas ni anegamientos.
 - **Clima de reanálisis.** NASA POWER suaviza extremos locales y el centroide del partido no representa todo su territorio.
 - **Fechas de corte únicas** para toda la provincia, cuando la fenología varía entre el norte y el sur.
@@ -678,8 +708,8 @@ La aplicación Flask está publicada en **https://tp-integrador-rendimiento-cult
 
 ### Mejoras pendientes
 
-1. **Calibrar las probabilidades** del clasificador con validación (`CalibratedClassifierCV`), para que la probabilidad mostrada se pueda leer como tal y el umbral se acerque al teórico de 1/3.
-2. **Evaluar modelos por grupo de cultivos** (verano e invierno), donde el clima tiene un efecto distinto.
+1. ~~Calibrar las probabilidades del clasificador.~~ **Evaluada y no adoptada** (sección 5.5): la variante interpretable no cambia la decisión y obliga a renunciar al reentrenamiento con validación; la variante reentrenable empeora el costo en validación.
+2. ~~Evaluar modelos por grupo de cultivos (verano e invierno).~~ **Evaluada y no adoptada** (sección 5.5): separar por grupo empeora el costo en validación porque el modelo ya usa `cultivo` como variable categórica.
 3. **Probar la exclusión de la superficie sembrada** en KNN, que tiene importancia negativa.
 4. **Explorar GaussianNB con clima**, que tuvo el menor costo en test, con un protocolo que lo pueda elegir sin mirar el test.
 5. **Sumar fuentes de eventos puntuales** (granizo, heladas locales) para atacar los falsos negativos que el clima de ventana no explica.
@@ -699,6 +729,8 @@ python -m src.clima
 python -m src.baselines
 python -m src.regresion
 python -m src.clasificacion
+python -m src.calibracion
+python -m src.grupos
 python -m pytest -q
 
 python -m jupyter nbconvert --to notebook --execute --inplace notebooks/entrenamiento.ipynb
@@ -718,7 +750,7 @@ python -m flask --app app run
 | `modelos/clasificador.joblib` | Pipeline del árbol con el umbral 0,65 |
 | `modelos/*_metadata.json` | Variables, hiperparámetros, métricas, semilla y versiones |
 | `app.py`, `templates/` | Aplicación Flask |
-| `tests/` | 45 tests del pipeline y de la app |
+| `tests/` | 53 tests del pipeline y de la app, ejecutados en cada push por `.github/workflows/ci.yml` |
 
 ---
 

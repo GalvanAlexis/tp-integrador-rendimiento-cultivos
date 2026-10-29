@@ -1,0 +1,4 @@
+variante,calibracion,ajuste_calibrador,umbral,recall_val,precision_val,f1_val,accuracy_val,costo_val,tp_val,fp_val,fn_val,tn_val,monotonia_spearman
+crudo (entregado),ninguna,-,0.65,0.24814814814814815,0.6442307692307693,0.3582887700534759,0.8687089715536105,443.0,67,37,203,1521,1.0
+sigmoide con validación cruzada interna,sigmoid,5 pliegues sobre train,0.531621,0.1,0.5094339622641509,0.16718266253869968,0.8528446389496718,512.0,27,26,243,1532,0.5703264923341361
+sigmoide ajustada en validación,sigmoid,validación,0.376218,0.24814814814814815,0.6442307692307693,0.3582887700534759,0.8687089715536105,443.0,67,37,203,1521,1.0

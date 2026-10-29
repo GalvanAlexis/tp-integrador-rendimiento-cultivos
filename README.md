@@ -78,6 +78,9 @@ proyecto/
 ├── .python-version
 ├── .vercelignore
 ├── app.py
+├── .github/
+│   └── workflows/
+│       └── ci.yml
 ├── modelos/
 │   ├── regresor.joblib
 │   ├── regresor_metadata.json
@@ -100,7 +103,9 @@ proyecto/
 │   ├── baselines.py
 │   ├── clima.py
 │   ├── regresion.py
-│   └── clasificacion.py
+│   ├── clasificacion.py
+│   ├── calibracion.py
+│   └── grupos.py
 ├── datos/
 │   ├── README.md
 │   ├── diccionario_variables.md
@@ -275,11 +280,33 @@ La app no entrena al arrancar: el primer request carga los dos pipelines y el CS
 
 El proyecto está vinculado al repositorio de GitHub: cada push a `main` redeploya producción y cada rama genera un preview deployment. El primer request después de un deploy tarda unos segundos porque carga los pipelines.
 
+## Mejoras evaluadas
+
+Las dos mejoras que quedaron abiertas en la Entrega 4 se midieron en validación, sin volver a medir el test, y ninguna se adoptó. El clasificador entregado no cambió.
+
+| Mejora | Resultado | Decisión |
+|---|---|---|
+| Calibrar las probabilidades | Sigmoides sobre validación: umbral óptimo 0,376 (teórico 1/3), mismas decisiones y mismo costo (443). Con validación cruzada interna: costo 512 y recall 0,100 | No se adopta: la variante interpretable exige renunciar al reentrenamiento con validación; la reentrenable empeora |
+| Modelos por grupo de cultivos | Verano 400 contra 307 e invierno 148 contra 136 | No se adopta: el árbol ya recibe `cultivo` y separar le quita filas |
+
+```bash
+python -m src.calibracion
+python -m src.grupos
+```
+
+Los resultados quedan en `datos/procesado/clasificacion_calibracion_comparacion.csv` y `datos/procesado/clasificacion_por_grupo_cultivo.csv`. El detalle está en la sección 5.5 del informe final.
+
+## Integración continua
+
+`.github/workflows/ci.yml` instala `requirements-dev.txt` y ejecuta `python -m pytest` en cada push y en cada pull request. Son 53 tests: pipeline de datos, modelos, app y experimentos. No entrena ni descarga datos, usa los artefactos versionados.
+
 ## Próximos pasos
 
 1. ~~Desplegar la app Flask en Vercel.~~
-2. Calibrar las probabilidades del clasificador con validación.
-3. Evaluar modelos por grupo de cultivos (verano e invierno), donde el clima tiene un efecto distinto.
+2. ~~Calibrar las probabilidades del clasificador con validación.~~ Evaluada y no adoptada.
+3. ~~Evaluar modelos por grupo de cultivos (verano e invierno).~~ Evaluada y no adoptada.
+4. Probar la exclusión de la superficie sembrada en KNN, que tiene importancia negativa.
+5. Explorar GaussianNB con clima con un protocolo que lo pueda elegir sin mirar el test.
 
 ## Equipo
 

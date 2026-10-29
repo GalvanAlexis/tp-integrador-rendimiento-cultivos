@@ -327,20 +327,54 @@ Un test verifica que `predict` del modelo guardado coincide con la regla usada e
 
 - **Un solo evento domina el test.** La sequía 2022/23 aporta casi la mitad de las campañas malas y la mayoría de los aciertos. Las métricas globales dicen sobre todo qué tan bien se detecta una gran sequía.
 - **Cambio de prevalencia.** La validación tuvo 14,8% de campañas malas y el test, 21,3%. El umbral elegido en validación (0,65) resultó conservador para el test. GaussianNB, que en validación casi empataba con el Dummy, fue el mejor en test.
-- **Probabilidades sin calibrar.** La probabilidad que muestra la app es la fracción de campañas malas en la hoja del árbol. Sirve para ordenar casos, no como probabilidad exacta.
+- **Probabilidades sin calibrar.** La probabilidad que muestra la app es la fracción de campañas malas en la hoja del árbol. Sirve para ordenar casos, no como probabilidad exacta. La sección 12 mide las dos variantes de calibración y explica por qué no se adopta ninguna.
 - **Girasol** no tiene una alerta útil con estas variables.
 - **Autocompletado limitado.** La app autocompleta hasta la campaña 2024/25. Para campañas futuras hay que descargar el clima nuevo de NASA POWER.
 
 ## 11. Próximos pasos (Clase 5)
 
-1. Desplegar la app (Vercel) con los mismos pipelines.
-2. Calibrar las probabilidades del clasificador (por ejemplo, con `CalibratedClassifierCV` sobre validación) para que la probabilidad mostrada se pueda leer como tal.
-3. Evaluar modelos por grupo de cultivos (verano e invierno), donde el clima tiene un efecto distinto.
+1. ~~Desplegar la app (Vercel) con los mismos pipelines.~~ Hecho en la Entrega 5.
+2. ~~Calibrar las probabilidades del clasificador.~~ Medido en la sección 12: no mejora la decisión y la variante reentrenable empeora el costo en validación.
+3. ~~Evaluar modelos por grupo de cultivos (verano e invierno).~~ Medido en la sección 12: empeora el costo en los dos grupos.
 
-## 12. Reproducibilidad
+## 12. Mejoras evaluadas después de la entrega
+
+Las dos mejoras que quedaron abiertas se midieron en validación, sin volver a medir el test. Ninguna se adoptó; el clasificador entregado no cambió.
+
+**Calibración de las probabilidades.** Tres variantes del mismo árbol (profundidad 5, hoja mínima 50, con clima):
+
+| Variante | Calibrador | Umbral | Recall val | Precisión val | Costo val | Correlación de rango |
+|---|---|---:|---:|---:|---:|---:|
+| Crudo (entregado) | ninguno | 0,650 | 0,248 | 0,644 | **443** | 1,00 |
+| Sigmoide, validación cruzada interna | 5 pliegues sobre train | 0,532 | 0,100 | 0,509 | 512 | 0,57 |
+| Sigmoide ajustada en validación | validación | **0,376** | 0,248 | 0,644 | **443** | 1,00 |
+
+La sigmoide de un único árbol es monótona: la tercera variante ordena igual que el modelo crudo, lleva el umbral óptimo de 0,65 a 0,376 —cerca del teórico 1/3— y no cambia ninguna decisión. La segunda sí cambia el ordenamiento, porque promedia cinco árboles, y empeora el costo en validación. Adoptar la variante interpretable exige reservar la validación como conjunto de calibración y entrenar el árbol solo con train; el modelo entregado se mantiene y la app conserva la advertencia.
+
+**Modelos por grupo de cultivos.** Verano (maíz, soja, girasol) e invierno (trigo), con el umbral re-elegido en la validación de cada grupo:
+
+| Grupo | Variante | Umbral | Recall val | Precisión val | Costo val |
+|---|---|---:|---:|---:|---:|
+| Verano | Global (entregado) | 0,650 | 0,266 | 0,779 | **307** |
+| Verano | Por grupo | 0,844 | 0,015 | 0,273 | 400 |
+| Invierno | Global (entregado) | 0,650 | 0,197 | 0,389 | **136** |
+| Invierno | Por grupo | 0,643 | 0,268 | 0,302 | 148 |
+
+Separar por grupo empeora el costo en los dos casos (548 contra 443 en total): el árbol ya recibe `cultivo` como variable categórica y entrenar por grupo le quita filas para estimar el clima.
+
+```bash
+python -m src.calibracion
+python -m src.grupos
+```
+
+Los resultados quedan en `datos/procesado/clasificacion_calibracion_comparacion.csv` y `datos/procesado/clasificacion_por_grupo_cultivo.csv`.
+
+## 13. Reproducibilidad
 
 ```bash
 python -m src.clasificacion
+python -m src.calibracion
+python -m src.grupos
 python -m jupyter nbconvert --to notebook --execute --inplace notebooks/04_clasificacion.ipynb
 python -m flask --app app run
 python -m pytest

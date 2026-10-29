@@ -48,6 +48,8 @@ CLASIFICACION_PREDICCIONES = PROCESADO_DIR / "clasificacion_predicciones_test.cs
 CLASIFICACION_ERRORES_PERFIL = PROCESADO_DIR / "clasificacion_errores_perfil_test.csv"
 CLASIFICACION_ERRORES_RATIO = PROCESADO_DIR / "clasificacion_errores_por_ratio_test.csv"
 CLASIFICACION_ACUERDO = PROCESADO_DIR / "clasificacion_acuerdo_sistemas_test.csv"
+CLASIFICACION_CALIBRACION = PROCESADO_DIR / "clasificacion_calibracion_comparacion.csv"
+CLASIFICACION_GRUPOS = PROCESADO_DIR / "clasificacion_por_grupo_cultivo.csv"
 
 # Esquema de costos de la alerta de campaña mala.
 # Un falso negativo (campaña mala no anticipada) se penaliza el doble que un
