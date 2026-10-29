@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Academia | Rendimiento de cultivos{% endblock %}
+{% block description %}Presentación, informe final y materiales del TP Integrador de rendimiento de cultivos.{% endblock %}
+
+{% block css %}
+    .hero { margin-bottom: 36px; }
+    .hero h1 { font-size: clamp(28px, 4vw, 40px); margin-bottom: 8px; }
+    .subtitle { color: var(--gris); font-size: 16px; max-width: 66ch; }
+    .materiales { display: grid; gap: 16px; }
+    .material {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      background: var(--blanco);
+      border: 1px solid var(--borde);
+      border-radius: 14px;
+      padding: 22px 24px;
+    }
+    .material .formato {
+      flex: none;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--verde);
+      background: var(--verde-claro);
+      border: 1px solid var(--borde);
+      border-radius: 999px;
+      padding: 3px 12px;
+    }
+    .material h2 { font-size: 19px; color: var(--tinta); margin-bottom: 4px; }
+    .material .detalle { color: var(--gris); font-size: 14px; margin-bottom: 14px; max-width: 62ch; }
+    .nota { font-size: 13px; color: var(--gris); margin-top: 24px; }
+    .nota a { color: var(--verde-mid); }
+    .aviso { font-size: 13px; color: var(--rojo); }
+    @media (max-width: 600px) {
+      .material { flex-direction: column; gap: 12px; padding: 18px; }
+    }
+{% endblock %}
+
+{% block content %}
+    <div class="hero">
+      <h1>Academia</h1>
+      <p class="subtitle">
+        Los materiales con los que se presentó y documentó el trabajo. Se abren en el navegador,
+        sin descargar nada, y son los mismos archivos que se entregaron.
+      </p>
+    </div>
+
+    <div class="materiales">
+      {% for m in materiales %}
+      <article class="material">
+        <span class="formato">{{ m.formato }}</span>
+        <div>
+          <h2>{{ m.titulo }}</h2>
+          <p class="detalle">{{ m.detalle }}</p>
+          {% if m.disponible %}
+          <a class="btn-secondary" href="/academia/{{ m.slug }}" target="_blank" rel="noopener">{{ m.accion }} &rarr;</a>
+          {% else %}
+          <p class="aviso">Este archivo no está disponible en este despliegue.</p>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    <p class="nota">
+      El código, los datos, los notebooks y las tablas de resultados están en
+      <a href="https://github.com/GalvanAlexis/tp-integrador-rendimiento-cultivos">GitHub</a>.
+    </p>
+{% endblock %}

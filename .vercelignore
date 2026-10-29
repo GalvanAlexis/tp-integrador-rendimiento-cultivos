@@ -9,6 +9,7 @@ __pycache__
 datos/cache
 datos/raw
 notebooks
-informe
-presentacion
 tests
+odd
+presentacion/figuras
+informe/figuras
