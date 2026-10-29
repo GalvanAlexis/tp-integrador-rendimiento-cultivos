@@ -52,6 +52,7 @@ def test_los_materiales_se_sirven(client):
 def test_un_slug_desconocido_da_404(client):
     assert client.get("/academia/notas").status_code == 404
     assert client.get("/academia/apuntes.pdf").status_code == 404
+    assert client.get("/academia/presentacion.pdf").status_code == 404
 
 
 def test_la_ruta_no_sirve_archivos_fuera_de_la_lista(client):
@@ -62,11 +63,11 @@ def test_la_ruta_no_sirve_archivos_fuera_de_la_lista(client):
 
 
 def test_landing_page_incluye_acceso_a_presentacion(client):
-    """La pagina de inicio ofrece accesos directos a la presentacion y materiales."""
+    """La pagina de inicio ofrece accesos directos a la presentacion e informe final."""
     html = client.get("/").get_data(as_text=True)
     assert 'href="/academia/presentacion"' in html
-    assert 'href="/academia/presentacion.pdf"' in html
     assert 'href="/academia/informe.pdf"' in html
+    assert 'href="/academia/presentacion.pdf"' not in html
 
 
 def test_navbar_contiene_dropdown_con_materiales(client):
@@ -75,7 +76,8 @@ def test_navbar_contiene_dropdown_con_materiales(client):
         html = client.get(ruta).get_data(as_text=True)
         assert 'nav-dropdown' in html, f"falta nav-dropdown en {ruta}"
         assert 'href="/academia/presentacion"' in html, f"falta link a presentacion en navbar de {ruta}"
-        assert 'href="/academia/presentacion.pdf"' in html, f"falta link a presentacion.pdf en navbar de {ruta}"
+        assert 'href="/academia/informe.pdf"' in html, f"falta link a informe.pdf en navbar de {ruta}"
+        assert 'href="/academia/presentacion.pdf"' not in html
 
 
 def test_presentacion_html_contiene_enlace_volver(client):
