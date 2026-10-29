@@ -203,6 +203,17 @@ def _autocompletar(partido: str, cultivo: str, anio: int | None) -> dict:
         & (_df_hist["campania_inicio"] == anio)
     ]
     if fila.empty:
+        if anio and anio >= 2025:
+            historico_partido = _df_hist[
+                (_df_hist["municipio_nombre"] == partido)
+                & (_df_hist["cultivo"] == cultivo)
+            ].sort_values("campania_inicio", ascending=False)
+            if not historico_partido.empty:
+                ultimo = historico_partido.iloc[0]
+                resultado = {col: float(ultimo[col]) for col in CAMPOS if col in ultimo}
+                resultado["prev5_ceros"] = int(ultimo["prev5_ceros"])
+                resultado["es_futura"] = True
+                return resultado
         return {}
     row = fila.iloc[0]
     resultado = {col: float(row[col]) for col in CAMPOS if col in row}
@@ -356,7 +367,8 @@ def _render_predecir(data: dict, ejecutar: bool):
         partido=partido,
         cultivo=cultivo,
         anio=anio,
-        anio_prueba=anio is not None and anio >= TEST_START,
+        anio_prueba=anio is not None and TEST_START <= anio <= 2024,
+        anio_futuro=anio is not None and anio >= 2025,
         autocomp=autocomp,
         form_data=form_data,
         agro_fields=AGRO_FIELDS,
@@ -453,7 +465,11 @@ def api_historico():
     )
     if not autocomp:
         return jsonify({"encontrado": False}), 404
-    return jsonify({"encontrado": True, "valores": {k: autocomp[k] for k in CAMPOS}})
+    return jsonify({
+        "encontrado": True,
+        "es_futura": bool(autocomp.get("es_futura", False)),
+        "valores": {k: autocomp[k] for k in CAMPOS if k in autocomp},
+    })
 
 
 if __name__ == "__main__":

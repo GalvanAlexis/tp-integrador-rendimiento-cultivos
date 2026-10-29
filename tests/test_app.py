@@ -90,3 +90,26 @@ def test_advertencia_de_limitaciones(client):
     assert "Limitaciones de esta herramienta" in formulario
     assert "No es una garantía" in formulario
     assert "no como la única fuente" in formulario
+
+def test_prediccion_campania_futura(client):
+    """Las campanas futuras (ej. 2027) cargan linea de base y permiten predecir."""
+    r = client.get(
+        "/api/historico",
+        query_string={"partido": "Pergamino", "cultivo": "Soja total", "anio": "2027"},
+    )
+    assert r.status_code == 200
+    data = r.get_json()
+    assert data["encontrado"] is True
+    assert data["es_futura"] is True
+    assert data["valores"]["prev5"] > 0
+
+    form = {
+        "partido": "Pergamino",
+        "cultivo": "Soja total",
+        "anio": "2027",
+        **{k: str(round(v, 2)) for k, v in data["valores"].items()},
+    }
+    html = client.post("/predecir", data=form).get_data(as_text=True)
+    assert "Campaña futura: Simulación predictiva" in html
+    assert "Proyección para la campaña 2027/28" in html
+    assert "¿Cuánto va a rendir?" in html
