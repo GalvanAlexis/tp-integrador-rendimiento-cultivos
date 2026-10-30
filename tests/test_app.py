@@ -113,3 +113,18 @@ def test_prediccion_campania_futura(client):
     assert "Campaña futura: Simulación predictiva" in html
     assert "Proyección para la campaña 2027/28" in html
     assert "¿Cuánto va a rendir?" in html
+
+
+def test_cabeceras_cache_control(client):
+    """Las respuestas deben incluir politicas de cache optimas para CDN y navegadores."""
+    r_index = client.get("/")
+    assert "public" in r_index.headers.get("Cache-Control", "")
+    assert "s-maxage=3600" in r_index.headers.get("Cache-Control", "")
+
+    r_api = client.get("/api/datos")
+    assert "public" in r_api.headers.get("Cache-Control", "")
+    assert "s-maxage=86400" in r_api.headers.get("Cache-Control", "")
+
+    r_hist = client.get("/api/historico", query_string=EJEMPLO)
+    assert "public" in r_hist.headers.get("Cache-Control", "")
+    assert "s-maxage=604800" in r_hist.headers.get("Cache-Control", "")

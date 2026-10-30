@@ -790,35 +790,47 @@
         restaurar.disabled = !campos.some(function (i) { return i.classList.contains("modificado"); });
       }
 
+      var cacheHistorico = {};
+
+      function aplicarDatosHistoricos(data, cultivo, partido) {
+        if (!data.encontrado) {
+          campos.forEach(function (input) { input.dataset.original = ""; });
+          estado.className = "estado-historico error";
+          estado.textContent = "No hay datos de " + cultivo + " en " + partido +
+            " para esa campaña. Probá con otra o completá los valores a mano.";
+          escenario.open = true;
+          marcarCambios();
+          return;
+        }
+        campos.forEach(function (input) {
+          var v = data.valores[input.name];
+          if (v !== undefined) { input.value = redondear(v); input.dataset.original = redondear(v); }
+        });
+        estado.className = "estado-historico ok";
+        if (data.es_futura) {
+          estado.textContent = "Línea de base histórica cargada para " + cultivo + " en " + partido + ". Podés proyectar o simular el clima.";
+          escenario.open = true;
+        } else {
+          estado.textContent = "Datos históricos de " + cultivo + " en " + partido + " cargados.";
+        }
+        marcarCambios();
+      }
+
       function cargarHistorico() {
         var partido = selects[0].value, cultivo = selects[1].value, anio = selects[2].value;
         if (!partido || !cultivo || !anio) { return; }
+        var clave = partido + "|" + cultivo + "|" + anio;
+        if (cacheHistorico[clave]) {
+          aplicarDatosHistoricos(cacheHistorico[clave], cultivo, partido);
+          return;
+        }
         estado.className = "estado-historico";
         estado.textContent = "Buscando datos de referencia…";
         var url = "/api/historico?partido=" + encodeURIComponent(partido) +
           "&cultivo=" + encodeURIComponent(cultivo) + "&anio=" + encodeURIComponent(anio);
         fetch(url).then(function (r) { return r.json(); }).then(function (data) {
-          if (!data.encontrado) {
-            campos.forEach(function (input) { input.dataset.original = ""; });
-            estado.className = "estado-historico error";
-            estado.textContent = "No hay datos de " + cultivo + " en " + partido +
-              " para esa campaña. Probá con otra o completá los valores a mano.";
-            escenario.open = true;
-            marcarCambios();
-            return;
-          }
-          campos.forEach(function (input) {
-            var v = data.valores[input.name];
-            if (v !== undefined) { input.value = redondear(v); input.dataset.original = redondear(v); }
-          });
-          estado.className = "estado-historico ok";
-          if (data.es_futura) {
-            estado.textContent = "Línea de base histórica cargada para " + cultivo + " en " + partido + ". Podés proyectar o simular el clima.";
-            escenario.open = true;
-          } else {
-            estado.textContent = "Datos históricos de " + cultivo + " en " + partido + " cargados.";
-          }
-          marcarCambios();
+          cacheHistorico[clave] = data;
+          aplicarDatosHistoricos(data, cultivo, partido);
         }).catch(function () {
           estado.className = "estado-historico error";
           estado.textContent = "No se pudieron cargar los datos de referencia.";

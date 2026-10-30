@@ -6,7 +6,10 @@
   <title>{% block title %}Rendimiento de cultivos{% endblock %}</title>
   <meta name="description" content="{% block description %}Predicción del rendimiento de cultivos en partidos bonaerenses con alerta de campaña mala.{% endblock %}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="prefetch" href="/predecir">
+  <link rel="prefetch" href="/academia">
   <style>
     :root {
       --verde-deep: #0a261a;
@@ -49,7 +52,7 @@
       scroll-behavior: smooth;
     }
     body {
-      font-family: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--fondo);
       color: var(--tinta);
       line-height: 1.6;
@@ -399,6 +402,25 @@
           dropdown.classList.remove('is-open');
         }
       });
+    })();
+    (function () {
+      var prefetched = {};
+      function prefetch(url) {
+        if (!url || prefetched[url] || url.charAt(0) !== '/' || url.indexOf('//') === 0) return;
+        prefetched[url] = true;
+        var l = document.createElement('link');
+        l.rel = 'prefetch';
+        l.href = url;
+        document.head.appendChild(l);
+      }
+      document.addEventListener('mouseover', function (e) {
+        var a = e.target.closest('a');
+        if (a && a.getAttribute('href')) prefetch(a.getAttribute('href'));
+      }, { passive: true });
+      document.addEventListener('touchstart', function (e) {
+        var a = e.target.closest('a');
+        if (a && a.getAttribute('href')) prefetch(a.getAttribute('href'));
+      }, { passive: true });
     })();
   </script>
   {% block scripts %}{% endblock %}
