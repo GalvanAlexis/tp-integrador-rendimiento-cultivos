@@ -41,6 +41,8 @@ def test_los_materiales_se_sirven(client):
         r = client.get(f"/academia/{material['slug']}")
         assert r.status_code == 200, material["slug"]
         assert r.headers["Content-Type"].startswith(material["mimetype"])
+        assert "public" in r.headers.get("Cache-Control", ""), material["slug"]
+        assert "s-maxage=604800" in r.headers.get("Cache-Control", ""), material["slug"]
         datos = r.get_data()
         assert len(datos) > 1000, material["slug"]
         if material["mimetype"] == "application/pdf":

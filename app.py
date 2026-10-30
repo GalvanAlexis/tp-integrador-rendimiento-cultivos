@@ -94,12 +94,49 @@ CAMPOS = {**AGRO_FIELDS, **CLIMA_FIELDS}
 app = Flask(__name__)
 
 # ---------------------------------------------------------------------------
-# Carga de modelos y datos al inicio
+# Carga diferida (lazy) de modelos y datos
 # ---------------------------------------------------------------------------
 _regresor = None
 _clasificador = None
 _df_hist: pd.DataFrame | None = None
 _resumen: dict = {}
+_partidos_cache: list[str] | None = None
+_cultivos_cache: list[str] | None = None
+_anios_cache: dict[str, list[int]] | None = None
+_autocomp_cache: dict[tuple[str, str, int | None], dict] = {}
+
+
+def _reg_disponible() -> bool:
+    return _regresor is not None or (MODELOS_DIR / "regresor.joblib").exists()
+
+
+def _clf_disponible() -> bool:
+    return _clasificador is not None or (MODELOS_DIR / "clasificador.joblib").exists()
+
+
+def _get_regresor():
+    global _regresor
+    if _regresor is None:
+        reg_path = MODELOS_DIR / "regresor.joblib"
+        if reg_path.exists():
+            _regresor = joblib.load(reg_path)
+    return _regresor
+
+
+def _get_clasificador():
+    global _clasificador
+    if _clasificador is None:
+        clf_path = MODELOS_DIR / "clasificador.joblib"
+        if clf_path.exists():
+            _clasificador = joblib.load(clf_path)
+    return _clasificador
+
+
+def _get_df_hist() -> pd.DataFrame | None:
+    global _df_hist
+    if _df_hist is None and DATASET_CLIMA.exists():
+        _df_hist = pd.read_csv(DATASET_CLIMA, encoding="utf-8")
+    return _df_hist
 
 
 def _leer_json(path: Path) -> dict:
@@ -146,15 +183,8 @@ def _cargar_resumen() -> dict:
 
 
 def _load_models() -> None:
-    global _regresor, _clasificador, _df_hist, _resumen
-    reg_path = MODELOS_DIR / "regresor.joblib"
-    clf_path = MODELOS_DIR / "clasificador.joblib"
-    if reg_path.exists():
-        _regresor = joblib.load(reg_path)
-    if clf_path.exists():
-        _clasificador = joblib.load(clf_path)
-    if DATASET_CLIMA.exists():
-        _df_hist = pd.read_csv(DATASET_CLIMA, encoding="utf-8")
+    """Inicializa unicamente los metadatos livianos requeridos para renderizar."""
+    global _resumen
     _resumen = _cargar_resumen()
 
 
@@ -163,56 +193,78 @@ _load_models()
 
 @app.context_processor
 def _estado_modelos() -> dict:
-    return {"reg_ok": _regresor is not None, "clf_ok": _clasificador is not None}
+    return {"reg_ok": _reg_disponible(), "clf_ok": _clf_disponible()}
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 def _partidos() -> list[str]:
-    if _df_hist is not None:
-        return sorted(_df_hist["municipio_nombre"].unique().tolist())
-    return []
+    global _partidos_cache
+    if _partidos_cache is None:
+        df = _get_df_hist()
+        if df is not None:
+            _partidos_cache = sorted(df["municipio_nombre"].unique().tolist())
+        else:
+            _partidos_cache = []
+    return _partidos_cache
 
 
 def _cultivos() -> list[str]:
-    if _df_hist is not None:
-        return sorted(_df_hist["cultivo"].unique().tolist())
-    return ["Girasol", "Maíz", "Soja total", "Trigo total"]
+    global _cultivos_cache
+    if _cultivos_cache is None:
+        df = _get_df_hist()
+        if df is not None:
+            _cultivos_cache = sorted(df["cultivo"].unique().tolist())
+        else:
+            _cultivos_cache = ["Girasol", "Maíz", "Soja total", "Trigo total"]
+    return _cultivos_cache
 
 
 def _anios() -> dict[str, list[int]]:
     """Campanas disponibles, separadas segun si los modelos las vieron al entrenar."""
-    if _df_hist is not None:
-        todos = sorted(_df_hist["campania_inicio"].unique().tolist(), reverse=True)
-    else:
-        todos = list(range(2024, 2014, -1))
-    return {
-        "prueba": [a for a in todos if a >= TEST_START],
-        "entrenamiento": [a for a in todos if a < TEST_START],
-    }
+    global _anios_cache
+    if _anios_cache is None:
+        df = _get_df_hist()
+        if df is not None:
+            todos = sorted(df["campania_inicio"].unique().tolist(), reverse=True)
+        else:
+            todos = list(range(2024, 2014, -1))
+        _anios_cache = {
+            "prueba": [a for a in todos if a >= TEST_START],
+            "entrenamiento": [a for a in todos if a < TEST_START],
+        }
+    return _anios_cache
 
 
 def _autocompletar(partido: str, cultivo: str, anio: int | None) -> dict:
     """Devuelve las variables de entrada y el resultado real de una campana historica."""
-    if _df_hist is None or not (partido and cultivo and anio):
+    if not (partido and cultivo and anio):
         return {}
-    fila = _df_hist[
-        (_df_hist["municipio_nombre"] == partido)
-        & (_df_hist["cultivo"] == cultivo)
-        & (_df_hist["campania_inicio"] == anio)
+    clave = (partido, cultivo, anio)
+    if clave in _autocomp_cache:
+        return _autocomp_cache[clave]
+
+    df = _get_df_hist()
+    if df is None:
+        return {}
+    fila = df[
+        (df["municipio_nombre"] == partido)
+        & (df["cultivo"] == cultivo)
+        & (df["campania_inicio"] == anio)
     ]
     if fila.empty:
         if anio and anio >= 2025:
-            historico_partido = _df_hist[
-                (_df_hist["municipio_nombre"] == partido)
-                & (_df_hist["cultivo"] == cultivo)
+            historico_partido = df[
+                (df["municipio_nombre"] == partido)
+                & (df["cultivo"] == cultivo)
             ].sort_values("campania_inicio", ascending=False)
             if not historico_partido.empty:
                 ultimo = historico_partido.iloc[0]
                 resultado = {col: float(ultimo[col]) for col in CAMPOS if col in ultimo}
                 resultado["prev5_ceros"] = int(ultimo["prev5_ceros"])
                 resultado["es_futura"] = True
+                _autocomp_cache[clave] = resultado
                 return resultado
         return {}
     row = fila.iloc[0]
@@ -225,6 +277,7 @@ def _autocompletar(partido: str, cultivo: str, anio: int | None) -> dict:
             "mala85_real": int(row["mala85"]),
         }
     )
+    _autocomp_cache[clave] = resultado
     return resultado
 
 
@@ -270,20 +323,22 @@ def _predecir(valores: dict) -> dict:
     fila = pd.DataFrame([valores])
     resultado: dict = {"pos_umbral": _posicion(THRESHOLD)}
 
-    if _regresor is not None:
-        cols_reg = list(_regresor.feature_names_in_)
-        ratio_pred = float(_regresor.predict(fila[cols_reg])[0])
+    reg = _get_regresor()
+    if reg is not None:
+        cols_reg = list(reg.feature_names_in_)
+        ratio_pred = float(reg.predict(fila[cols_reg])[0])
         resultado["ratio_pred"] = ratio_pred
         resultado["rend_pred_kg"] = ratio_pred * valores["prev5"]
         resultado["alerta_regresion"] = int(ratio_pred < THRESHOLD)
         resultado["pos_ratio"] = _posicion(ratio_pred)
 
-    if _clasificador is not None:
-        cols_clf = list(_clasificador.feature_names_in_)
-        resultado["alerta_clasificador"] = int(_clasificador.predict(fila[cols_clf])[0])
-        proba = _clasificador.estimator_.predict_proba(fila[cols_clf])[0, 1]
+    clf = _get_clasificador()
+    if clf is not None:
+        cols_clf = list(clf.feature_names_in_)
+        resultado["alerta_clasificador"] = int(clf.predict(fila[cols_clf])[0])
+        proba = clf.estimator_.predict_proba(fila[cols_clf])[0, 1]
         resultado["proba_clasificador"] = float(proba)
-        resultado["umbral_clasificador"] = float(_clasificador.threshold)
+        resultado["umbral_clasificador"] = float(clf.threshold)
 
     # La alerta principal es la del clasificador, elegido por costo en validación.
     # La regresión se muestra como segunda opinión: en test, la alerta combinada
@@ -424,12 +479,17 @@ def academia_archivo(slug: str):
     material = next((m for m in MATERIALES if m["slug"] == slug), None)
     if material is None or not material["archivo"].exists():
         abort(404)
-    return send_file(
+    response = send_file(
         material["archivo"],
         mimetype=material["mimetype"],
         download_name=material["nombre_descarga"],
         conditional=True,
+        max_age=86400,
     )
+    response.headers["Cache-Control"] = (
+        "public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400"
+    )
+    return response
 
 
 @app.get("/health")
@@ -438,8 +498,8 @@ def health():
         {
             "status": "ok",
             "entrega": 5,
-            "regresor": _regresor is not None,
-            "clasificador": _clasificador is not None,
+            "regresor": _reg_disponible(),
+            "clasificador": _clf_disponible(),
         }
     )
 
@@ -470,6 +530,37 @@ def api_historico():
         "es_futura": bool(autocomp.get("es_futura", False)),
         "valores": {k: autocomp[k] for k in CAMPOS if k in autocomp},
     })
+
+
+@app.after_request
+def _agregar_cabeceras_cache(response):
+    """Configura politicas de cache optimas para Edge CDN y navegadores."""
+    if "Cache-Control" in response.headers:
+        return response
+
+    if request.method in ("GET", "HEAD") and response.status_code == 200:
+        path = request.path
+        if path.startswith("/academia/"):
+            response.headers["Cache-Control"] = (
+                "public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400"
+            )
+        elif path == "/api/historico":
+            response.headers["Cache-Control"] = (
+                "public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400"
+            )
+        elif path == "/api/datos":
+            response.headers["Cache-Control"] = (
+                "public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400"
+            )
+        elif path in ("/", "/academia"):
+            response.headers["Cache-Control"] = (
+                "public, max-age=60, s-maxage=3600, stale-while-revalidate=86400"
+            )
+        elif path == "/predecir" and not request.args.get("predecir"):
+            response.headers["Cache-Control"] = (
+                "public, max-age=60, s-maxage=3600, stale-while-revalidate=86400"
+            )
+    return response
 
 
 if __name__ == "__main__":
