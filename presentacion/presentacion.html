@@ -585,7 +585,8 @@
     transform: translateY(-1px);
   }
 
-  /* La tecla F sigue funcionando en escritorio; el boton es para quien no tiene teclado. */
+  /* Mismo estilo que el botón de volver. En el móvil va debajo, para que el
+     texto largo no choque con el otro botón. */
   #pantalla {
     position: fixed;
     top: 14px;
@@ -598,18 +599,18 @@
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     color: #dcfce7;
-    padding: 10px 18px;
+    padding: 7px 16px;
     border-radius: 999px;
     border: 1px solid rgba(220, 252, 231, 0.3);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     font-family: inherit;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 600;
     letter-spacing: 0.02em;
     cursor: pointer;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
-    transition: background 0.15s, color 0.15s;
+    transition: background 0.15s, color 0.15s, transform 0.1s;
   }
 
   #pantalla:hover,
@@ -617,17 +618,17 @@
     background: rgba(20, 52, 43, 1);
     color: #ffffff;
     border-color: rgba(220, 252, 231, 0.6);
+    transform: translateY(-1px);
   }
 
-  body.en-pantalla-completa #pantalla {
-    background: rgba(235, 104, 52, 0.94);
-    border-color: rgba(255, 255, 255, 0.45);
+  #pantalla.activo {
+    background: rgba(235, 104, 52, 0.95);
+    border-color: rgba(255, 255, 255, 0.5);
     color: #ffffff;
   }
 
-  /* En pantallas muy angostas el botón se achica para no chocar con "Volver". */
-  @media (max-width: 350px) {
-    #pantalla { font-size: 12px; padding: 8px 12px; }
+  @media (max-width: 760px) and (orientation: portrait) {
+    #pantalla { top: 56px; left: 18px; right: auto; }
   }
 
   #aviso {
@@ -646,6 +647,7 @@
     line-height: 1.35;
     text-align: center;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    pointer-events: none;
   }
 
   #aviso.visible { display: block; }
@@ -1227,7 +1229,7 @@
 <div id="progreso"></div>
 <div id="hud">1 / 17</div>
 <div id="ayuda">← → navegar · F pantalla completa · S notas</div>
-<button id="pantalla" type="button" aria-label="Ver en pantalla completa horizontal">Pantalla completa</button>
+<button id="pantalla" type="button" aria-label="Ver en pantalla completa horizontal">Pantalla Completa - Horizontal</button>
 <div id="aviso" role="status" aria-live="polite"></div>
 
 <script>
@@ -1237,11 +1239,28 @@
     var progreso = document.getElementById('progreso');
     var stage = document.getElementById('stage');
     var actual = 0;
+    var modoHorizontal = false;
+
+    function enVertical() {
+      return window.innerHeight > window.innerWidth;
+    }
 
     function ajustar() {
-      var escala = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
-      stage.style.transform =
-        'translate(-50%, -50%) scale(' + escala + ')';
+      var ancho = window.innerWidth;
+      var alto = window.innerHeight;
+      // En vertical el mazo se rota 90°: sus 1280 x 720 quedan sobre el lado
+      // largo del teléfono, así ocupa toda la pantalla 9:16 en vez de dejar
+      // franjas negras arriba y abajo. Al girar el teléfono la rotación sobra
+      // y vuelve la escala normal.
+      if (modoHorizontal && alto > ancho) {
+        var rotada = Math.min(ancho / 720, alto / 1280);
+        stage.style.transform =
+          'translate(-50%, -50%) rotate(90deg) scale(' + rotada + ')';
+      } else {
+        var escala = Math.min(ancho / 1280, alto / 720);
+        stage.style.transform =
+          'translate(-50%, -50%) scale(' + escala + ')';
+      }
     }
 
     function mostrar(indice, sinHistorial) {
@@ -1263,19 +1282,22 @@
     }
 
     // --- Pantalla completa y orientación horizontal ---
-    // La tecla F funciona en escritorio. En el móvil no hay teclado, así que el
-    // mismo comportamiento se ofrece con un botón que además pide orientación
-    // horizontal. El bloqueo de orientación solo lo permiten algunos navegadores
-    // (Chrome en Android); cuando falla se avisa que hay que girar el teléfono.
+    // En escritorio la tecla F pone el mazo en pantalla completa. En el móvil no
+    // hay teclado, así que el mismo comportamiento se ofrece con un botón que
+    // pide pantalla completa, intenta bloquear la orientación horizontal y,
+    // cuando el navegador no lo permite (iPhone, por ejemplo), rota el mazo para
+    // que ocupe toda la pantalla vertical mientras se gira el teléfono.
     var botonPantalla = document.getElementById('pantalla');
     var aviso = document.getElementById('aviso');
     var ayuda = document.getElementById('ayuda');
-    // Deteccion amplia: si el telefono no soporta las media queries de puntero,
-    // igual queremos saber que conviene avisar sobre girar la pantalla.
+    // Detección amplia: un teléfono puede no informar las media queries de
+    // puntero y aun así necesitar el aviso de girar la pantalla.
     var esTactil = ('ontouchstart' in window) ||
       (navigator.maxTouchPoints || 0) > 0 ||
-      !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+      !!(window.matchMedia && (window.matchMedia('(pointer: coarse)').matches ||
+        window.matchMedia('(any-pointer: coarse)').matches));
     var tiempoAviso = null;
+    var tiempoRevision = null;
 
     function mostrarAviso(texto) {
       aviso.textContent = texto;
@@ -1283,7 +1305,7 @@
       clearTimeout(tiempoAviso);
       tiempoAviso = setTimeout(function () {
         aviso.classList.remove('visible');
-      }, 5000);
+      }, 6000);
     }
 
     function pantallaCompletaActiva() {
@@ -1322,29 +1344,48 @@
     }
 
     function actualizarBoton() {
-      var activa = !!pantallaCompletaActiva();
-      document.body.classList.toggle('en-pantalla-completa', activa);
-      botonPantalla.textContent = activa ? 'Salir' : 'Pantalla completa';
-      botonPantalla.setAttribute('aria-label', activa
-        ? 'Salir de pantalla completa'
+      botonPantalla.classList.toggle('activo', modoHorizontal);
+      botonPantalla.textContent = modoHorizontal
+        ? 'Salir - Pantalla Completa'
+        : 'Pantalla Completa - Horizontal';
+      botonPantalla.setAttribute('aria-label', modoHorizontal
+        ? 'Salir de la vista horizontal'
         : 'Ver en pantalla completa horizontal');
     }
 
-    function alternarPantallaCompleta() {
-      if (pantallaCompletaActiva()) {
-        liberarOrientacion();
-        salirDePantallaCompleta().catch(function () {});
-        return;
-      }
+    function activarHorizontal() {
+      modoHorizontal = true;
+      document.body.classList.add('modo-horizontal');
+      actualizarBoton();
+      ajustar();
       pedirPantallaCompleta().then(function () {
-        return bloquearHorizontal().catch(function () {
-          if (esTactil) mostrarAviso('Girá el teléfono para verlo horizontal.');
-        });
+        return bloquearHorizontal();
       }).catch(function () {
-        mostrarAviso(esTactil
-          ? 'Este navegador no permite pantalla completa. Girá el teléfono para verlo horizontal.'
-          : 'Este navegador no permite pantalla completa.');
+        // Sin pantalla completa o sin bloqueo de orientación (iPhone, Firefox)
+        // la rotación del mazo ya deja la presentación horizontal; el aviso de
+        // abajo explica cómo verla cómoda.
       });
+      clearTimeout(tiempoRevision);
+      tiempoRevision = setTimeout(function () {
+        if (modoHorizontal && enVertical()) {
+          mostrarAviso('Girá el teléfono hacia la izquierda para verla horizontal.');
+        }
+      }, 700);
+    }
+
+    function desactivarHorizontal() {
+      modoHorizontal = false;
+      document.body.classList.remove('modo-horizontal');
+      clearTimeout(tiempoRevision);
+      liberarOrientacion();
+      if (pantallaCompletaActiva()) salirDePantallaCompleta().catch(function () {});
+      actualizarBoton();
+      ajustar();
+    }
+
+    function alternarPantallaCompleta() {
+      if (modoHorizontal) desactivarHorizontal();
+      else activarHorizontal();
     }
 
     if (esTactil) ayuda.textContent = 'Tocá a la derecha o a la izquierda para navegar';
@@ -1357,6 +1398,13 @@
 
     ['fullscreenchange', 'webkitfullscreenchange', 'msfullscreenchange'].forEach(function (nombre) {
       document.addEventListener(nombre, function () {
+        // Salir de pantalla completa (ESC, gesto del sistema) apaga también la
+        // vista horizontal: si no, el mazo quedaría girado sin motivo.
+        if (modoHorizontal && !pantallaCompletaActiva()) {
+          modoHorizontal = false;
+          document.body.classList.remove('modo-horizontal');
+          liberarOrientacion();
+        }
         actualizarBoton();
         ajustar();
       });
@@ -1384,8 +1432,15 @@
     });
 
     // Navegación por clic: mitad derecha avanza, mitad izquierda retrocede.
+    // Con el mazo rotado 90° la "derecha" de la diapositiva queda abajo, así que
+    // el eje se invierte para que el gesto siga siendo el mismo que se ve.
     document.addEventListener('click', function (evento) {
       if (evento.target.closest('#volver, #pantalla, #aviso, a, aside, .notes')) return;
+      if (modoHorizontal && enVertical()) {
+        if (evento.clientY > window.innerHeight / 2) mostrar(actual + 1);
+        else mostrar(actual - 1);
+        return;
+      }
       if (evento.clientX > window.innerWidth / 2) mostrar(actual + 1);
       else mostrar(actual - 1);
     });

@@ -106,4 +106,12 @@ def test_presentacion_html_ofrece_pantalla_completa_en_el_movil(client):
         assert "display: inline-flex" in bloque.group(1), (
             "el control no se muestra por defecto: no puede depender de media queries"
         )
+        assert "Pantalla Completa - Horizontal" in html
+        # En vertical el mazo se rota para ocupar la pantalla 9:16 del telefono.
+        assert "rotate(90deg)" in html
+        assert "modo-horizontal" in html
+        bloque_aviso = re.search(r"#aviso \{(.*?)\}", html, re.S)
+        assert bloque_aviso and "pointer-events: none" in bloque_aviso.group(1), (
+            "el aviso no debe interceptar eventos tactiles"
+        )
 
