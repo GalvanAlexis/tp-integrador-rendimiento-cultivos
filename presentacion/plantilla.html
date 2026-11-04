@@ -585,6 +585,75 @@
     transform: translateY(-1px);
   }
 
+  /* En escritorio alcanza con la tecla F: el boton aparece solo en pantallas tactiles. */
+  #pantalla {
+    position: fixed;
+    top: 14px;
+    right: 18px;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    background: rgba(20, 52, 43, 0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #dcfce7;
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(220, 252, 231, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  #pantalla:hover,
+  #pantalla:active {
+    background: rgba(20, 52, 43, 1);
+    color: #ffffff;
+    border-color: rgba(220, 252, 231, 0.6);
+  }
+
+  body.en-pantalla-completa #pantalla {
+    background: rgba(235, 104, 52, 0.94);
+    border-color: rgba(255, 255, 255, 0.45);
+    color: #ffffff;
+  }
+
+  @media (hover: none) and (pointer: coarse) {
+    #pantalla { display: inline-flex; }
+  }
+
+  /* En pantallas muy angostas el botón se achica para no chocar con "Volver". */
+  @media (hover: none) and (pointer: coarse) and (max-width: 350px) {
+    #pantalla { font-size: 12px; padding: 8px 12px; }
+  }
+
+  #aviso {
+    position: fixed;
+    left: 50%;
+    bottom: 54px;
+    transform: translateX(-50%);
+    z-index: 1001;
+    display: none;
+    max-width: calc(100% - 36px);
+    padding: 12px 20px;
+    border-radius: 12px;
+    background: rgba(20, 52, 43, 0.96);
+    color: #dcfce7;
+    font-size: 16px;
+    line-height: 1.35;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  }
+
+  #aviso.visible { display: block; }
+
   /* --- Impresión: una diapositiva por página --- */
   @media print {
     @page { size: 1280px 720px; margin: 0; }
@@ -611,7 +680,7 @@
 
     .slide:last-of-type { break-after: auto; page-break-after: auto; }
 
-    #hud, #ayuda, #progreso, .notes, #volver { display: none !important; }
+    #hud, #ayuda, #progreso, .notes, #volver, #pantalla, #aviso { display: none !important; }
   }
 </style>
 </head>
@@ -1162,6 +1231,8 @@
 <div id="progreso"></div>
 <div id="hud">1 / 17</div>
 <div id="ayuda">← → navegar · F pantalla completa · S notas</div>
+<button id="pantalla" type="button" aria-label="Ver en pantalla completa horizontal">Pantalla completa</button>
+<div id="aviso" role="status" aria-live="polite"></div>
 
 <script>
   (function () {
@@ -1195,6 +1266,102 @@
       return isNaN(numero) ? 0 : numero - 1;
     }
 
+    // --- Pantalla completa y orientación horizontal ---
+    // La tecla F funciona en escritorio. En el móvil no hay teclado, así que el
+    // mismo comportamiento se ofrece con un botón que además pide orientación
+    // horizontal. El bloqueo de orientación solo lo permiten algunos navegadores
+    // (Chrome en Android); cuando falla se avisa que hay que girar el teléfono.
+    var botonPantalla = document.getElementById('pantalla');
+    var aviso = document.getElementById('aviso');
+    var ayuda = document.getElementById('ayuda');
+    var esTactil = !!(window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+    var tiempoAviso = null;
+
+    function mostrarAviso(texto) {
+      aviso.textContent = texto;
+      aviso.classList.add('visible');
+      clearTimeout(tiempoAviso);
+      tiempoAviso = setTimeout(function () {
+        aviso.classList.remove('visible');
+      }, 5000);
+    }
+
+    function pantallaCompletaActiva() {
+      return document.fullscreenElement || document.webkitFullscreenElement ||
+        document.msFullscreenElement || null;
+    }
+
+    function pedirPantallaCompleta() {
+      var raiz = document.documentElement;
+      var pedir = raiz.requestFullscreen || raiz.webkitRequestFullscreen || raiz.msRequestFullscreen;
+      if (!pedir) return Promise.reject(new Error('sin soporte'));
+      var resultado = pedir.call(raiz);
+      return resultado && resultado.then ? resultado : Promise.resolve();
+    }
+
+    function salirDePantallaCompleta() {
+      var salir = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+      if (!salir) return Promise.resolve();
+      var resultado = salir.call(document);
+      return resultado && resultado.then ? resultado : Promise.resolve();
+    }
+
+    function bloquearHorizontal() {
+      var orientacion = window.screen && window.screen.orientation;
+      if (orientacion && orientacion.lock) return orientacion.lock('landscape');
+      if (window.screen && window.screen.lockOrientation) {
+        return Promise.resolve(window.screen.lockOrientation('landscape'));
+      }
+      return Promise.reject(new Error('sin api'));
+    }
+
+    function liberarOrientacion() {
+      var orientacion = window.screen && window.screen.orientation;
+      if (orientacion && orientacion.unlock) orientacion.unlock();
+      else if (window.screen && window.screen.unlockOrientation) window.screen.unlockOrientation();
+    }
+
+    function actualizarBoton() {
+      var activa = !!pantallaCompletaActiva();
+      document.body.classList.toggle('en-pantalla-completa', activa);
+      botonPantalla.textContent = activa ? 'Salir' : 'Pantalla completa';
+      botonPantalla.setAttribute('aria-label', activa
+        ? 'Salir de pantalla completa'
+        : 'Ver en pantalla completa horizontal');
+    }
+
+    function alternarPantallaCompleta() {
+      if (pantallaCompletaActiva()) {
+        liberarOrientacion();
+        salirDePantallaCompleta().catch(function () {});
+        return;
+      }
+      pedirPantallaCompleta().then(function () {
+        return bloquearHorizontal().catch(function () {
+          mostrarAviso('Girá el teléfono para verlo horizontal.');
+        });
+      }).catch(function () {
+        mostrarAviso('Este navegador no permite pantalla completa. Girá el teléfono para verlo horizontal.');
+      });
+    }
+
+    if (esTactil) ayuda.textContent = 'Tocá a la derecha o a la izquierda para navegar';
+
+    botonPantalla.addEventListener('click', function (evento) {
+      evento.preventDefault();
+      evento.stopPropagation();
+      alternarPantallaCompleta();
+    });
+
+    ['fullscreenchange', 'webkitfullscreenchange', 'msfullscreenchange'].forEach(function (nombre) {
+      document.addEventListener(nombre, function () {
+        actualizarBoton();
+        ajustar();
+      });
+    });
+
+    actualizarBoton();
+
     document.addEventListener('keydown', function (evento) {
       var tecla = evento.key;
       if (tecla === 'ArrowRight' || tecla === 'PageDown' || tecla === ' ' || tecla === 'Enter') {
@@ -1208,11 +1375,7 @@
       } else if (tecla === 'End') {
         mostrar(slides.length - 1);
       } else if (tecla === 'f' || tecla === 'F') {
-        if (document.fullscreenElement) {
-          document.exitFullscreen();
-        } else {
-          document.documentElement.requestFullscreen();
-        }
+        alternarPantallaCompleta();
       } else if (tecla === 's' || tecla === 'S') {
         document.body.classList.toggle('notas');
       }
@@ -1220,7 +1383,7 @@
 
     // Navegación por clic: mitad derecha avanza, mitad izquierda retrocede.
     document.addEventListener('click', function (evento) {
-      if (evento.target.closest('#volver, a, aside, .notes')) return;
+      if (evento.target.closest('#volver, #pantalla, #aviso, a, aside, .notes')) return;
       if (evento.clientX > window.innerWidth / 2) mostrar(actual + 1);
       else mostrar(actual - 1);
     });
