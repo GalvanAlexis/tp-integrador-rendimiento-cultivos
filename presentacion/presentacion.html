@@ -585,13 +585,13 @@
     transform: translateY(-1px);
   }
 
-  /* En escritorio alcanza con la tecla F: el boton aparece solo en pantallas tactiles. */
+  /* La tecla F sigue funcionando en escritorio; el boton es para quien no tiene teclado. */
   #pantalla {
     position: fixed;
     top: 14px;
     right: 18px;
     z-index: 1000;
-    display: none;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
     background: rgba(20, 52, 43, 0.88);
@@ -625,12 +625,8 @@
     color: #ffffff;
   }
 
-  @media (hover: none) and (pointer: coarse) {
-    #pantalla { display: inline-flex; }
-  }
-
   /* En pantallas muy angostas el botón se achica para no chocar con "Volver". */
-  @media (hover: none) and (pointer: coarse) and (max-width: 350px) {
+  @media (max-width: 350px) {
     #pantalla { font-size: 12px; padding: 8px 12px; }
   }
 
@@ -1274,7 +1270,11 @@
     var botonPantalla = document.getElementById('pantalla');
     var aviso = document.getElementById('aviso');
     var ayuda = document.getElementById('ayuda');
-    var esTactil = !!(window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+    // Deteccion amplia: si el telefono no soporta las media queries de puntero,
+    // igual queremos saber que conviene avisar sobre girar la pantalla.
+    var esTactil = ('ontouchstart' in window) ||
+      (navigator.maxTouchPoints || 0) > 0 ||
+      !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
     var tiempoAviso = null;
 
     function mostrarAviso(texto) {
@@ -1338,10 +1338,12 @@
       }
       pedirPantallaCompleta().then(function () {
         return bloquearHorizontal().catch(function () {
-          mostrarAviso('Girá el teléfono para verlo horizontal.');
+          if (esTactil) mostrarAviso('Girá el teléfono para verlo horizontal.');
         });
       }).catch(function () {
-        mostrarAviso('Este navegador no permite pantalla completa. Girá el teléfono para verlo horizontal.');
+        mostrarAviso(esTactil
+          ? 'Este navegador no permite pantalla completa. Girá el teléfono para verlo horizontal.'
+          : 'Este navegador no permite pantalla completa.');
       });
     }
 
