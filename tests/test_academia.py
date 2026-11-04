@@ -1,4 +1,6 @@
 """Tests de la seccion Academia: materiales publicados desde la app."""
+import re
+
 import pytest
 
 from app import MATERIALES, app
@@ -92,11 +94,16 @@ def test_presentacion_html_contiene_enlace_volver(client):
 
 
 def test_presentacion_html_ofrece_pantalla_completa_en_el_movil(client):
-    """La presentacion ofrece un control tactil de pantalla completa horizontal."""
+    """El control se muestra siempre, sin depender de media queries de puntero."""
     r = client.get("/academia/presentacion")
     if r.status_code == 200:
         html = r.get_data(as_text=True)
         assert 'id="pantalla"' in html
         assert "requestFullscreen" in html
         assert "lock('landscape')" in html
+        bloque = re.search(r"#pantalla \{(.*?)\}", html, re.S)
+        assert bloque, "falta la regla #pantalla"
+        assert "display: inline-flex" in bloque.group(1), (
+            "el control no se muestra por defecto: no puede depender de media queries"
+        )
 

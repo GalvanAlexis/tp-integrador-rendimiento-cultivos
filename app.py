@@ -484,10 +484,12 @@ def academia_archivo(slug: str):
         mimetype=material["mimetype"],
         download_name=material["nombre_descarga"],
         conditional=True,
-        max_age=86400,
+        max_age=0,
     )
+    # El borde puede cachear una semana, pero el navegador revalida siempre:
+    # si no, un telefono que ya abrio la presentacion sigue viendo la copia vieja.
     response.headers["Cache-Control"] = (
-        "public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400"
+        "public, max-age=0, s-maxage=604800, stale-while-revalidate=86400"
     )
     return response
 
