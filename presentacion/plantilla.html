@@ -643,11 +643,11 @@
       <div>
         <p>Antes de la cosecha ya tiene que resolver:</p>
         <ul>
-          <li>si contrata un <strong>seguro</strong>,</li>
           <li>si <strong>vende por adelantado</strong> parte de la cosecha,</li>
-          <li>cuánto gasta en <strong>insumos</strong> y cuánto pide de <strong>crédito</strong>.</li>
+          <li>si va a poder pagar sus <strong>créditos</strong> o le conviene renegociarlos,</li>
+          <li>cómo se <strong>prepara</strong> si la campaña viene mala.</li>
         </ul>
-        <div class="destacado">Nuestra pregunta: con lo que ya se sabe a mitad de campaña, ¿podemos avisarle que viene mala?</div>
+        <div class="destacado">Nuestra pregunta: con el clima que ya pasó, ¿podemos avisarle antes de cosechar que viene mala?</div>
       </div>
       <div class="apiladas">
         <div class="tarjeta">
@@ -666,8 +666,8 @@
       <b>Guion (50 s).</b>
       <ul>
         <li>Arrancar por el ejemplo: en la sequía de 2022/23 la soja en Pergamino rindió casi la mitad de lo normal.</li>
-        <li>Si el productor se hubiese enterado antes, podría haber contratado un seguro o no vender por adelantado.</li>
-        <li>No es un pronóstico del clima: usamos el clima que ya pasó hasta la mitad de la campaña.</li>
+        <li>Si el productor se hubiese enterado antes de cosechar, podría no haber vendido de más por adelantado o haber renegociado sus créditos a tiempo.</li>
+        <li>No es un pronóstico del clima: nos paramos en una fecha, usamos el clima que ya pasó y predecimos cómo va a terminar la cosecha.</li>
       </ul>
     </aside>
   </section>
@@ -689,7 +689,7 @@
       </div>
     </div>
     <p class="nota" style="margin-top:30px; font-size:21px">
-      La predicción se hace a mitad de campaña, cuando termina el período más sensible del cultivo:
+      La predicción se hace antes de la cosecha, cuando el período más sensible del cultivo ya empezó:
       <strong>trigo 15/11 · maíz y girasol 31/01 · soja 28/02</strong>. Solo usamos datos disponibles en esa fecha.
     </p>
     <aside class="notes">
@@ -697,6 +697,7 @@
       <ul>
         <li>Las dos tareas de la materia sobre el mismo problema: una da un número, la otra da un sí o no.</li>
         <li>Más adelante comparamos cuál de las dos sirve mejor para avisar.</li>
+        <li>Si preguntan por qué no predecir al sembrar: sería más útil, pero todavía no hay información suficiente. Elegimos un punto donde el clima ya dice algo y aún quedan decisiones por tomar.</li>
       </ul>
     </aside>
   </section>
@@ -930,7 +931,7 @@
       <ul>
         <li>Mismos 2.204 casos de test para los dos. Hay 470 campañas malas.</li>
         <li>El clasificador detecta 173; la regresión, 107. A cambio tiene más falsas alarmas (93 contra 32).</li>
-        <li>Por qué el 2: no avisar una sequía es quedarte sin seguro; una falsa alarma es pagar un seguro de más.</li>
+        <li>Por qué el 2: si no avisamos una sequía, el productor llega sin preparación; una falsa alarma solo le hace tomar precauciones de más.</li>
         <li>Sin las variables de clima, ningún clasificador le gana a "no avisar nunca": la señal está en el clima.</li>
       </ul>
     </aside>
@@ -1047,6 +1048,7 @@
         </ul>
       </div>
     </div>
+    <p class="nota" style="font-size: 21px"><strong>A futuro:</strong> una predicción que se actualice durante la campaña, desde la siembra hasta la cosecha, a medida que se conoce el clima.</p>
     <div class="cierre">
       <p>Gracias. ¿Preguntas?</p>
       <span>tp-integrador-rendimiento-cultivos.vercel.app</span>
