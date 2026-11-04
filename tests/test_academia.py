@@ -90,3 +90,13 @@ def test_presentacion_html_contiene_enlace_volver(client):
         assert 'id="volver"' in html
         assert "Volver" in html
 
+
+def test_presentacion_html_ofrece_pantalla_completa_en_el_movil(client):
+    """La presentacion ofrece un control tactil de pantalla completa horizontal."""
+    r = client.get("/academia/presentacion")
+    if r.status_code == 200:
+        html = r.get_data(as_text=True)
+        assert 'id="pantalla"' in html
+        assert "requestFullscreen" in html
+        assert "lock('landscape')" in html
+
